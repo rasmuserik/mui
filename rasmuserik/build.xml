@@ -10,6 +10,8 @@
           description="Assemble the application directory">
     <mkdir dir="${war.dir}/WEB-INF"/>
     <copy todir="${war.dir}">
+      <fileset dir="static">
+      </fileset>
       <fileset dir="src">
         <include name="*.ls"/>
       </fileset>

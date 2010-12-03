@@ -1,2 +1,3 @@
 #!/bin/sh
-js parser.js < parser.js
+js parser.js < parser.js > t && diff parser.js t
+

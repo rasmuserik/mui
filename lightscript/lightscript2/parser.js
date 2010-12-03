@@ -308,8 +308,6 @@ pp["list{"] = function (node, indent) {
     };
     if (acc . length == 0) {
         return "{}";
-    } else if (acc . length == 1) {
-        return "{ " + acc[0] + " }";
     } else {
         return "{\n" + indentstr(ind) + acc . join(",\n" + indentstr(ind)) + "\n" + indentstr(indent) + "}";
     };

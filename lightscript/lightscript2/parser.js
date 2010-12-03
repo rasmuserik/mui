@@ -295,6 +295,25 @@ infix("=", 100);
 infix("in", 50);
 list("(", ")");
 list("{", "}");
+pp["list{"] = function (node, indent) {
+    var acc = [];
+    var i = 1;
+    var ind = indent + indentinc;
+    while (i < node . length) {
+        if (node[i][0] == "id") {
+            node[i][0] = "string";
+        };
+        acc . push(prettyprint(node[i], ind) + ": " + prettyprint(node[i + 1], ind));
+        i = i + 2;
+    };
+    if (acc . length == 0) {
+        return "{}";
+    } else if (acc . length == 1) {
+        return "{ " + acc[0] + " }";
+    } else {
+        return "{\n" + indentstr(ind) + acc . join(",\n" + indentstr(ind)) + "\n" + indentstr(indent) + "}";
+    };
+};
 list("[", "]");
 ["var", "return", "-", "!", "throw"] . map(prefix);
 ["while", "for", "if", "function", "try", "catch"] . map(prefix2);

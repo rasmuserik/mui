@@ -1,6 +1,16 @@
+import os
+
+print "Retrieving database if not exists..."
+os.system("test -f database.wordnet || " +
+    "(wget http://wordnetcode.princeton.edu/3.0/WNdb-3.0.tar.gz -O - | tar xvz) && " +
+    "(head -n 29 dict/data.adv > LICENSE_FOR_DATABASE) && " +
+    "(tail -q -n +30 dict/data.* > database.wordnet) && " +
+    "rm -rf dict")
+
+print "Creating mapping from wordnet references to ids..."
 ids = {}
 nextid = 0
-for line in open("data"):
+for line in open("database.wordnet"):
     line = line.split()
     if line[2] == "s":
         line[2] = "a"
@@ -8,6 +18,7 @@ for line in open("data"):
     ids[id] = nextid
     nextid = nextid + 1
 
+print "Extracting synsets..."
 types = {
     "00": "adj.all",
     "01": "adj.pert",
@@ -84,7 +95,7 @@ relations = {
 
 nextid = 0
 synsets = []
-for line in open("data"):
+for line in open("database.wordnet"):
     fields = line.split()
     result = {}
     result["type"] = types[fields[1]]
@@ -114,6 +125,8 @@ for line in open("data"):
     #print "synset(", nextid, ", ", result, ");"
     nextid = nextid + 1
 
+
+print "Transforming synsets into word entries..."
 def uniq(a):
     t = {}
     for x in a:
@@ -138,7 +151,13 @@ for synset in synsets:
         entry.append(meaning)
         words[word] = entry
 
+
+print "Saving result..."
 wordlist = words.keys()
 wordlist.sort()
+outfile = open("database.json", "w")
 for word in wordlist:
-    print word, words[word] 
+    outfile.write(word)
+    outfile.write(" ")
+    outfile.write(str(words[word]))
+    outfile.write("\n")

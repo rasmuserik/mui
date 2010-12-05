@@ -1,0 +1,17 @@
+application: rasmuserik
+version: 4
+runtime: python
+api_version: 1
+
+builtins:
+- datastore_admin: on
+
+handlers:
+- url: /wn/json
+  script: jsondump.py
+- url: /wn/upload
+  script: upload.py
+- url: /wn/simplehtml
+  script: simplehtml.py
+- url: /
+  script: index.py

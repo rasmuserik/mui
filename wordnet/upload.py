@@ -2,7 +2,7 @@ from google.appengine.ext import db
 import cgi
 import os
 
-class WordNet(db.Model):
+class WordNetDict(db.Model):
     word = db.StringProperty(required=True)
     json = db.TextProperty(required=True)
 
@@ -24,7 +24,7 @@ def body():
     if key == None or value == None:
         print '<h1>ERROR: key and value needed!</h1>'
         return
-    e = WordNet(word = key, json = value)
+    e = WordNetDict(word = key, json = value)
     e.put()
 
 def footer():

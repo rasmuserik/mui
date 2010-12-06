@@ -8,7 +8,7 @@ print """Content-Type: application/xhtml+xml; charset=UTF-8
       <div>
          Development sandbox.
          <ul>
-            <li><a href="wn/thesaurus">Thesaurus</a></li>
+            <li><a href="thesaurus">Thesaurus</a></li>
          </ul>
        </div>
    </body>

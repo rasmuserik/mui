@@ -15,11 +15,13 @@ handlers:
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
-- url: /wn/static
+- url: /static
   static_dir: static
-- url: /wn/LICENSE_FOR_DATABASE
+- url: /LICENSE_FOR_WORDNET_DATABASE
   static_files: LICENSE_FOR_DATABASE
   upload: LICENSE_FOR_DATABASE
   mime_type: text/plain
-- url: /wn/thesaurus
+- url: /thesaurus
   script: thesaurus.py
+- url: /wn/upload
+  script: upload.py

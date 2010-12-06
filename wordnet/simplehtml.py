@@ -18,11 +18,14 @@ def printEntry(entry):
 
     meanings = json.loads(entry.json)
     for meaning in meanings:
-        print "<li><em>"
+        print "<li>"
+        print "<em>"
         print meaning["desc"]
-        print "</em><br />"
+        print "</em>"
+        print "<br />"
         for word in meaning["words"]:
             print " " + toLink(word),
+        print "<small>(%s)</small>" % (meaning["type"],)
         print "<ul>"
         for relation in meaning["rel"]:
             print "<li><small>%s:" % (relation,)

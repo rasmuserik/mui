@@ -8,7 +8,7 @@ cgitb.enable()
 import os
 contentTypes = os.environ["HTTP_ACCEPT"]
 if contentTypes.find("text/html") != -1:
-        print 'Content-Type: text/html; charset=utf-8'
+        print 'Content-Type: text/html; charset=UTF-8'
 elif contentTypes.find("application/xhtml+xml") != -1:
         print 'Content-Type: application/xhtml+xml'
 else: 

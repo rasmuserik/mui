@@ -5,7 +5,6 @@ import json
 print "Retrieving database if not exists..."
 os.system("test -f database.wordnet || " +
     "((wget http://wordnetcode.princeton.edu/3.0/WNdb-3.0.tar.gz -O - | tar xvz) && " +
-    "(head -n 29 dict/data.adv > LICENSE_FOR_DATABASE) && " +
     "(tail -q -n +30 dict/data.* > database.wordnet) && " +
     "rm -rf dict)")
 
@@ -156,12 +155,12 @@ for synset in synsets:
 
 print "Saving result..."
 wordlist = words.keys()
-wordlist.sort()
+#wordlist.sort()
 outfile = open("database.json", "w")
 
 for word in wordlist:
-    con = httplib.HTTPConnection("rasmuserik.appspot.com")
-    #con = httplib.HTTPConnection("localhost:8080")
+    #con = httplib.HTTPConnection("rasmuserik.appspot.com")
+    con = httplib.HTTPConnection("localhost:8080")
     outfile.write(word)
     outfile.write(" ")
     outfile.write(str(words[word]))

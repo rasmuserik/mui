@@ -1,20 +1,10 @@
 from google.appengine.ext import db
 import cgi
-import os
+from wordnet import WordNet
 
-class WordNetDict(db.Model):
-    word = db.StringProperty(required=True)
-    json = db.TextProperty(required=True)
 
-def header():
-    #print 'Content-Type: application/xhtml+xml; charset=UTF-8\n\n'
-    print 'Content-Type: text/html; charset=UTF-8\n\n'
-    print '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
-    print '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">',
-    print '<head><title>foo</title></head><body>',
-
-def body():
-
+print "Conent-Type: text/plain\n\n"
+def main():
     #    if os.environ.get("HTTP_HOST") != "localhost:8080":
     #    print 'update disabled as the database has already been uploaded'
     #    return
@@ -22,14 +12,16 @@ def body():
     key = params.getfirst("key")
     value = params.getfirst("value")
     if key == None or value == None:
-        print '<h1>ERROR: key and value needed!</h1>'
+        print 'ERROR: key and value needed!'
         return
-    e = WordNetDict(word = key, json = value)
+    entry = db.GqlQuery("SELECT * FROM WordNet WHERE word=:1", key).get()
+
+    # Avoid duplicates
+    if entry != None:
+        print "Entry already there"
+        return
+    e = WordNet(word = key, json = value)
     e.put()
+    print "Entry added"
 
-def footer():
-    print '</body></html>',
-
-header()
-body()
-footer()
+main()

@@ -7,6 +7,10 @@ builtins:
 - datastore_admin: on
 
 handlers:
+- url: /wn/LICENSE_FOR_DATABASE
+  static_files: LICENSE_FOR_DATABASE
+  upload: LICENSE_FOR_DATABASE
+  mime_type: text/plain
 - url: /wn/json
   script: jsondump.py
 - url: /wn/upload

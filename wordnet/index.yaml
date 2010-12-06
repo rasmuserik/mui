@@ -1,6 +1,6 @@
 indexes:
 
-- kind: WordNetDict
+- kind: WordNet
   properties:
   - name: word
     direction: asc

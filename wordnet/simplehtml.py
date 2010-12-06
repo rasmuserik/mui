@@ -1,7 +1,7 @@
 from google.appengine.ext import db
+from django.utils import simplejson as json
 from wordnet import WordNet
 import cgi
-import json
 import cgitb
 cgitb.enable()
 
@@ -55,10 +55,12 @@ def body():
     entries.extend(db.GqlQuery("SELECT * FROM WordNet WHERE word<:1 ORDER BY word DESC", word).fetch(10))
     entries = [str(x.word) for x in entries]
     entries.sort()
-    entries = map(toLink, entries)
+    print "<ul>"
     for entry in entries:
-        print '<li>%s</li>' % (entry,)
-    print '</ul>'
+        print '<li>%s</li>' % (toLink(entry),)
+    print "</ul>"
+    print '<a href="simplehtml?word=%s+">prev</a>' % (entries[0],)
+    print '<a href="simplehtml?word=%s+">next</a>' % (entries[-1],)
 
 body()
 print '<div style="text-align:right;font-size:50%"><a href="LICENSE_FOR_DATABASE">database license</a></div></body></html>'

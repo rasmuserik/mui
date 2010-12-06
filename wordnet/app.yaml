@@ -6,6 +6,9 @@ api_version: 1
 builtins:
 - datastore_admin: on
 
+skip_files: 
+- ^jquery-mobile
+- ^database.*
 handlers:
 - url: /wn/static
   static_dir: static

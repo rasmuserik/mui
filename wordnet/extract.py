@@ -159,12 +159,15 @@ wordlist = words.keys()
 outfile = open("database.json", "w")
 
 for word in wordlist:
-    #con = httplib.HTTPConnection("rasmuserik.appspot.com")
-    con = httplib.HTTPConnection("localhost:8080")
     outfile.write(word)
     outfile.write(" ")
     outfile.write(str(words[word]))
     outfile.write("\n")
-    request = "/wn/upload?" + urllib.urlencode({'key': word, 'value': json.dumps(words[word])})
-    con.request("GET", request);
-    con.close()
+    params = urllib.urlencode({'key': word, 'value': json.dumps(words[word])})
+    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+    if True: #len(params) > 1000:
+        print word
+        #con = httplib.HTTPConnection("rasmuserik.appspot.com")
+        con = httplib.HTTPConnection("localhost:8080")
+        con.request("POST", "/wn/upload", params, headers);
+        con.close()

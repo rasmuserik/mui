@@ -20,11 +20,10 @@ word = params.getfirst("word")
 print """
 <!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN"
    "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head> 
         <title>solsort.dk thesaurus %s</title> 
         <link type="text/css" rel="stylesheet" href="/static/style.css" />
-
 </head> 
 <body> 
 """ %(word,)
@@ -45,23 +44,27 @@ def printEntry(entry):
         print "</span>"
         print "<br />"
         for word in meaning["words"]:
-            print " " + toLink(word),
+            # extra span, to make sure certain mobile browsers detect whitespace between links
+            print " %s <span> </span> " % ( toLink(word), )
         print '<span class="wordtype">(%s)</span>' % (meaning["type"],)
         print "<ul>"
         for relation in meaning["rel"]:
             print '<li class="wordrelation">%s:' % (relation,)
             for word in meaning["rel"][relation]:
-                print toLink(word)
+                # extra span, to make sure certain mobile browsers detect whitespace between links
+                print " <span> </span> %s" % ( toLink(word), )
             print "</li>"
         print "</ul></div>"
-    print '<a href="/thesaurus?word=%s+" data-role="button" data-inline="true">index</a>' % (entry.word,)
+    print '<div><a href="/thesaurus?word=%s+">index</a></div>' % (entry.word,)
 
 def body():
     print """
-        <div><form action="/thesaurus" method="get">
-                <input type="text" name="word" />
-                <input type="submit" value="Search" data-inline="true" />
-        </form></div>
+        <form action="/thesaurus" method="get">
+            <div>
+                <input type="text" inputmode="latin predictOff" name="word" />
+                <input type="submit" value="Search" />
+            </div>
+        </form>
         """
     if word == None:
         return
@@ -78,9 +81,10 @@ def body():
     print '<ul>'
     for entry in entries:
         print '<li>%s</li>' % (toLink(entry),)
-    print "</ul>"
+    print "</ul><div>"
     print '<a href="thesaurus?word=%s+">prev</a>' % (entries[0],)
     print '<a href="thesaurus?word=%s+">next</a>' % (entries[-1],)
+    print "</div>"
 
 body()
 print """

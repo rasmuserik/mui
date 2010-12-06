@@ -19,10 +19,10 @@ print """
 <!DOCTYPE html >
 <html>
 <head> 
-        <title>WordNet</title> 
-        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a1/jquery.mobile-1.0a1.min.css" />
-        <script src="http://code.jquery.com/jquery-1.4.3.min.js"></script>
-        <script src="http://code.jquery.com/mobile/1.0a1/jquery.mobile-1.0a1.min.js"></script>
+        <title>Thesaurus</title> 
+        <!-- link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.css" />
+        <script src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.js"></script-->
 </head> 
 <body> 
 <div data-role="page"><div data-role="content">
@@ -30,7 +30,7 @@ print """
 
 
 def toLink(word):
-        return '<a href="/wn/simplehtml?word=%s">%s</a>' % (word, word.replace("_", " "))
+        return '<a href="/wn/thesaurus?word=%s">%s</a>' % (word, word.replace("_", " "))
 
 def printEntry(entry):
     print "<h1>%s</h1><ul>" % (entry.word.replace("_", " "),)
@@ -56,14 +56,14 @@ def printEntry(entry):
         print "</ul>"
         print "</li>"
     print "</ul>"
-    print '<a href="/wn/simplehtml?word=%s+" data-role="button" data-inline="true">index</a>' % (entry.word,)
+    print '<a href="/wn/thesaurus?word=%s+" data-role="button" data-inline="true">index</a>' % (entry.word,)
 
 def body():
     params = cgi.FieldStorage()
     word = params.getfirst("word")
     print """
-        <form action="/wn/simplehtml" method="GET">
-                <input type="text" size="20" name="word" />
+        <form action="/wn/thesaurus" method="GET">
+                <input type="text" name="word" />
                 <input type="submit" value="Search" data-inline="true" />
         </form>
         """
@@ -84,8 +84,8 @@ def body():
         print '<li>%s</li>' % (toLink(entry),)
     print "</ul></div>"
     print '<div data-role="controlgroup" data-type="horizontal">'
-    print '<a data-icon="arrow-l" data-role="button" href="simplehtml?word=%s+">prev</a>' % (entries[0],)
-    print '<a data-icon="arrow-r" data-role="button" href="simplehtml?word=%s+">next</a>' % (entries[-1],)
+    print '<a data-icon="arrow-l" data-role="button" href="thesaurus?word=%s+">prev</a>' % (entries[0],)
+    print '<a data-icon="arrow-r" data-role="button" href="thesaurus?word=%s+">next</a>' % (entries[-1],)
     print '</div>'
 
 body()

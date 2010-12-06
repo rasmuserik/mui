@@ -15,7 +15,9 @@ handlers:
   script: jsondump.py
 - url: /wn/upload
   script: upload.py
-- url: /wn/simplehtml
-  script: simplehtml.py
+- url: /wn/thesaurus
+  script: thesaurus.py
+- url: /wn
+  script: thesaurus.py
 - url: /
   script: index.py

@@ -20,9 +20,16 @@ print """
 <html>
 <head> 
         <title>Thesaurus</title> 
-        <!-- link rel="stylesheet" href="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.css" />
+        <!--
+        jquery.mobile not sufficiently mature yet :(
+        using own simple stylesheet instead.
+
+        <link rel="stylesheet" href="static/jquery.mobile.min.css" />
         <script src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
-        <script src="http://code.jquery.com/mobile/1.0a2/jquery.mobile-1.0a2.min.js"></script-->
+        <script src="static/jquery.mobile.min.js"></script>
+        -->
+        <link rel="stylesheet" href="static/style.css" />
+
 </head> 
 <body> 
 <div data-role="page"><div data-role="content">

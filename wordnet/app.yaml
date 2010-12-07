@@ -17,10 +17,8 @@ handlers:
   upload: favicon.ico
 - url: /static
   static_dir: static
-- url: /LICENSE_FOR_WORDNET_DATABASE
-  static_files: LICENSE_FOR_DATABASE
-  upload: LICENSE_FOR_DATABASE
-  mime_type: text/plain
+- url: /about
+  script: about.py
 - url: /thesaurus
   script: thesaurus.py
 - url: /wn/upload

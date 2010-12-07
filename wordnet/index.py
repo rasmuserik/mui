@@ -13,3 +13,4 @@ print """Content-Type: application/xhtml+xml; charset=UTF-8
        </div>
    </body>
 </html>"""
+import mylogger

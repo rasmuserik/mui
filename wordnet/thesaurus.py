@@ -88,6 +88,7 @@ def body():
 
 body()
 print """
-<div class="licenselink"><a href="LICENSE_FOR_WORDNET_DATABASE">database license</a></div>
+<div class="licenselink"><a href="/about">about</a></div>
 </body></html>
 """
+import mylogger

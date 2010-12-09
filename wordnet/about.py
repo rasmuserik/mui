@@ -13,7 +13,7 @@ print """Content-Type: application/xhtml+xml; charset=UTF-8
    </div>
 <h2>Thesaurus database entries</h2>
 <div>
-The entries in /thesaurus are based on <a href="http://wordnet.princeton.edu/">wordnet</a>, which is freely available online under the following license:
+The entries in the thesaurus are based on <a href="http://wordnet.princeton.edu/">wordnet</a>, which is freely available online under the following license:
 <pre>
   1 This software and database is being provided to you, the LICENSEE, by  
   2 Princeton University under the following license.  By obtaining, using  
@@ -49,3 +49,5 @@ The entries in /thesaurus are based on <a href="http://wordnet.princeton.edu/">w
    </body>
 </html>"""
 import mylogger
+mylogger.log("")
+

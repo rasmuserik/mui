@@ -16,6 +16,10 @@ else:
 
 params = cgi.FieldStorage()
 word = params.getfirst("word")
+if word == None:
+    import random
+    word = random.choice( ["justice", "fool", "hermit", "magician", "devil", "fortune", "world", "death", "hanging", "empress", "tower", "star", "temperance", "chariot", "judgement", "high_priest", "strength", "priestess", "lover", "sun", "emperor", "moon"])
+    # ["razor_edge", "morning_glory", "Niger", "tabular_array", "musculus_adductor_hallucis", "Nyctaginiablue_elderberry", "predictor_variable", "lagerphone", "fluorouracil", "jurist", "retroactive", "repossess", "homoiothermic", "lyre-flower", "Monarda_fistulosa", "cnidarian", "hedge_fund", "incertain", "roiled", "genus_Rhizobium", "refreshinglylaminator", "hay_conditioner", "horseback", "uninquiring", "jujitsu", "stub_out", "whistling", "Magnificatmagnetic_resonance", "toiling", "opsonisation", "dosimeter", "maddened", "love", "beauty", "sublimation", "fairy", "magic", "Loki", "cloud", "osculation", "timid", "book", "thesaurus"]
 
 print """
 <!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN"
@@ -62,12 +66,10 @@ def body():
         <form action="/thesaurus" method="get">
             <div>
                 <input type="text" inputmode="latin predictOff" name="word" />
-                <input type="submit" value="Search" />
+                <input type="submit" value="search" name="action" />
             </div>
         </form>
         """
-    if word == None:
-        return
     entry = db.GqlQuery("SELECT * FROM WordNet WHERE word=:1", word).get()
 
     if entry != None:
@@ -91,4 +93,6 @@ print """
 <div class="licenselink"><a href="/about">about</a></div>
 </body></html>
 """
+
 import mylogger
+mylogger.log(os.environ["REMOTE_ADDR"]+str(word))

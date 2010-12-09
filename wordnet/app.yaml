@@ -11,7 +11,7 @@ skip_files:
 - ^database.*
 handlers:
 - url: /
-  script: index.py
+  script: thesaurus.py
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico

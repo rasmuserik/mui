@@ -14,3 +14,4 @@ print """Content-Type: application/xhtml+xml; charset=UTF-8
    </body>
 </html>"""
 import mylogger
+mylogger.log("")

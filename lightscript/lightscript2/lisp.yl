@@ -1,44 +1,59 @@
+[;]
+[; Parser]
+[;]
 [define [nextc] [set c [getch]]]
 [nextc]
-[define 
+[define
     [getnext]
     [locals result elem quote]
     [set result [array]]
-    [while [string_contains [str ' \n\r\t'] c] [nextc]]
+    [while [string_contains ' \n\r\t' c] [nextc]]
     [cond
-        [[= c [str '[']]
+        [[eq? c '[']
             [nextc]
             [set elem [getnext]]
-            [while 
-                [not [= elem false]]
+            [while
+                [not [eq? elem false]]
                 [array_push result elem]
                 [set elem [getnext]]]
             [return result]]
-        [[= c [str ']']]
-            [nextc] [return false]]
-        [[= c [str '\'']]
+        [[eq? c ']'] [nextc] [return false]]
+        [[eq? c '\'']
             [nextc]
-            [while 
-                [not [= c [str '\'']]]
-                [cond 
-                    [[= c [str '\\']]
+            [while
+                [not [eq? c '\'']]
+                [cond
+                    [[eq? c '\\']
                         [nextc]
                         [cond
-                            [[= c [str 'n']] [set c [str '\n']]]
-                            [[= c [str 'r']] [set c [str '\r']]]
-                            [[= c [str 't']] [set c [str '\t']]]]]]
+                            [[eq? c 'n'] [set c '\n']]
+                            [[eq? c 'r'] [set c '\r']]
+                            [[eq? c 't'] [set c '\t']]]]]
                 [array_push result c]
                 [nextc]]
             [nextc]
-            [return [array_join result [str '']]]]
-        [else
-            [while 
-                [not [string_contains [str ' \n\r\t[]'] c]]
+            [return [array 'str' [array_join result '']]]]
+        [[string_contains '0123456789' c]
+            [while
+                [string_contains '0123456789' c]
                 [array_push result c]
                 [nextc]]
-            [return [array_join result [str '']]]]]]
-
-[set x [getnext]]
-[while [not [= x false]]
-    [print [listpp x]]
-    [set x [getnext]]]
+            [return [array 'num' [array_join result '']]]]
+        [else
+            [while
+                [not [string_contains ' \n\r\t[]' c]]
+                [array_push result c]
+                [nextc]]
+            [return [array_join result '']]]]]
+[;]
+[; Compiler]
+[;]
+[; ... TODO ...]
+[;]
+[; Main loop]
+[;]
+[set expr [getnext]]
+[while
+    [not [eq? expr false]]
+    [print [listpp expr]]
+    [set expr [getnext]]]

@@ -69,15 +69,21 @@ function listpp(list, acc, indent) {
         listpp(list, acc, 4);
         return acc . join("");
     };
-    if (list . constructor !== Array) {
-        var str = list;
-        var escape = { '\n': '\\n', ' ': '\\ ', '\t': '\\t', '[': '\\[', ']': '\\]', '\\': '\\\\', '\r': '\\r' };
+    if (list[0] == "str") {
+        acc.push("'");
+        var str = list[1];
+        var escape = { "'": "\\'", '\n': '\\n', '\t': '\\t', '\\': '\\\\', '\r': '\\r' };
         var i = 0;
         while(i<str.length) {
             acc . push(escape[str[i]]||str[i] );
             i = i + 1;
         }
+        acc.push("'");
         return str . length;
+    }
+    if (list . constructor !== Array) {
+        acc.push(list);
+        return list.length;
     };
     var len = 1;
     acc . push("[");

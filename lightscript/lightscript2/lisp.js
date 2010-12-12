@@ -36,7 +36,7 @@ var getnext = function() {
                 c = getch();
             }
             c = getch();
-            return result.join('');
+            return ["str", result.join('')];
         default:
             while(" \n\r\t[]'".indexOf(c) == -1) {
                 result.push(c);
@@ -45,6 +45,7 @@ var getnext = function() {
             return result.join("");
     }
 }
+function getnext(){var result,elem,quote;result=array();while(string_contains(" \n\r\t",c)){nextc()};if((c==="[")){nextc();elem=getnext();while(!((elem===false))){array_push(result,elem);elem=getnext()};return(result)}else if((c==="]")){nextc();return(false)}else if((c==="'")){nextc();while(!((c==="'"))){if((c==="\\")){nextc();if((c==="n")){c="\n"}else if((c==="r")){c="\r"}else if((c==="t")){c="\t"}};array_push(result,c);nextc()};nextc();return(array("str",array_join(result,"")))}else if(string_contains("0123456789",c)){while(string_contains("0123456789",c)){array_push(result,c);nextc()};return(array("num",array_join(result,"")))}else {while(!(string_contains(" \n\r\t[]",c))){array_push(result,c);nextc()};return(array_join(result,""))}}
 
 function tailblock(expr, n) {
     return "{" + map(compile, tail(expr, n)).join(";") + "}"
@@ -79,16 +80,20 @@ function compile(expr) {
                     + tailblock(expr,2);
         case "switch":
             return result;
+        case "num":
+            return expr[1];
         case "str":
             return uneval(expr[1])
         case "cond":
             return map(compileif, tail(expr)).join('else ');
-        case "=":
+        case "eq?":
             return infix('===', expr);
         case "and":
             return infix('&&', expr);
         case "not":
             return "!(" + compile(expr[1]) + ")";
+        case ";":
+            return "";
         case "set":
             return expr[1] + "=" + compile(expr[2]);
         default:

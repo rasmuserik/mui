@@ -40,7 +40,7 @@ var getch = (function () {
 function listpp(list, acc, indent) {
     if (! acc) {
         acc = [];
-        listpp(list, acc, 4);
+        listpp(list, acc, 2);
         return acc . join("");
     };
     if (list[0] == "num") {
@@ -73,7 +73,7 @@ function listpp(list, acc, indent) {
             seppos . push(acc . length);
             acc . push("");
         };
-        len = len + 1 + listpp(list[i], acc, indent + 4);
+        len = len + 1 + listpp(list[i], acc, indent + 2);
         first = false;
         i = i + 1;
     };
@@ -86,7 +86,7 @@ function listpp(list, acc, indent) {
         return result;
     };
     var sep;
-    if (len > 110 - indent) {
+    if (len > 72 - indent) {
         sep = "\n" + nspace(indent);
     } else {
         sep = " ";
@@ -124,3 +124,7 @@ function array() {
 function strjoin() {
     return Array.prototype.slice.call(arguments).join("");
 }
+function len(obj) {
+    return obj.length;
+}
+

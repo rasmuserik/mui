@@ -86,12 +86,16 @@ function compile(expr) {
             return uneval(expr[1])
         case "cond":
             return map(compileif, tail(expr)).join('else ');
-        case "eq?":
+        case "equal":
             return infix('===', expr);
         case "and":
             return infix('&&', expr);
+        case "or":
+            return infix('||', expr);
         case "not":
             return "!(" + compile(expr[1]) + ")";
+        case "get":
+            return compile(expr[1]) + "[" + compile(expr[2]) + "]";
         case ";":
             return "";
         case "set":

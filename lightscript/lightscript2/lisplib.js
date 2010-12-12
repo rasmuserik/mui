@@ -37,32 +37,6 @@ var getch = (function () {
         };
     };
 })();
-
-function tail(list, n) {
-    n = n || 1;
-    return list.slice(n);
-}
-
-function map(fn, list) {
-    return list.map(fn);
-}
-function array_join(list, sep) {
-    return list.join(sep);
-}
-function array_push(list, elem) {
-    return list.push(elem);
-}
-function string_contains(str, c) {
-    return str.indexOf(c) != -1;
-}
-function array() {
-    var result = [];
-    var i;
-    for(i=0;i<arguments.length;++i) {
-        result[i] = arguments[i];
-    }
-    return result;
-}
 function listpp(list, acc, indent) {
     if (! acc) {
         acc = [];
@@ -122,3 +96,27 @@ function listpp(list, acc, indent) {
     return len;
 };
 
+
+function tail(list, n) {
+    n = n || 1;
+    return list.slice(n);
+}
+
+function map(fn, list) {
+    return list.map(fn);
+}
+function array_join(list, sep) {
+    return list.join(sep);
+}
+function array_push(list, elem) {
+    return list.push(elem);
+}
+function string_contains(str, c) {
+    return str.indexOf(c) != -1;
+}
+function array() {
+    return Array.prototype.slice.call(arguments);
+}
+function strjoin() {
+    return Array.prototype.slice.call(arguments).join("");
+}

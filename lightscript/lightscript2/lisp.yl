@@ -1,0 +1,44 @@
+[define [nextc] [set c [getch]]]
+[nextc]
+[define 
+    [getnext]
+    [locals result elem quote]
+    [set result [array]]
+    [while [string_contains [str ' \n\r\t'] c] [nextc]]
+    [cond
+        [[= c [str '[']]
+            [nextc]
+            [set elem [getnext]]
+            [while 
+                [not [= elem false]]
+                [array_push result elem]
+                [set elem [getnext]]]
+            [return result]]
+        [[= c [str ']']]
+            [nextc] [return false]]
+        [[= c [str '\'']]
+            [nextc]
+            [while 
+                [not [= c [str '\'']]]
+                [cond 
+                    [[= c [str '\\']]
+                        [nextc]
+                        [cond
+                            [[= c [str 'n']] [set c [str '\n']]]
+                            [[= c [str 'r']] [set c [str '\r']]]
+                            [[= c [str 't']] [set c [str '\t']]]]]]
+                [array_push result c]
+                [nextc]]
+            [nextc]
+            [return [array_join result [str '']]]]
+        [else
+            [while 
+                [not [string_contains [str ' \n\r\t[]'] c]]
+                [array_push result c]
+                [nextc]]
+            [return [array_join result [str '']]]]]]
+
+[set x [getnext]]
+[while [not [= x false]]
+    [print [listpp x]]
+    [set x [getnext]]]

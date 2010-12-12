@@ -82,7 +82,7 @@ function listpp(list, acc, indent) {
         return result;
     };
     var sep;
-    if (len > 72 - indent) {
+    if (len > 130 - indent) {
         sep = "\n" + nspace(indent);
     } else {
         sep = " ";

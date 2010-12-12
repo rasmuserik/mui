@@ -48,13 +48,12 @@
 [;]
 [; Compiler]
 [;]
-[; ... TODO ...]
 [define [infix name expr]
-    [return [strjoin [get expr 1] name [compile [get expr 2]]]]]
+    [return [strjoin [compile [get expr 1]] name [compile [get expr 2]]]]]
 [define [compile expr]
     [locals type]
     [set type [get expr 0]]
-    [print type]
+    [; print [uneval expr]]
     [cond
         [[equal [typeof expr] 'string'] [return expr]]
         [[equal type 'define']
@@ -69,8 +68,14 @@
         [[equal type 'locals']
             [return [strjoin 'var ' [array_join [tail expr] ',']]]]
         [[equal type 'set'] [return [infix '=' expr]]]
-        [[equal type 'not'] [return [strjoin '!(' [get expr 1] ')']]]
+        [[equal type 'num'] [return [get expr 1]]]
+        [[equal type ';'] [return '']]
+        [[equal type 'get'] [return [strjoin [compile [get expr 1]] '[' [compile [get expr 2]] ']']]]
+        [[equal type 'not'] [return [strjoin '!(' [compile [get expr 1]] ')']]]
         [[equal type 'equal'] [return [infix '===' expr]]]
+        [[equal type 'while'] [return [strjoin 'while(' [compile [get expr 1]] '){'
+                [array_join [map compile [tail expr 2]] ';']
+                '}']]]
         [else [return [strjoin type '(' [map compile [tail expr]] ')']]]]]
 
 
@@ -81,4 +86,5 @@
 [while
     [not [equal expr false]]
     [print [listpp expr]]
+    [print [compile expr]]
     [set expr [getnext]]]

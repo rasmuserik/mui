@@ -415,7 +415,7 @@ prefix2('for', function(node) {
 }); 
 prefix2('if', function(node) {
     // assume node.child[0] === { name:'paren', child:[?]}
-    var node.child[0] = node.child[0].child[0];
+    node.child[0] = node.child[0].child[0];
 
     //
     if(node.child[1].name === 'else') {

@@ -43,6 +43,10 @@ function listpp(list, acc, indent) {
         listpp(list, acc, 4);
         return acc . join("");
     };
+    if (list[0] == "num") {
+        acc.push(list[1]);
+        return 1;
+    }
     if (list[0] == "str") {
         acc.push("'");
         var str = list[1];
@@ -82,7 +86,7 @@ function listpp(list, acc, indent) {
         return result;
     };
     var sep;
-    if (len > 130 - indent) {
+    if (len > 110 - indent) {
         sep = "\n" + nspace(indent);
     } else {
         sep = " ";

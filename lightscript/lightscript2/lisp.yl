@@ -12,10 +12,7 @@
         [[equal c '[']
             [nextc]
             [set elem [getnext]]
-            [while
-                [not [equal elem false]]
-                [array_push result elem]
-                [set elem [getnext]]]
+            [while [not [equal elem false]] [array_push result elem] [set elem [getnext]]]
             [return result]]
         [[equal c ']'] [nextc] [return false]]
         [[equal c '\'']
@@ -25,66 +22,49 @@
                 [cond
                     [[equal c '\\']
                         [nextc]
-                        [cond
-                            [[equal c 'n'] [set c '\n']]
-                            [[equal c 'r'] [set c '\r']]
-                            [[equal c 't'] [set c '\t']]]]]
+                        [cond [[equal c 'n'] [set c '\n']] [[equal c 'r'] [set c '\r']] [[equal c 't'] [set c '\t']]]]]
                 [array_push result c]
                 [nextc]]
             [nextc]
             [return [array 'str' [array_join result '']]]]
         [[string_contains '0123456789' c]
-            [while
-                [string_contains '0123456789' c]
-                [array_push result c]
-                [nextc]]
+            [while [string_contains '0123456789' c] [array_push result c] [nextc]]
             [return [array 'num' [array_join result '']]]]
         [else
-            [while
-                [not [string_contains ' \n\r\t[]' c]]
-                [array_push result c]
-                [nextc]]
+            [while [not [string_contains ' \n\r\t[]' c]] [array_push result c] [nextc]]
             [return [array_join result '']]]]]
 [;]
 [; Compiler]
 [;]
-[define [infix name expr]
-    [return [strjoin [compile [get expr 1]] name [compile [get expr 2]]]]]
-[define [compile expr]
+[define [infix name expr] [return [strjoin [compile [get expr 1]] name [compile [get expr 2]]]]]
+[define [tailblock expr n] [return [strjoin '{' [array_join [map compile [tail expr n]] ';'] '}']]]
+[define
+    [compile expr]
     [locals type]
     [set type [get expr 0]]
     [; print [uneval expr]]
     [cond
         [[equal [typeof expr] 'string'] [return expr]]
         [[equal type 'define']
-            [return [strjoin
-                'function '
-                [get [get expr 1] 0]
-                '('
-                [array_join [tail [get expr 1]] ',']
-                '){'
-                [array_join [map compile [tail expr 2]] ';']
-                '}']]]
-        [[equal type 'locals']
-            [return [strjoin 'var ' [array_join [tail expr] ',']]]]
+            [return
+                [strjoin
+                    'function '
+                    [get [get expr 1] 0]
+                    '('
+                    [array_join [tail [get expr 1]] ',']
+                    ')'
+                    [tailblock expr 2]]]]
+        [[equal type 'locals'] [return [strjoin 'var ' [array_join [tail expr] ',']]]]
         [[equal type 'set'] [return [infix '=' expr]]]
         [[equal type 'num'] [return [get expr 1]]]
         [[equal type ';'] [return '']]
         [[equal type 'get'] [return [strjoin [compile [get expr 1]] '[' [compile [get expr 2]] ']']]]
         [[equal type 'not'] [return [strjoin '!(' [compile [get expr 1]] ')']]]
         [[equal type 'equal'] [return [infix '===' expr]]]
-        [[equal type 'while'] [return [strjoin 'while(' [compile [get expr 1]] '){'
-                [array_join [map compile [tail expr 2]] ';']
-                '}']]]
+        [[equal type 'while'] [return [strjoin 'while(' [compile [get expr 1]] ')' [tailblock expr 2]]]]
         [else [return [strjoin type '(' [map compile [tail expr]] ')']]]]]
-
-
 [;]
 [; Main loop]
 [;]
 [set expr [getnext]]
-[while
-    [not [equal expr false]]
-    [print [listpp expr]]
-    [print [compile expr]]
-    [set expr [getnext]]]
+[while [not [equal expr false]] [print [listpp expr]] [; print [compile expr]] [set expr [getnext]]]

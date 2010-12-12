@@ -86,7 +86,7 @@ function compile(expr) {
             return uneval(expr[1])
         case "cond":
             return map(compileif, tail(expr)).join('else ');
-        case "equal":
+        case "eq?":
             return infix('===', expr);
         case "and":
             return infix('&&', expr);

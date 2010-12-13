@@ -46,7 +46,8 @@
     [set i indent_count]
     [while [< 0 i] [set result [+ result '    ']] [set i [- i 1]]]
     [return result]]
-[define [infix name expr] [return [strjoin '(' [compile [get expr 1]] ' ' name ' ' [compile [get expr 2]] ')']]]
+[define [infixraw name expr] [return [strjoin [compile [get expr 1]] ' ' name ' ' [compile [get expr 2]]]]]
+[define [infix name expr] [return [strjoin '(' [infixraw name expr] ')']]]
 [define
     [tailblock expr n]
     [locals result]
@@ -78,11 +79,11 @@
                     ')'
                     [tailblock expr 2]]]]
         [[eq? type 'locals'] [return [strjoin 'var ' [array_join [tail expr] ', ']]]]
-        [[eq? type 'set'] [return [infix '=' expr]]]
+        [[eq? type 'set'] [return [infixraw '=' expr]]]
         [[eq? type 'num'] [return [get expr 1]]]
         [[eq? type 'str'] [return [uneval [get expr 1]]]]
         [[eq? type 'table'] [return [strjoin '{' [array_join [map tableentry [tail expr]] ', '] '}']]]
-        [[eq? type ';'] [return '']]
+        [[eq? type ';'] [return [strjoin '// ' [array_join [tail expr] ' ']]]]
         [[eq? type 'get'] [return [strjoin [compile [get expr 1]] '[' [compile [get expr 2]] ']']]]
         [[eq? type 'not'] [return [strjoin '!(' [compile [get expr 1]] ')']]]
         [[eq? type 'eq?'] [return [infix '===' expr]]]

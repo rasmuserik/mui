@@ -1,3 +1,4 @@
-git add *.yl *.sh compile.js yolan.js stdlib.js stdlib.py yolan.py py_compile.py
+./clean.sh
+git add *
 git commit -m "yolan"
 

@@ -17,11 +17,11 @@ function compile(expr){var type;(type=expr[0]);if((typeof(expr)==="string")){ret
 
 
 
-function prettyprint(list,acc,indent){var str,i,escape,seppos,first;print(uneval(list));if(!(acc)){print("acc");(acc=array());prettyprint(list,acc,2);return(array_join(acc,""))}else if((list[0]==="num")){print("num");array_push(acc,list[1]);return(1)}else if((list[0]==="str")){print("str");(escape={"\n":"\\n","'":"\\'","\t":"\\t","\\":"\\\\","\r":"\\r"});(str=list[1]);array_push(acc,"'");(i=0);while((i<len(str))){array_push((escape[str[i]]||str[i]));(i=(i+1))};array_push(acc,"'");return(len(str))}else if((typeof(list)==="string")){print("string");array_push(acc,list);return(len(list))};array_push(acc,"[");(length=1);(seppos=array());(first=true);(i=0);while((i<len(list))){print(i);if(!(first)){array_push(seppos,len(acc));array_push(acc,"")};(length=((len+1)+prettyprint(list[i],acc,(indent+2))));(first=false);(i=(i+1))};;array_push(acc,"]");return(length)}
+function prettyprint(list,acc,indent){var str,i,escape,seppos,first;if(!(acc)){(acc=array());prettyprint(list,acc,2);return(array_join(acc,""))}else if((list[0]==="num")){array_push(acc,list[1]);return(1)}else if((list[0]==="str")){(escape={"\n":"\\n","'":"\\'","\t":"\\t","\\":"\\\\","\r":"\\r"});(str=list[1]);array_push(acc,"'");(i=0);while((i<len(str))){array_push(acc,(escape[str[i]]||str[i]));(i=(i+1))};array_push(acc,"'");return(len(str))}else if((typeof(list)==="string")){array_push(acc,list);return(len(list))};array_push(acc,"[");(length=1);(seppos=array());(first=true);(i=0);while((i<len(list))){if(!(first)){array_push(seppos,len(acc));array_push(acc,"")};(length=((len+1)+prettyprint(list[i],acc,(indent+2))));(first=false);(i=(i+1))};;array_push(acc,"]");return(length)}
 
 
 
 function compile_stdin(){print("/* Code compiled from yolan */");print("load(\"yolanlib.js\");");(expr=getnext());while(!((expr===false))){print(compile(expr));(expr=getnext())}}
 function prettyprint_stdin(){(expr=getnext());while(!((expr===false))){print(prettyprint(expr));(expr=getnext())}}
-compile_stdin()
+
 

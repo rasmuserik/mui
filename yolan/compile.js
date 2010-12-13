@@ -3,8 +3,8 @@ load("stdlib.js");
 load("yolan.js");
 print("/* Code compiled from yolan */");
 print("load(\"stdlib.js\");");
-(expr = getnext());
+expr = getnext();
 while(!((expr === false))) {
     print(strjoin(compile(expr), ";"));
-    (expr = getnext())
+    expr = getnext()
 };

@@ -4,10 +4,12 @@ load("stdlib.js");
 // Parser;
 // ;
 function nextc() {
+    // global vars: c;
     c = getch()
 };
 nextc();
 function getnext() {
+    // global vars: c;
     var result, elem, quote;
     result = array();
     while(string_contains(" \n\r\t", c)) {
@@ -57,16 +59,19 @@ function getnext() {
     }
 };
 // ;
-// Compiler;
+// JavaScript Compiler;
 // ;
 indent_count = 0;
 function increase_indent() {
+    // global vars: indent_count;
     indent_count = (indent_count + 1)
 };
 function decrease_indent() {
+    // global vars: indent_count;
     indent_count = (indent_count - 1)
 };
 function indent() {
+    // global vars: indent_count;
     var i, result;
     result = "";
     i = indent_count;
@@ -110,6 +115,8 @@ function compile(expr) {
         return(strjoin("function ", expr[1][0], "(", array_join(tail(expr[1]), ", "), ")", tailblock(expr, 2)))
     } else if((type === "locals")) {
         return(strjoin("var ", array_join(tail(expr), ", ")))
+    } else if((type === "globals")) {
+        return(strjoin("// global vars: ", array_join(tail(expr), ", ")))
     } else if((type === "set")) {
         return(infixraw("=", expr))
     } else if((type === "num")) {
@@ -142,6 +149,79 @@ function compile(expr) {
         return(strjoin("while(", compile(expr[1]), ")", tailblock(expr, 2)))
     } else  {
         return(strjoin(type, "(", array_join(map(compile, tail(expr)), ", "), ")"))
+    }
+};
+// ;
+// Python Compiler;
+// ;
+function py_infixraw(name, expr) {
+    return(strjoin(py_compile(expr[1]), " ", name, " ", py_compile(expr[2])))
+};
+function py_infix(name, expr) {
+    return(strjoin("(", py_infixraw(name, expr), ")"))
+};
+function py_tailblock(expr, n) {
+    var result;
+    increase_indent();
+    result = strjoin("\n", indent(), array_join(map(py_compile, tail(expr, n)), strjoin("\n", indent())));
+    decrease_indent();
+    return(strjoin(result, "\n", indent()))
+};
+function py_tableentry(expr) {
+    return(strjoin(py_compile(expr[0]), ":", py_compile(expr[1])))
+};
+function py_compileif(expr) {
+    var condition;
+    if((expr[0] === "else")) {
+        condition = "se:"
+    } else  {
+        condition = strjoin("if ", py_compile(expr[0]), ":")
+    };
+    return(strjoin(condition, py_tailblock(expr, 1)))
+};
+function py_compile(expr) {
+    var type;
+    type = expr[0];
+    if((typeof(expr) === "string")) {
+        return(expr)
+    } else if((type === "define")) {
+        return(strjoin("def ", expr[1][0], "(", array_join(tail(expr[1]), ", "), "):", py_tailblock(expr, 2)))
+    } else if((type === "locals")) {
+        return(strjoin("# local vars: ", array_join(tail(expr), ", ")))
+    } else if((type === "globals")) {
+        return(strjoin("global ", array_join(tail(expr), ", ")))
+    } else if((type === "set")) {
+        return(py_infixraw("=", expr))
+    } else if((type === "num")) {
+        return(expr[1])
+    } else if((type === "str")) {
+        return(uneval(expr[1]))
+    } else if((type === "table")) {
+        return(strjoin("{", array_join(map(py_tableentry, tail(expr)), ", "), "}"))
+    } else if((type === ";")) {
+        return(strjoin("# ", array_join(tail(expr), " ")))
+    } else if((type === "get")) {
+        return(strjoin(py_compile(expr[1]), "[", py_compile(expr[2]), "]"))
+    } else if((type === "not")) {
+        return(strjoin("not (", py_compile(expr[1]), ")"))
+    } else if((type === "eq?")) {
+        return(py_infix("==", expr))
+    } else if((type === "<")) {
+        return(py_infix("<", expr))
+    } else if((type === "+")) {
+        return(py_infix("+", expr))
+    } else if((type === "-")) {
+        return(py_infix("-", expr))
+    } else if((type === "or")) {
+        return(py_infix("or", expr))
+    } else if((type === "and")) {
+        return(py_infix("and", expr))
+    } else if((type === "cond")) {
+        return(array_join(map(py_compileif, tail(expr)), "el"))
+    } else if((type === "while")) {
+        return(strjoin("while ", py_compile(expr[1]), ":", py_tailblock(expr, 2)))
+    } else  {
+        return(strjoin(type, "(", array_join(map(py_compile, tail(expr)), ", "), ")"))
     }
 };
 // ;

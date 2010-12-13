@@ -1,5 +1,5 @@
-[load "yolan.js"]
-[print '/* Code compiled from yolan */']
-[print 'load("stdlib.js");']
+[load yolan]
+[print '# Code compiled from yolan']
+[print 'from stdlib import *']
 [set expr [getnext]]
 [while [not [eq? expr false]] [print [py_compile expr]] [set expr [getnext]]]

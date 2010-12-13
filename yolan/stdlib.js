@@ -68,3 +68,7 @@ function len(obj) {
 function get_type(obj) {
     return typeof(obj);
 }
+function idx(obj, id) {
+    return obj[id];
+}
+STRING_TYPE = get_type("")

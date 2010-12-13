@@ -1,1 +1,1 @@
-rm _backup_*
+rm _backup_* *.pyc

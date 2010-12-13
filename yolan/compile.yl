@@ -1,4 +1,4 @@
-[load "yolan.js"]
+[load yolan]
 [print '/* Code compiled from yolan */']
 [print 'load("stdlib.js");']
 [set expr [getnext]]

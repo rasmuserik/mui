@@ -9,7 +9,7 @@
     [set i 0]
     [while
         [< i [len str]]
-        [array_push acc [or [get escape [get str i]] [get str i]]]
+        [array_push acc [or [get escape [idx str i]] [idx str i]]]
         [set i [+ i 1]]]
     [array_push acc '\'']
     [return [array_join acc '']]]

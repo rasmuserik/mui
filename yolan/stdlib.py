@@ -1,7 +1,11 @@
 import sys
 
 def getch():
-    return sys.stdin.read(1)
+    c = sys.stdin.read(1)
+    if c == '':
+        return ']'
+    else:
+        return c
 def array(*args):
     return [x for x in args]
 def string_contains(str, elem):

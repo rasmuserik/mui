@@ -1,0 +1,3 @@
+[load 'yolan.js']
+[set expr [getnext]]
+[while [not [eq? expr false]] [print [prettyprint expr]] [set expr [getnext]]]

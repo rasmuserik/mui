@@ -1,5 +1,5 @@
 [load "yolan.js"]
 [print '/* Code compiled from yolan */']
-[print 'load("yolanlib.js");']
+[print 'load("stdlib.js");']
 [set expr [getnext]]
 [while [not [eq? expr false]] [print [strjoin [compile expr] ';']] [set expr [getnext]]]

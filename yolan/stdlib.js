@@ -106,6 +106,9 @@ function tail(list, n) {
     return list.slice(n);
 }
 
+function put(obj, key, val) {
+    obj[key] = val;
+}
 function map(fn, list) {
     return list.map(fn);
 }

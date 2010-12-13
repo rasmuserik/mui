@@ -1,0 +1,5 @@
+[load "yolan"]
+[print '/* Code compiled from yolan */']
+[print 'load("lisplib.js");']
+[set expr [getnext]]
+[while [not [eq? expr false]] [print [compile expr]] [set expr [getnext]]]

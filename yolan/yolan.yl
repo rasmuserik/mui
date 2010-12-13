@@ -123,7 +123,7 @@
 [;]
 [define [compile_stdin]
     [print '/* Code compiled from yolan */']
-    [print 'load("lisplib.js");']
+    [print 'load("yolanlib.js");']
     [set expr [getnext]]
     [while [not [eq? expr false]] [print [compile expr]] [set expr [getnext]]]]
 
@@ -132,4 +132,4 @@
     [while [not [eq? expr false]] [print [prettyprint expr]] [set expr [getnext]]]]
 
 [; compile_stdin]
-[prettyprint_stdin]
+[; prettyprint_stdin]

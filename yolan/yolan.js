@@ -107,48 +107,48 @@ function compileif(expr) {
     return(strjoin(condition, tailblock(expr, 1)))
 };
 function compile(expr) {
-    var type;
-    type = expr[0];
-    if((typeof(expr) === "string")) {
+    var expr_head;
+    expr_head = expr[0];
+    if((get_type(expr) === "string")) {
         return(expr)
-    } else if((type === "define")) {
+    } else if((expr_head === "define")) {
         return(strjoin("function ", expr[1][0], "(", array_join(tail(expr[1]), ", "), ")", tailblock(expr, 2)))
-    } else if((type === "locals")) {
+    } else if((expr_head === "locals")) {
         return(strjoin("var ", array_join(tail(expr), ", ")))
-    } else if((type === "globals")) {
+    } else if((expr_head === "globals")) {
         return(strjoin("// global vars: ", array_join(tail(expr), ", ")))
-    } else if((type === "set")) {
+    } else if((expr_head === "set")) {
         return(infixraw("=", expr))
-    } else if((type === "num")) {
+    } else if((expr_head === "num")) {
         return(expr[1])
-    } else if((type === "str")) {
+    } else if((expr_head === "str")) {
         return(uneval(expr[1]))
-    } else if((type === "table")) {
+    } else if((expr_head === "table")) {
         return(strjoin("{", array_join(map(tableentry, tail(expr)), ", "), "}"))
-    } else if((type === ";")) {
+    } else if((expr_head === ";")) {
         return(strjoin("// ", array_join(tail(expr), " ")))
-    } else if((type === "get")) {
+    } else if((expr_head === "get")) {
         return(strjoin(compile(expr[1]), "[", compile(expr[2]), "]"))
-    } else if((type === "not")) {
+    } else if((expr_head === "not")) {
         return(strjoin("!(", compile(expr[1]), ")"))
-    } else if((type === "eq?")) {
+    } else if((expr_head === "eq?")) {
         return(infix("===", expr))
-    } else if((type === "<")) {
+    } else if((expr_head === "<")) {
         return(infix("<", expr))
-    } else if((type === "+")) {
+    } else if((expr_head === "+")) {
         return(infix("+", expr))
-    } else if((type === "-")) {
+    } else if((expr_head === "-")) {
         return(infix("-", expr))
-    } else if((type === "or")) {
+    } else if((expr_head === "or")) {
         return(infix("||", expr))
-    } else if((type === "and")) {
+    } else if((expr_head === "and")) {
         return(infix("&&", expr))
-    } else if((type === "cond")) {
+    } else if((expr_head === "cond")) {
         return(array_join(map(compileif, tail(expr)), " else "))
-    } else if((type === "while")) {
+    } else if((expr_head === "while")) {
         return(strjoin("while(", compile(expr[1]), ")", tailblock(expr, 2)))
     } else  {
-        return(strjoin(type, "(", array_join(map(compile, tail(expr)), ", "), ")"))
+        return(strjoin(expr_head, "(", array_join(map(compile, tail(expr)), ", "), ")"))
     }
 };
 // ;
@@ -180,48 +180,48 @@ function py_compileif(expr) {
     return(strjoin(condition, py_tailblock(expr, 1)))
 };
 function py_compile(expr) {
-    var type;
-    type = expr[0];
-    if((typeof(expr) === "string")) {
+    var expr_head;
+    expr_head = expr[0];
+    if((get_type(expr) === "string")) {
         return(expr)
-    } else if((type === "define")) {
+    } else if((expr_head === "define")) {
         return(strjoin("def ", expr[1][0], "(", array_join(tail(expr[1]), ", "), "):", py_tailblock(expr, 2)))
-    } else if((type === "locals")) {
+    } else if((expr_head === "locals")) {
         return(strjoin("# local vars: ", array_join(tail(expr), ", ")))
-    } else if((type === "globals")) {
+    } else if((expr_head === "globals")) {
         return(strjoin("global ", array_join(tail(expr), ", ")))
-    } else if((type === "set")) {
+    } else if((expr_head === "set")) {
         return(py_infixraw("=", expr))
-    } else if((type === "num")) {
+    } else if((expr_head === "num")) {
         return(expr[1])
-    } else if((type === "str")) {
+    } else if((expr_head === "str")) {
         return(uneval(expr[1]))
-    } else if((type === "table")) {
+    } else if((expr_head === "table")) {
         return(strjoin("{", array_join(map(py_tableentry, tail(expr)), ", "), "}"))
-    } else if((type === ";")) {
+    } else if((expr_head === ";")) {
         return(strjoin("# ", array_join(tail(expr), " ")))
-    } else if((type === "get")) {
+    } else if((expr_head === "get")) {
         return(strjoin(py_compile(expr[1]), "[", py_compile(expr[2]), "]"))
-    } else if((type === "not")) {
+    } else if((expr_head === "not")) {
         return(strjoin("not (", py_compile(expr[1]), ")"))
-    } else if((type === "eq?")) {
+    } else if((expr_head === "eq?")) {
         return(py_infix("==", expr))
-    } else if((type === "<")) {
+    } else if((expr_head === "<")) {
         return(py_infix("<", expr))
-    } else if((type === "+")) {
+    } else if((expr_head === "+")) {
         return(py_infix("+", expr))
-    } else if((type === "-")) {
+    } else if((expr_head === "-")) {
         return(py_infix("-", expr))
-    } else if((type === "or")) {
+    } else if((expr_head === "or")) {
         return(py_infix("or", expr))
-    } else if((type === "and")) {
+    } else if((expr_head === "and")) {
         return(py_infix("and", expr))
-    } else if((type === "cond")) {
+    } else if((expr_head === "cond")) {
         return(array_join(map(py_compileif, tail(expr)), "el"))
-    } else if((type === "while")) {
+    } else if((expr_head === "while")) {
         return(strjoin("while ", py_compile(expr[1]), ":", py_tailblock(expr, 2)))
     } else  {
-        return(strjoin(type, "(", array_join(map(py_compile, tail(expr)), ", "), ")"))
+        return(strjoin(expr_head, "(", array_join(map(py_compile, tail(expr)), ", "), ")"))
     }
 };
 // ;
@@ -256,7 +256,7 @@ function prettyprint(list, acc, indent) {
         };
         array_push(acc, "'");
         return(len(str))
-    } else if((typeof(list) === "string")) {
+    } else if((get_type(list) === "string")) {
         array_push(acc, list);
         return(len(list))
     };

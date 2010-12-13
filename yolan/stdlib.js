@@ -65,4 +65,6 @@ function strjoin() {
 function len(obj) {
     return obj.length;
 }
-
+function get_type(obj) {
+    return typeof(obj);
+}

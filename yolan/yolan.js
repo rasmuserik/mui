@@ -21,7 +21,7 @@ function prettyprint(list,acc,indent){var str,i,escape,seppos,first;print(uneval
 
 
 
-function compile_stdin(){print("/* Code compiled from yolan */");print("load(\"lisplib.js\");");(expr=getnext());while(!((expr===false))){print(compile(expr));(expr=getnext())}}
+function compile_stdin(){print("/* Code compiled from yolan */");print("load(\"yolanlib.js\");");(expr=getnext());while(!((expr===false))){print(compile(expr));(expr=getnext())}}
 function prettyprint_stdin(){(expr=getnext());while(!((expr===false))){print(prettyprint(expr));(expr=getnext())}}
 compile_stdin()
 

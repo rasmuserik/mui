@@ -37,75 +37,10 @@ var getch = (function () {
         };
     };
 })();
-function listpp(list, acc, indent) {
-    if (! acc) {
-        acc = [];
-        listpp(list, acc, 2);
-        return acc . join("");
-    };
-    if (list[0] == "num") {
-        acc.push(list[1]);
-        return 1;
-    }
-    if (list[0] == "str") {
-        acc.push("'");
-        var str = list[1];
-        var escape = { "'": "\\'", '\n': '\\n', '\t': '\\t', '\\': '\\\\', '\r': '\\r' };
-        var i = 0;
-        while(i<str.length) {
-            acc . push(escape[str[i]]||str[i] );
-            i = i + 1;
-        }
-        acc.push("'");
-        return str . length;
-    }
-    if (list . constructor !== Array) {
-        acc.push(list);
-        return list.length;
-    };
-    var len = 1;
-    acc . push("[");
-    var seppos = [];
-    var first = true;
-    var i = 0;
-    while (i < list . length) {
-        if (! first) {
-            seppos . push(acc . length);
-            acc . push("");
-        };
-        len = len + 1 + listpp(list[i], acc, indent + 2);
-        first = false;
-        i = i + 1;
-    };
-    var nspace = function (n) {
-        var result = "";
-        while (n > 0) {
-            result = result + " ";
-            n = n - 1;
-        };
-        return result;
-    };
-    var sep;
-    if (len > 72 - indent) {
-        sep = "\n" + nspace(indent);
-    } else {
-        sep = " ";
-    };
-    i = 0;
-    while (i < seppos . length) {
-        acc[seppos[i]] = sep;
-        i = i + 1;
-    };
-    acc . push("]");
-    return len;
-};
-
-
 function tail(list, n) {
     n = n || 1;
     return list.slice(n);
 }
-
 function put(obj, key, val) {
     obj[key] = val;
 }

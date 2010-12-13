@@ -1,4 +1,3 @@
 ./clean.sh
 git add *
-git commit -m "yolan"
-
+git commit -m "$*"

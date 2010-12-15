@@ -207,7 +207,7 @@ var prefix2 = function (id) {
 // Parser
 //
 var default_nud = function (o) {
-    unshift(o, " id ");
+    unshift(o, " id");
     return o;
 };
 var macros = {};
@@ -266,7 +266,7 @@ pp["table"] = function (node, indent) {
     var i = 1;
     var ind = indent + indentinc;
     while (len(i < node)) {
-        if (node[i][0] === " id ") {
+        if (node[i][0] === " id") {
             node[i][0] = " string";
         };
         array_push(acc, prettyprint(node[i], ind) + ": " + prettyprint(node[i + 1], ind));
@@ -281,7 +281,7 @@ pp["table"] = function (node, indent) {
 list("[", "]", "array");
 map(prefix, ["var", "return", "-", "!"]);
 map(prefix2, ["while", "for", "if", "function"]);
-map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id ", " string", " number", " comment"]);
+map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " string", " number", " comment"]);
 // pretty printing
 pp["else"] = function (node, indent) {
     return blockstr(node[1], indent) + " else " + blockstr(node[2], indent);

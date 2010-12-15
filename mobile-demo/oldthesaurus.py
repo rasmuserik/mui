@@ -34,7 +34,7 @@ print """
 
 
 def toLink(word):
-        return '<a href="/thesaurus?word=%s">%s</a>' % (word, word.replace("_", " "))
+        return '<a href="/oldthesaurus?word=%s">%s</a>' % (word, word.replace("_", " "))
 
 def printEntry(entry):
     print "<h1>%s</h1>" % (entry.word.replace("_", " "),)
@@ -59,11 +59,11 @@ def printEntry(entry):
                 print " <span> </span> %s" % ( toLink(word), )
             print "</li>"
         print "</ul></div>"
-    print '<div><a href="/thesaurus?word=%s+">index</a></div>' % (entry.word,)
+    print '<div><a href="/oldthesaurus?word=%s+">index</a></div>' % (entry.word,)
 
 def body():
     print """
-        <form action="/thesaurus" method="get">
+        <form action="/oldthesaurus" method="get">
             <div>
                 <input type="text" inputmode="latin predictOff" name="word" />
                 <input type="submit" value="search" name="action" />
@@ -84,8 +84,8 @@ def body():
     for entry in entries:
         print '<li>%s</li>' % (toLink(entry),)
     print "</ul><div>"
-    print '<a href="thesaurus?word=%s+">prev</a>' % (entries[0],)
-    print '<a href="thesaurus?word=%s+">next</a>' % (entries[-1],)
+    print '<a href="oldthesaurus?word=%s+">prev</a>' % (entries[0],)
+    print '<a href="oldthesaurus?word=%s+">next</a>' % (entries[-1],)
     print "</div>"
 
 body()

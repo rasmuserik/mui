@@ -12,6 +12,8 @@ skip_files:
 handlers:
 - url: /oldthesaurus
   script: oldthesaurus.py
+- url: /bib
+  script: bibdk.py
 - url: /
   script: thesaurus.py
 - url: /favicon.ico

@@ -37,9 +37,60 @@ var getch = (function () {
         };
     };
 })();
+// Function that prettyprints a list of lists
+function listpp(list, acc, indent) {
+    if (! acc) {
+        acc = [];
+        listpp(list, acc, 0);
+        return array_join(acc, "");
+    };
+    if (! is_array(list)) {
+        var str = uneval(list);
+        array_push(acc, str);
+        return len(str);
+    };
+    var length = 1;
+    array_push(acc, "[");
+    var seppos = [];
+    var first = true;
+    var i = 0;
+    while (i < len(list)) {
+        if (! first) {
+            array_push(seppos, len(acc));
+            array_push(acc, "");
+        };
+        length = length + 1 + listpp(list[i], acc, indent + 1);
+        first = false;
+        i = i + 1;
+    };
+    var nspace = function (n) {
+        var result = "";
+        while (n > 0) {
+            result = result + " ";
+            n = n - 1;
+        };
+        return result;
+    };
+    var sep;
+    if (length > 72 - indent) {
+        sep = ",\n" + nspace(indent);
+    } else {
+        sep = ", ";
+    };
+    i = 0;
+    while (i < len(seppos)) {
+        acc[seppos[i]] = sep;
+        i = i + 1;
+    };
+    array_push(acc, "]");
+    return length;
+};
 function tail(list, n) {
     n = n || 1;
     return list.slice(n);
+}
+function slice(list, a, b) {
+    return list.slice(a, b);
 }
 function put(obj, key, val) {
     obj[key] = val;
@@ -78,3 +129,5 @@ function unshift(arr, obj) {
     arr.unshift(obj);
 }
 STRING_TYPE = get_type("")
+
+

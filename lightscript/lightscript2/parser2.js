@@ -205,7 +205,7 @@ var prefix2 = function (id) {
 // Parser
 //
 var default_nud = function (o) {
-    unshift(o, "id");
+    unshift(o, "id ");
     return o;
 };
 var parse = function (rbp) {
@@ -255,7 +255,7 @@ pp["list{"] = function (node, indent) {
     var i = 1;
     var ind = indent + indentinc;
     while (len(i < node)) {
-        if (node[i][0] == "id") {
+        if (node[i][0] == "id ") {
             node[i][0] = "string";
         };
         array_push(acc, prettyprint(node[i], ind) + ": " + prettyprint(node[i + 1], ind));
@@ -270,7 +270,7 @@ pp["list{"] = function (node, indent) {
 list("[", "]");
 map(prefix, ["var", "return", "-", "!", "throw"]);
 map(prefix2, ["while", "for", "if", "function", "try", "catch"]);
-map(passthrough, ["undefined", "null", ";", ":", ",", ")", "}", "(eof)", "false", "true", "id", "string", "number", "comment"]);
+map(passthrough, ["undefined", "null", ";", ":", ",", ")", "}", "(eof)", "false", "true", "id ", "string", "number", "comment"]);
 // pretty printing
 pp["else"] = function (node, indent) {
     return blockstr(node[1], indent) + " else " + blockstr(node[2], indent);
@@ -313,61 +313,16 @@ pp["-"] = function (node, indent) {
 // dump
 //
 token = next_token();
-t = readlist(["list{"], "");
-//for (elem in t) {
-//    print(prettyprint(t[elem]));
-//}
-//while((t = parse()) !== EOF) {
-//    print(uneval(t));
-//    print(prettyprint(t));
-//};
-// Function that prettyprints a list of lists
-function listpp(list, acc, indent) {
-    if (! acc) {
-        acc = [];
-        listpp(list, acc, 0);
-        return array_join(acc, "");
-    };
-    if (!is_array(list)) {
-        var str = uneval(list);
-        array_push(acc, str);
-        return len(str);
-    };
-    var len = 1;
-    array_push(acc, "[");
-    var seppos = [];
-    var first = true;
-    var i = 0;
-    while (i < len(list)) {
-        if (! first) {
-            array_push(seppos, len(acc));
-            array_push(acc, "");
+while ((t = parse()) !== EOF) {
+    if (uneval(t) !== uneval([";"])) {
+        //print(uneval(t));
+        //print(listpp(t));
+        var lineend;
+        if (t[0] === "comment") {
+            lineend = "";
+        } else {
+            lineend = ";";
         };
-        len = len + 1 + listpp(list[i], acc, indent + 1);
-        first = false;
-        i = i + 1;
+        print(prettyprint(t) + lineend);
     };
-    var nspace = function (n) {
-        var result = "";
-        while (n > 0) {
-            result = result + " ";
-            n = n - 1;
-        };
-        return result;
-    };
-    var sep;
-    if (len > 72 - indent) {
-        sep = ",\n" + nspace(indent);
-    } else {
-        sep = ", ";
-    };
-    i = 0;
-    while (i < len(seppos)) {
-        acc[seppos[i]] = sep;
-        i = i + 1;
-    };
-    array_push(acc, "]");
-    return len;
 };
-//print(listpp(t));
-print(blockstr(t) . slice(2, -2));

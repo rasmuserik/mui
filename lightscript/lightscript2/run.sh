@@ -1,4 +1,4 @@
 #!/bin/sh
-js parser.js < parser.js > t && diff parser.js t
+js parser2.js < parser2.js > t && diff -u parser2.js t
 #js parser.js < parser.js
 

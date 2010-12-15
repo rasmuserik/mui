@@ -163,7 +163,7 @@ for word in wordlist:
     outfile.write(" ")
     outfile.write(str(words[word]))
     outfile.write("\n")
-    params = urllib.urlencode({'key': word, 'value': json.dumps(words[word])})
+    params = urllib.urlencode({'key': word.lower(), 'value': json.dumps(words[word])})
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
     if True: #len(params) > 1000:
         print word

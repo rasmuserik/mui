@@ -146,34 +146,36 @@ var readlist = function (acc, endsymb) {
     return acc;
 };
 // syntax constructors
-var infix = function (id, prio) {
+var infix = function (id, prio, name) {
+    name = name || id;
     bp[id] = prio;
     led[id] = function (left, token) {
-        return [id, left, parse(prio)];
+        return [name, left, parse(prio)];
     };
-    pp[id] = infixstr;
+    pp[name] = infixstr;
 };
-var infixr = function (id, prio) {
+var infixr = function (id, prio, name) {
+    name = name || id;
     bp[id] = prio;
     led[id] = function (left, token) {
-        return [id, left, parse(prio - 1)];
+        return [name, left, parse(prio - 1)];
     };
-    pp[id] = infixstr;
+    pp[name] = infixstr;
 };
-var infixlist = function (id, endsymb, prio) {
+var infixlist = function (id, endsymb, prio, name) {
     bp[id] = prio;
     led[id] = function (left, token) {
-        return readlist(["apply" + id, left], endsymb);
+        return readlist([name, left], endsymb);
     };
-    pp["apply" + id] = function (node, indent) {
+    pp[name] = function (node, indent) {
         return prettyprint(node[1], indent) + id + tailstr(tail(node), indent, ", ") + endsymb;
     };
 };
-var list = function (id, endsymb) {
+var list = function (id, endsymb, name) {
     nud[id] = function () {
-        return readlist(["list" + id], endsymb);
+        return readlist([name], endsymb);
     };
-    pp["list" + id] = function (node, indent) {
+    pp[name] = function (node, indent) {
         return id + tailstr(node, indent, ", ") + endsymb;
     };
 };
@@ -205,18 +207,27 @@ var prefix2 = function (id) {
 // Parser
 //
 var default_nud = function (o) {
-    unshift(o, "id ");
+    unshift(o, " id ");
     return o;
+};
+var macros = {};
+var apply_macros = function (obj) {
+    if (macros[obj[0]]) {
+        obj = macros[obj[0]](obj);
+    };
+    return obj;
 };
 var parse = function (rbp) {
     rbp = rbp || 0;
     var t = token;
     token = next_token();
     var left = (nud[t[0]] || default_nud)(t);
+    left = apply_macros(left);
     while (rbp < (bp[token[0]] || 0) && ! is_separator(t[0])) {
         t = token;
         token = next_token();
         left = led[t[0]](left, t);
+        left = apply_macros(left);
     };
     return left;
 };
@@ -228,17 +239,17 @@ var parse = function (rbp) {
 var is_separator = function (c) {
     return string_contains(";,:", c);
 };
-infixlist("(", ")", 600);
-infixlist("[", "]", 600);
+infixlist("(", ")", 600, "call");
+infixlist("[", "]", 600, "subscript");
 infix("*", 500);
 infix("%", 500);
 infix("/", 500);
 infix("+", 400);
 infix("-", 400);
 infix("===", 300);
-infix("==", 300);
+infix("==", 300, "===");
 infix("!==", 300);
-infix("!=", 300);
+infix("!=", 300, "!==");
 infix("<=", 300);
 infix("<", 300);
 infix(">=", 300);
@@ -248,29 +259,29 @@ infixr("||", 200);
 infixr("else", 200);
 infix("=", 100);
 infix("in", 50);
-list("(", ")");
-list("{", "}");
+list("(", ")", "list(");
+list("{", "}", "list{");
 pp["list{"] = function (node, indent) {
     var acc = [];
     var i = 1;
     var ind = indent + indentinc;
     while (len(i < node)) {
-        if (node[i][0] == "id ") {
+        if (node[i][0] === " id ") {
             node[i][0] = "string";
         };
         array_push(acc, prettyprint(node[i], ind) + ": " + prettyprint(node[i + 1], ind));
         i = i + 2;
     };
-    if (len(acc) == 0) {
+    if (len(acc) === 0) {
         return "{}";
     } else {
         return "{\n" + indentstr(ind) + array_join(acc, ",\n" + indentstr(ind)) + "\n" + indentstr(indent) + "}";
     };
 };
-list("[", "]");
+list("[", "]", "array");
 map(prefix, ["var", "return", "-", "!", "throw"]);
 map(prefix2, ["while", "for", "if", "function", "try", "catch"]);
-map(passthrough, ["undefined", "null", ";", ":", ",", ")", "}", "(eof)", "false", "true", "id ", "string", "number", "comment"]);
+map(passthrough, ["undefined", "null", ";", ":", ",", ")", "}", "(eof)", "false", "true", " id ", "string", "number", "comment"]);
 // pretty printing
 pp["else"] = function (node, indent) {
     return blockstr(node[1], indent) + " else " + blockstr(node[2], indent);
@@ -281,15 +292,15 @@ pp["string"] = function (node) {
     var i = 0;
     while (i < len(str)) {
         var c = str[i];
-        if (c == "\\") {
+        if (c === "\\") {
             array_push(result, "\\\\");
-        } else if (c == "\n") {
+        } else if (c === "\n") {
             array_push(result, "\\n");
-        } else if (c == "\r") {
+        } else if (c === "\r") {
             array_push(result, "\\r");
-        } else if (c == "\t") {
+        } else if (c === "\t") {
             array_push(result, "\\t");
-        } else if (c == "\"") {
+        } else if (c === "\"") {
             array_push(result, "\\\"");
         } else {
             array_push(result, c);

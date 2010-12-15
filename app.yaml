@@ -1,0 +1,29 @@
+application: rasmuserik
+version: 1
+runtime: python
+api_version: 1
+
+builtins:
+- datastore_admin: on
+
+skip_files: 
+- ^jquery-mobile
+- ^database.*
+handlers:
+- url: /oldthesaurus
+  script: oldthesaurus.py
+- url: /bib
+  script: bibdk.py
+- url: /
+  script: thesaurus.py
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+- url: /static
+  static_dir: static
+- url: /about
+  script: about.py
+- url: /thesaurus
+  script: thesaurus.py
+- url: /wn/upload
+  script: upload.py

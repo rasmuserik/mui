@@ -154,6 +154,14 @@ var infix = function (id, prio, name) {
     };
     pp[name] = infixstr;
 };
+var swapinfix = function (id, prio, name) {
+    name = name;
+    bp[id] = prio;
+    led[id] = function (left, token) {
+        return [name, parse(prio), left];
+    };
+    pp[name] = infixstr;
+};
 var infixr = function (id, prio, name) {
     name = name || id;
     bp[id] = prio;
@@ -252,8 +260,8 @@ infix("!==", 300);
 infix("!=", 300, "!==");
 infix("<=", 300);
 infix("<", 300);
-infix(">=", 300);
-infix(">", 300);
+swapinfix(">=", 300, "<=");
+swapinfix(">", 300, "<");
 infixr("&&", 200);
 infixr("||", 200);
 infixr("else", 200);

@@ -44,12 +44,12 @@ var next_token = function () {
             push_char();
         };
         skip_char();
-        return ["string", pop_string()];
+        return [" string", pop_string()];
     } else if (char_is(num)) {
         while (char_is(num)) {
             push_char();
         };
-        return ["number", pop_string()];
+        return [" number", pop_string()];
         // varname
     } else if (char_is(alphanum)) {
         while (char_is(alphanum)) {
@@ -66,7 +66,7 @@ var next_token = function () {
                 while (c !== undefined && c !== "\n") {
                     push_char();
                 };
-                return ["comment", pop_string()];
+                return [" comment", pop_string()];
             };
         };
         while (char_is(symb)) {
@@ -104,7 +104,7 @@ var infixstr = function (node, indent) {
     return prettyprint(node[1], indent) + " " + node[0] + " " + prettyprint(node[2], indent);
 };
 var blockstr = function (node, indent) {
-    if (node[0] !== "list{") {
+    if (node[0] !== "table") {
         return prettyprint(node, indent);
     };
     var acc = "{";
@@ -112,7 +112,7 @@ var blockstr = function (node, indent) {
     var prevcomment = false;
     while (i < len(node)) {
         acc = acc + "\n" + indentstr(indent + indentinc) + prettyprint(node[i], indent + indentinc);
-        if (node[i][0] !== "comment") {
+        if (node[i][0] !== " comment") {
             acc = acc + ";";
         };
         i = i + 1;
@@ -259,15 +259,15 @@ infixr("||", 200);
 infixr("else", 200);
 infix("=", 100);
 infix("in", 50);
-list("(", ")", "list(");
-list("{", "}", "list{");
-pp["list{"] = function (node, indent) {
+list("(", ")", "paren");
+list("{", "}", "table");
+pp["table"] = function (node, indent) {
     var acc = [];
     var i = 1;
     var ind = indent + indentinc;
     while (len(i < node)) {
         if (node[i][0] === " id ") {
-            node[i][0] = "string";
+            node[i][0] = " string";
         };
         array_push(acc, prettyprint(node[i], ind) + ": " + prettyprint(node[i + 1], ind));
         i = i + 2;
@@ -279,14 +279,14 @@ pp["list{"] = function (node, indent) {
     };
 };
 list("[", "]", "array");
-map(prefix, ["var", "return", "-", "!", "throw"]);
-map(prefix2, ["while", "for", "if", "function", "try", "catch"]);
-map(passthrough, ["undefined", "null", ";", ":", ",", ")", "}", "(eof)", "false", "true", " id ", "string", "number", "comment"]);
+map(prefix, ["var", "return", "-", "!"]);
+map(prefix2, ["while", "for", "if", "function"]);
+map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id ", " string", " number", " comment"]);
 // pretty printing
 pp["else"] = function (node, indent) {
     return blockstr(node[1], indent) + " else " + blockstr(node[2], indent);
 };
-pp["string"] = function (node) {
+pp[" string"] = function (node) {
     var str = node[1];
     var result = ["\""];
     var i = 0;
@@ -310,7 +310,7 @@ pp["string"] = function (node) {
     array_push(result, "\"");
     return array_join(result, "");
 };
-pp["comment"] = function (node) {
+pp[" comment"] = function (node) {
     return "//" + node[1];
 };
 pp["-"] = function (node, indent) {
@@ -329,7 +329,7 @@ while ((t = parse()) !== EOF) {
         //print(uneval(t));
         //print(listpp(t));
         var lineend;
-        if (t[0] === "comment") {
+        if (t[0] === " comment") {
             lineend = "";
         } else {
             lineend = ";";

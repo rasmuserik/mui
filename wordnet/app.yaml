@@ -10,6 +10,8 @@ skip_files:
 - ^jquery-mobile
 - ^database.*
 handlers:
+- url: /thes
+  script: thes.py
 - url: /
   script: thesaurus.py
 - url: /favicon.ico

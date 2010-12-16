@@ -1,49 +1,40 @@
 from google.appengine.ext import db
 from django.utils import simplejson as json
-from wordnet import WordNet
+from wordnet.wordnet import WordNet
 import cgi
 import cgitb
 cgitb.enable()
 
 import os
 contentTypes = os.environ["HTTP_ACCEPT"]
-#if contentTypes.find('application/vnd.wap.xhtml+xml') != -1:
-#        print 'Content-Type: application/vnd.wap.xhtml+xml; charset=UTF-8'
-#elif contentTypes.find("application/xhtml+xml") != -1:
-#        print 'Content-Type: application/xhtml+xml; charset=UTF-8'
-#else:
-#        print 'Content-Type: text/html; charset=UTF-8'
-
-#print 'Content-Type: application/xhtml+xml; charset=UTF-8'
-print 'Content-Type: text/html; charset=UTF-8'
+if contentTypes.find('application/vnd.wap.xhtml+xml') != -1:
+        print 'Content-Type: application/vnd.wap.xhtml+xml; charset=UTF-8'
+elif contentTypes.find("application/xhtml+xml") != -1:
+        print 'Content-Type: application/xhtml+xml; charset=UTF-8'
+else:
+        print 'Content-Type: text/html; charset=UTF-8'
 
 params = cgi.FieldStorage()
 word = params.getfirst("word")
-title = word
 if word == None:
     import random
-    title = "solsort.dk thesaurus"
-    alphabet = 'qwertyuiopasdfghjklzxcvbnm'
-    word = random.choice(alphabet) + random.choice(alphabet) + random.choice(alphabet) + " "
-word = word.lower().replace(' ', '_')
+    #word = random.choice( ["justice", "hermit", "magician", "devil", "fortune", "world", "death", "hanging", "empress", "tower", "star", "temperance", "chariot", "judgement", "high_priest", "strength", "priestess", "lover", "sun", "emperor", "moon"])
+    word = random.choice(["razor_edge", "morning_glory", "Niger", "tabular_array", "musculus_adductor_hallucis", "Nyctaginiablue_elderberry", "predictor_variable", "lagerphone", "fluorouracil", "jurist", "retroactive", "repossess", "homoiothermic", "lyre-flower", "Monarda_fistulosa", "cnidarian", "hedge_fund", "incertain", "roiled", "genus_Rhizobium", "refreshinglylaminator", "hay_conditioner", "horseback", "uninquiring", "jujitsu", "stub_out", "whistling", "Magnificatmagnetic_resonance", "toiling", "opsonisation", "dosimeter", "maddened", "love", "beauty", "sublimation", "fairy", "magic", "Loki", "cloud", "osculation", "timid", "book", "thesaurus", "justice", "hermit", "magician", "devil", "fortune", "world", "death", "hanging", "empress", "tower", "star", "temperance", "chariot", "judgement", "high_priest", "strength", "priestess", "lover", "sun", "emperor", "moon"])
 
 print """
 <!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN"
    "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head> 
-        <title>%s</title> 
-        <link rel="stylesheet" href="/static/jquery.mobile.min.css" />
-        <script src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
-        <script src="/static/jquery.mobile.min.js"></script>
+        <title>solsort.dk thesaurus %s</title> 
         <link type="text/css" rel="stylesheet" href="/static/style.css" />
 </head> 
-<body><div data-role="page" data-theme="c"><div data-role="content">
-""" % (title,)
+<body> 
+""" %(word,)
 
 
 def toLink(word):
-        return '<a href="/thesaurus?word=%s">%s</a>' % (word, word.replace("_", " "))
+        return '<a href="/oldthesaurus?word=%s">%s</a>' % (word, word.replace("_", " "))
 
 def printEntry(entry):
     print "<h1>%s</h1>" % (entry.word.replace("_", " "),)
@@ -68,14 +59,14 @@ def printEntry(entry):
                 print " <span> </span> %s" % ( toLink(word), )
             print "</li>"
         print "</ul></div>"
-    print '<div><a href="/thesaurus?word=%s+" data-role="button" data-inline="true">index</a></div>' % (entry.word,)
+    print '<div><a href="/oldthesaurus?word=%s+">index</a></div>' % (entry.word,)
 
 def body():
     print """
-        <form action="/thesaurus" method="get">
+        <form action="/oldthesaurus" method="get">
             <div>
                 <input type="text" inputmode="latin predictOff" name="word" />
-                <input type="submit" value="search" name="action" data-inline="true" />
+                <input type="submit" value="search" name="action" />
             </div>
         </form>
         """
@@ -89,18 +80,17 @@ def body():
     entries.extend(db.GqlQuery("SELECT * FROM WordNet WHERE word<:1 ORDER BY word DESC", word).fetch(5))
     entries = [str(x.word) for x in entries]
     entries.sort()
-    print '<ul data-role="listview" data-inset="true">'
+    print '<ul>'
     for entry in entries:
         print '<li>%s</li>' % (toLink(entry),)
-    print '</ul><div data-role="controlgroup" data-type="horizontal">'
-    print '<a href="/thesaurus?word=%s+" data-role="button">prev</a>' % (entries[0],)
-    print '<a href="/thesaurus?word=%s+" data-role="button">next</a>' % (entries[-1],)
+    print "</ul><div>"
+    print '<a href="oldthesaurus?word=%s+">prev</a>' % (entries[0],)
+    print '<a href="oldthesaurus?word=%s+">next</a>' % (entries[-1],)
     print "</div>"
 
 body()
 print """
 <div class="licenselink"><a href="/about">about</a></div>
-</div></div>
 </body></html>
 """
 

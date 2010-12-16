@@ -1,17 +1,33 @@
-print """Content-Type: application/xhtml+xml; charset=UTF-8
+print """Content-Type: text/html; charset=UTF-8
 
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
-   <head><title>About demo.solsort.dk</title></head>
+   <head><title>about demo.solsort.dk</title>
+         <link rel="stylesheet" href="/static/jquery.mobile.min.css" />
+         <script src="http://code.jquery.com/jquery-1.4.4.min.js"></script>
+         <script src="/static/jquery.mobile.min.js"></script>
+         <link type="text/css" rel="stylesheet" href="/static/style.css" />
+   </head>
    <body>
+   <div data-role="page">
+   <div data-role="header">
+   <h1>about demo.solsort.dk</h1>
+   </div>
+   <div data-role="content">
    <div>
         demo.solsort.dk is development sandbox and demo site, just for the fun of it. Questions and comments are welcome, see solsort.dk for contact info.
    </div>
    <div>
         Disclaimer: this is just experiments, and may not be fit for anything at all, all usage is on your own risk ;-)
    </div>
-<h2>Thesaurus database entries</h2>
+<h2>bibliotek.dk</h2>
+<div>This is just a temporary mashup/demo prototype, with the purpose of motivating DBC to make a mobile edition of bibliotek.dk. It is not directly related to the real bibliotek.dk, except that it uses that as a data source.</div>
+<h2>Thesaurus</h2>
+<div>
+Long time ago I stumbled on a nice research project at Princeton, which made a word-relation database freely available.  hmmm. couldn't that be used to create a free mobile thesaurus... clickyticlick ... a bit of rearranging and the data are suddenly nice thesaurus entries... clickyticlick ... whoops, now there is a mobile website :)
+</div>
+<h3>Thesaurus database entries</h3>
 <div>
 The entries in the thesaurus are based on <a href="http://wordnet.princeton.edu/">wordnet</a>, which is freely available online under the following license:
 <pre>
@@ -46,6 +62,7 @@ The entries in the thesaurus are based on <a href="http://wordnet.princeton.edu/
   29 Princeton University and LICENSEE agrees to preserve same.  
 </pre>
 </div>
+</div></div>
    </body>
 </html>"""
 import mylogger

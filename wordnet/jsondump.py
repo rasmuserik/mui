@@ -1,6 +1,6 @@
 from google.appengine.ext import db
 import cgi
-from wordnet import WordNet
+from wordnet.wordnet import WordNet
 #import cgitb
 #cgitb.enable()
 

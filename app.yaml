@@ -10,12 +10,10 @@ skip_files:
 - ^jquery-mobile
 - ^database.*
 handlers:
-- url: /oldthesaurus
-  script: oldthesaurus.py
-- url: /bib
-  script: bibdk.py
 - url: /
-  script: thesaurus.py
+  script: index.py
+- url: /bib
+  script: bibdk/bibdk.py
 - url: /favicon.ico
   static_files: favicon.ico
   upload: favicon.ico
@@ -23,7 +21,9 @@ handlers:
   static_dir: static
 - url: /about
   script: about.py
+- url: /oldthesaurus
+  script: wordnet/oldthesaurus.py
 - url: /thesaurus
-  script: thesaurus.py
+  script: wordnet/thesaurus.py
 - url: /wn/upload
-  script: upload.py
+  script: wordnet/upload.py

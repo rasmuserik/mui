@@ -18,8 +18,9 @@ print """Content-Type: text/html; charset=UTF-8
          <ul>
             <li><a href="oldthesaurus">Thesaurus</a> (simple mobile html)</li>
             <li><a href="thesaurus">Thesaurus</a> (smartphone optimised with graceful degradation)</li>
-            <li><a href="bib">Draft of mobile version of bibliotek.dk</a> (smartphone optimised with graceful degradation)</li>
+            <li><a href="bib">Very first drafts of mobile version of bibliotek.dk</a> (smartphone optimised with graceful degradation)</li>
          </ul>
+         <a href="about">about</a>
        </div>
    </div>
    </body>

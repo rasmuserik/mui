@@ -1,0 +1,1412 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+  <head lang="da">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>S&oslash;geresultat - bibliotek.dk</title>
+    <meta name="DC.Date.Current" scheme="ISO31" content="2010-01-01" />
+    <meta name="DC.Title" content="bibliotek.dk" />
+    <meta name="DC.Identifier" content="http://bibliotek.dk" />
+    <meta name="DC.Subject" content="bibliografiske databaser, databaser, bibliotekskataloger, kataloger, biblioteker, skønlitteratur, faglitteratur, bøger, musik, av-materialer, artikler, anmeldelser, tidsskrifter, video, cd-rom" />
+    <meta name="DC.Description" content="Database der giver gratis adgang til at søge, vise og bestille materialer fra alle de offentlige danske biblioteker. Det drejer sig om bøger, tidsskrifter, musik, artikler og anmeldelser mm." />
+    <meta name="DC.Publisher" content="Biblioteksstyrelsen" />
+    <meta name="DC.Publisher" content="Dansk BiblioteksCenter" />
+    <meta name="DC.Date.Creation" content="2000" />
+    <meta name="DC.Format" scheme="MIME" content="text/html" />
+    <meta name="DC.Language" scheme="NISOZ39.50" content="DAN" />
+    <meta name="description" content="Søg og bestil danske bibliotekers bøger, musik, film, artikler m.m. på bibliotek.dk. Adgang til alt hvad der findes på danske biblioteker på ét site" />
+    <meta name="version" content="4.4" />
+    <link rel="schema.dc" href="http://purl.org/metadata/dublin_core_elements" />
+    <!-- TradeDoubler site verification 1200372 -->
+    <link href="common/css/JHgroup-layout.css" type="text/css" rel="stylesheet" />
+    <link href="common/css/JHtext-layout.css" type="text/css" rel="stylesheet" />
+    <link href="common/css/leftmenu.css" type="text/css" rel="stylesheet" />
+    <link href="common/css/CDstdsearch.css" type="text/css" rel="stylesheet" />
+    <link href="common/css/infoBox.css" type="text/css" rel="stylesheet" />
+    <link href="common/css/star_rating.css" rel="stylesheet" type="text/css" media="all" />
+    <!--[if lt IE 8]>
+      <link href="common/css/IE7styles.css" type="text/css" rel="stylesheet" />
+    <![endif]-->
+
+    <link rel="shortcut icon" href="common/pics/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="common/pics/favicon.ico" type="image/x-icon" />
+
+
+    <!-- vis.php css -->
+    <link href="common/css/soegeresultat.css" type="text/css" rel="stylesheet" />
+    <link href="common/css/tabs1.css" type="text/css" rel="stylesheet" />
+    <!-- andre vis.php header tags -->
+    <link rel="alternate" title="bibliotek.dk RSS" href="rss.php?ccl=forfatter%3Dblah" type="application/rss+xml" />
+    <meta name="robots" content="index,nofollow" />
+
+    <!--Følgende scripts bygger på jquery sikrer at de forskellige scripts virker i forskellige browsere -->
+    <script type="text/javascript" src="common/javascripts/jquery-1.3.2.min.js"></script>
+    <script type="text/javascript" src="common/javascripts/jquery.tools-1.0.2.min.js"></script>
+    <!-- script type="text/javascript" src="http://cdn.jquerytools.org/1.0.2/jquery.tools.min.js"></script -->
+
+    <!--script som gør div-tags klikbare (jquery.biggerlink.js):-->
+    <script type="text/javascript" src="common/javascripts/jquery.fancybox/jquery.biggerlink.js"></script>
+
+    <!--script sikrer at når en bruger udfylder en formular hvis der er flere på en side og trykker på "enter" at der referes til den rette formular (jquery.assignenterkey.js)-->
+    <script type="text/javascript" src="common/javascripts/jquery.assignenterkey.js"></script>
+
+    <!-- acceskey uden brug af alt-tast -->
+    <script type="text/javascript" src="common/javascripts/jquery.shortaccesskey.js"></script>
+
+    <!--popup-window  -->
+    <script type="text/javascript" src="common/javascripts/jquery.popupwindow.js"></script>
+
+    <!-- page-specific javascript -->
+
+    <script type="text/javascript" src="common/javascripts/js_vis.js"></script>
+    <script type="text/javascript" src="common/javascripts/ajax_holding.js"></script>
+    <script language="javascript" type="text/javascript">
+
+      var rec_owner=0;
+      var local_id=0;
+      var id=0;
+      var newVal="0";
+
+      function rateSubmit(no,ejer,idnr) {
+        rec_owner=ejer;
+        local_id=idnr;
+        id=rec_owner+local_id;
+
+      $.get("http://bibliotek.dk/star_rating_jquery_server.php",
+          {val: no, rec_owner: rec_owner, local_id: local_id},
+          function(returned_data)
+             {
+              $("#stars_"+rec_owner+local_id).addClass("stars"+returned_data);
+              newVal=returned_data;
+             });
+           $("#ucd_num_raters_"+id).text('Tak for din vurdering!');
+      }
+
+      function setRatingVal(prevVal, id) {
+        if(newVal>0)
+          document.getElementById("stars_"+id).className='stars'+newVal;
+        else
+          document.getElementById("stars_"+id).className='stars'+prevVal;
+      }
+    </script>
+
+    <!-- generelle javascripts -->
+    <script type="text/javascript" src="common/javascripts/js_script.js"></script>
+    <script type="text/javascript" src="common/javascripts/js_sogning.js"></script>
+
+
+    <script language="javascript" type="text/javascript">
+
+      var myWidth = 800;
+      var myHeight = 600;
+
+      var showInfoTitle = '';
+
+      $(document).ready(function() {
+        var fromDate = new Date("October 30, 2010 00:00:01");
+        var toDate   = new Date("November 1, 2010 00:00:01");
+        var today    = new Date();
+
+        if ( fromDate < today && today < toDate ) {
+          document.getElementById('bibdk_logo_img').setAttribute('src', 'common/pics/10aar/logo/bibdk_10aar_logo.png'); // href ='common/pics/10aar/logo/bibdk_10aar_logo_2.png';
+          document.getElementById('bibdk_logo_img').style.height='70px';
+          document.getElementById('bibdk_logo_img').style.width='260px';
+          var totalNum = 3;//the total number of images in a folder.
+          var rndNum = Math.floor(Math.random() * totalNum) + 1;
+          document.getElementById('hdr').style.backgroundImage  = "url(common/pics/10aar/banner/banner_10aar_" + rndNum  + ".jpg)";
+        } else {
+          var totalNum = 31;//the total number of images in a folder.
+          var rndNum = Math.floor(Math.random() * totalNum);
+          document.getElementById('hdr').style.backgroundImage  = "url(common/pics/topimages/" + rndNum  + ".jpg)";
+        }
+	
+        if(getURLParam('wayf_show_help')==1) {
+                showInfo(document.getElementById('logged_in_as'),'help_wayf_first_login');
+        }
+        if(getURLParam('wayf_init_logout')==1) {
+		alert('');
+        }
+
+
+        FocusFirst();
+
+      });
+
+        CART_COOKIE_NAME = "bibdk_cart";
+  
+      function linkTo(url) {
+        window.location.href = url;
+      }
+
+      function openOrCloseBlock(id,replace) {
+       if ( arguments.length == 2 ) replace = false; else replace = true;
+
+       var element = id;
+       var linkSign = 'linkSign-' + id;
+        if ( document.getElementById(element).style.display != 'block' ) {
+          document.getElementById(element).style.display = 'block';
+          if ( replace )
+          {
+              document.getElementById(linkSign).innerHTML = '[&divide;]';
+          }
+        } else{
+          document.getElementById(element).style.display = 'none';
+          if ( replace )
+          {
+              document.getElementById(linkSign).innerHTML = '[+]';
+          }
+        }
+      }
+
+
+    </script>
+
+
+  </head>
+
+  <body>
+    <!-- <noscript><meta http-equiv=Refresh content="0; url=help.php?help=javascript" /></noscript>-->
+    <!-- header div -->
+    <!--start alternativ navigation (css display:none) -->
+    <div class="alternativ-nav" id="top">
+        <div class="alt-menupunkt"><a href="#sheets">Topmenu</a></div>
+        <div class="alt-menupunkt"><a href="#searchbox">Gå direkte til søgning af materialer</a></div>
+        <div class="alt-menupunkt"><a href="#leftmenu">Søgekategorier</a></div>
+        <div class="alt-menupunkt"><a href="#topnavbar">Servicelinks</a></div>
+    </div>
+    <!--slut alternativ navigation (non css) -->
+
+    <div id="hdr">
+      <div id="logo">
+        <a title="Til forside" href="http://bibliotek.dk/"><img id="bibdk_logo_img" class="logo" src="common/pics/design/original_logo_transparent-2.png" alt="Til forside" title="Til forside" border="0"/></a>
+      </div>
+      <div id="topnavbar">
+          <div class="servicelink">
+          <a href="javascript:void(0)"
+             onclick="w_kontakt=PopWinxy('http://blog.bibliotek.dk', 'blog', 600, 960, 2, 2);"
+             class="servicelink-text">blog</a> |&nbsp;
+  </div>
+            <div class="servicelink">
+          <a href="javascript:void(0)"
+             onclick="w_om=PopWinxy('http://bibliotek.dk/help.php?help=sitemap', 'sitemap', 600, 640, 2, 2);"
+             class="servicelink-text">sitemap</a> |&nbsp;
+  </div>
+            <div class="servicelink">
+          <a href="javascript:void(0)"
+             onclick="w_om=PopWinxy('http://bibliotek.dk/help.php?help=om+bibliotek.dk', 'om', 600, 640, 2, 2);"
+             class="servicelink-text">om bibliotek.dk</a> |&nbsp;</div>
+            <div class="servicelink">
+          <a href="javascript:void(0)"
+             onclick="w_kontakt=PopWinxy('http://presse.bibliotek.dk', 'presserum', 600, 740, 2, 2);"
+             class="servicelink-text">presserum</a> |&nbsp;</div>
+            <div class="servicelink">
+          <a href="javascript:void(0)"
+             onclick="w_kontakt=PopWinxy('http://bibliotek.dk/help.php?help=kontakt', 'kontakt', 600, 640, 2, 2);"
+             class="servicelink-text">kontakt</a> |&nbsp;</div>
+            <div class="servicelink">
+          <a href="http://bibliotek.dk/help.php?iframe"
+             class="servicelink-text popupwindow"
+             rel="windowNew"
+             accesskey="h"
+             title="hjælp"
+             type="button"><span class="accesskey">h</span>j&aelig;lp</a> |&nbsp;</div>
+            <div class="servicelink">
+          <a href="./?lingo=eng"
+             class="servicelink-text">english</a>&nbsp;</div>
+          <div class="laasintext">
+          <img src="common/pics/ikoner/haengelaas.png" alt="log ind / log ud" name="login" /></div>
+        <div class="servicelink">&nbsp;<a href="https://bibliotek.dk/mit_bibliotek.php?opcode=userauth" accesskey="i">log <span class="accesskey">i</span>nd</a></div>
+      </div>
+      <div class="alternativ-nav">
+        <a href="#top">Gå til hovednavigation </a>
+      </div>
+
+        <div id="loggedInOut">Du er ikke logget ind</div>
+
+
+      <div id="sheets">
+        <div class="leftsheetsel"></div>
+        <div id="s1" class="sheetsel">
+          <div class="sheeticon">
+            <a href="http://bibliotek.dk/" tabindex="-1"><img src="common/pics/ikoner/soeg3d.png" alt="S&oslash;gning" border="0" /></a>
+          </div>
+          <div class="sheettext">
+            <a href="http://bibliotek.dk/" accesskey="n">S&oslash;g<span class="accesskey">n</span>ing</a>
+          </div>
+        </div>
+        <div class="rightsheetsel"></div>
+          <div class="leftsheet"></div>
+        <div id="s2" class="sheet">
+          <div class="sheeticon">
+            <a href="http://bibliotek.dk/emneoversigt.php" tabindex="-1"><img src="common/pics/ikoner/emneoversigt3d.png" alt="Emneoversigt" border="0" /></a>
+          </div>
+          <div class="sheettext">
+            <a href="http://bibliotek.dk/emneoversigt.php" accesskey="e"><span class="accesskey">E</span>mneoversigt</a>
+          </div>
+        </div>
+        <div class="rightsheet"></div>
+          <div class="sheetspacer"></div>
+          <div class="leftsheet"></div>
+        <div id="s3" class="sheet">
+          <div class="sheeticon">
+            <a href="http://bibliotek.dk/mit_bibliotek.php" tabindex="-1"><img src="common/pics/ikoner/mitbib3d.png" alt="Min profil" border="0" /></a>
+          </div>
+          <div class="sheettext">
+            <a href="http://bibliotek.dk/mit_bibliotek.php" accesskey="m"><span class="accesskey">M</span>in profil</a>
+          </div>
+        </div>
+        <div class="rightsheet"></div>
+          <div class="leftsheet"></div>
+        <div id="s4" class="sheet">
+          <div class="sheeticon">
+            <a href="http://bibliotek.dk/kurv.php" tabindex="-1"><img src="common/pics/ikoner/minkurv3d.png" alt="Min kurv" border="0" /></a>
+          </div>
+          <div class="sheettext">
+            <a href="http://bibliotek.dk/kurv.php" accesskey="k">Min <span class="accesskey">k</span>urv</a>
+          </div>
+        </div>
+        <div class="rightsheet"></div>
+        </div>
+      <div class="alternativ-nav">
+        <a href="#top">Gå til hovednavigation </a>
+      </div>
+    </div>
+
+    <div id="c-block">
+    <!-- left column -->
+        <div id="lh-col">
+
+          <div id="leftmenu" class="leftmenu buttons">
+            <div class="menuitemleft-topleft"></div>
+            <div class="menuitemtop">
+                <div class="leftmenutext">
+                      <div style="font-size:1.3em"> <b>Søg i:</b></div>                  </div>
+            </div>
+            <div class="menuitemleft-topright"></div>
+              <div class="menuitemleft-middleleft"></div>
+            <div class="menuitemmiddle">
+                <div class="icon">
+                <img src="common/pics/ikoner/lillesoeg.png" alt="Alle materialer" />
+              </div>
+                <div class="leftmenutext selected">
+                 <!--   <a href="http://bibliotek.dk/sogning.php" title="Alle materialer søgning" accesskey="">-->
+	     <a href="http://bibliotek.dk/sogning.php" title="Alle materialer" accesskey="">
+                      Alle materialer                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-middleright"></div>
+              <div class="menuitemleft-middleleft"></div>
+            <div class="menuitemmiddle">
+                <div class="icon">
+                <img src="common/pics/ikoner/ikon_bog.gif" alt="Bøger" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/bog.php" title="Bøger søgning" accesskey="G">-->
+	     <a href="http://bibliotek.dk/bog.php" title="Bøger" accesskey="G">
+                      Bø<span class="accessKey">g</span>er                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-middleright"></div>
+              <div class="menuitemleft-middleleft"></div>
+            <div class="menuitemmiddle">
+                <div class="icon">
+                <img src="common/pics/ikoner/ikon_artikel.gif" alt="Artikler" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/artikel.php" title="Artikler søgning" accesskey="R">-->
+	     <a href="http://bibliotek.dk/artikel.php" title="Artikler" accesskey="R">
+                      A<span class="accessKey">r</span>tikler                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-middleright"></div>
+              <div class="menuitemleft-middleleft"></div>
+            <div class="menuitemmiddle">
+                <div class="icon">
+                <img src="common/pics/ikoner/ikon_netdokument.gif" alt="På nettet" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/netdok.php" title="På nettet søgning" accesskey="T">-->
+	     <a href="http://bibliotek.dk/netdok.php" title="På nettet" accesskey="T">
+                      På net<span class="accessKey">t</span>et                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-middleright"></div>
+              <div class="menuitemleft-middleleft"></div>
+            <div class="menuitemmiddle">
+                <div class="icon">
+                <img src="common/pics/ikoner/ikon_dvd_film.gif" alt="Film" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/film.php" title="Film søgning" accesskey="L">-->
+	     <a href="http://bibliotek.dk/film.php" title="Film" accesskey="L">
+                      Fi<span class="accessKey">l</span>m                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-middleright"></div>
+              <div class="menuitemleft-middleleft"></div>
+            <div class="menuitemmiddle">
+                <div class="icon">
+                <img src="common/pics/ikoner/ikon_cd.gif" alt="Musik" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/musik.php" title="Musik søgning" accesskey="U">-->
+	     <a href="http://bibliotek.dk/musik.php" title="Musik" accesskey="U">
+                      M<span class="accessKey">u</span>sik                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-middleright"></div>
+              <div class="menuitemleft-bottomleft"></div>
+            <div class="menuitembottom">
+                <div class="icon">
+                <img src="common/pics/ikoner/ikon_node.gif" alt="Noder" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/noder.php" title="Noder søgning" accesskey="d">-->
+	     <a href="http://bibliotek.dk/noder.php" title="Noder" accesskey="d">
+                      No<span class="accessKey">d</span>er                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-bottomright"></div>
+              <div class="leftmenu-vertikal-spacer"></div>
+              <div class="menuitemleft-topleft"></div>
+            <div class="menuitemtop">
+                <div class="icon">
+                <img src="common/pics/ikoner/avanceret-soeg.png" alt="Avanceret søgning" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/ava.php" title="Avanceret søgning søgning" accesskey="ø">-->
+	     <a href="http://bibliotek.dk/ava.php" title="Avanceret søgning" accesskey="ø">
+                      Avanceret s<span class="accessKey">ø</span>gning                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-topright"></div>
+              <div class="menuitemleft-bottomleft"></div>
+            <div class="menuitembottom">
+                <div class="icon">
+                <img src="common/pics/ikoner/kommando-soeg.png" alt="Kommandosøgning" />
+              </div>
+                <div class="leftmenutext">
+                 <!--   <a href="http://bibliotek.dk/kommando.php" title="Kommandosøgning søgning" accesskey="">-->
+	     <a href="http://bibliotek.dk/kommando.php" title="Kommandosøgning" accesskey="">
+                      Kommandosøgning                    </a>
+                  </div>
+            </div>
+            <div class="menuitemleft-bottomright"></div>
+            </div>
+
+              <div class="leftmenu-vertikal-spacer"></div>
+          <div class="leftmenu" style="text-align: center;">
+            <h3 style="margin:0; width:90%;text-align: left;">Find Bibliotek</h3>
+            <div class="bibl-soeg" style="text-align: left;">
+              <fieldset style="border: 0px #fff solid;">
+                <form id="searchbib" name="searchbib" action="http://bibliotek.dk/vejviserres.php" method="get" style="padding:0; margin-left:0.8em">
+                  Bibliotekets navn:<br />
+                  <input name="inavn" size="12" class="w90" accesskey="o" /><br />
+
+                  Postnummer:<br />
+                  <input name="postnummer" size="12" class="w90" /><br />
+
+                  By:<br />
+                  <input name="city" size="12" class="w90" /><br /><br />
+                  <!-- <div class="orderbutton"><a href="javascript:void(0);" onclick="document.searchbib.submit();" title="Søg bibliotek">Søg bibliotek</a></div> -->
+                  <div class="orderbutton" style="width:95%;"><input onfocus="this.blur();" style="width:90%;" name="name_submit" value="Søg bibliotek" title="Søg bibliotek" type="submit" /></div>
+                </form>
+              </fieldset>
+            </div>
+            <div class="soeg-bibl-left"></div>
+          </div>
+    
+        </div><!-- lh-col end -->
+
+    <!-- end of left column -->
+
+    <!-- center column -->
+      <div id="c-col">
+
+<script language="javascript" type="text/javascript">
+  /* <![CDATA[ */
+         $(document).ready(function(){
+    //$("input[type=checkbox]").each(function(){
+$(":checkbox").each(function(){
+       // $(this).removeAttr('onblur');
+        $(this).blur(function () {
+          //alert('testhest');
+          SaveKurv(this);
+        });
+        focusFirstRecord();
+    });
+}); // end document_ready
+          /* ]]> */
+</script>
+
+
+  
+  
+<!--
+      <div style="width:100%;">
+        <a title="Klik her for at åbne en hjælpeside, der fortæller, hvordan synshæmmede bedst muligt benytter bibliotek.dk" href="javascript:PopWinxy('http://bibliotek.dk/help.php?help=tilgaengelighed', 'tilgaengelighed', 600, 640, 2, 2);void(0);"></a></div>
+-->
+        <!-- h1 style="float:left;">Søgeresultat:</h1 -->
+<!--
+                  <form name="gogform" action="" style="float:right;  margin-top:1em;">
+          <select name="google_sel" onchange='openGoogle(this)' class="selectTxt">
+            <option value="">Send søgning videre til Google - vælg</option>
+            <option value="http://www.google.com/search?q=blah">Prøv søgning i Google</option>
+            <option value="http://scholar.google.dk/scholar?q=blah">Prøv søgning i Google Scholar</option>
+            <option value="http://books.google.com/books?q=blah">Prøv søgning i Google Books</option>
+                  </select>
+        </form>
+                </div>
+-->
+
+    
+
+    <!-- no ccl_error -->
+
+      <div id="topdescription">
+
+      
+                  <form name="gogform" action="" style="float:right;  margin-top:0em;">
+            <select name="google_sel" onchange='openGoogle(this)' class="selectTxt">
+              <option value="">Send søgning videre til Google - vælg</option>
+              <option value="http://www.google.com/search?q=blah">Prøv søgning i Google</option>
+              <option value="http://scholar.google.dk/scholar?q=blah">Prøv søgning i Google Scholar</option>
+              <option value="http://books.google.com/books?q=blah">Prøv søgning i Google Books</option>
+                      </select>
+          </form>
+        
+        <div class="topdescription-text">Du søgte på: <strong>forfatter=blah</strong></div>
+        <div class="topdescription-text clearfix" style="clear:both;">
+
+        
+                    <a href="sogning.php?set=1" accesskey="p">
+            <img src="common/pics/ikoner/tragt.png" alt="" border="0" /></a>&nbsp;
+          <a href="sogning.php?set=1" accesskey="p">
+            <span class="accesskey">P</span>r&aelig;cis&eacute;r s&oslash;gning          </a> &nbsp; &nbsp;
+          
+                    <a target="_blank" href="rss.php?ccl=forfatter%3Dblah">
+            <img src="common/pics/ikoner/feed.png" alt="" border="0" /></a>&nbsp;
+          <a target="_blank" href="rss.php?ccl=forfatter%3Dblah">
+      Abonnér på søgningen med rss-feed          </a> &nbsp;&nbsp;
+          
+        
+          <a href="sogning.php">
+            <img src="common/pics/ikoner/ikon_ny_soegning.png" alt="" border="0" />
+          </a><a href="sogning.php">
+            Ny s&oslash;gning          </a> &nbsp;
+
+                  <a class="popupwindow" rel="windowNew" href="http://bibliotek.dk/set_print.php?set=1&amp;start=1&amp;step=5&amp;sort=default+d">
+            <img src="common/pics/ikoner/ikon_printer.png" width="16" height="16" alt="" />
+          </a><a class="popupwindow" rel="windowNew" href="http://bibliotek.dk/set_print.php?set=1&amp;start=1&amp;step=5&amp;sort=default+d">
+            Print          </a>
+        
+        </div>
+
+        
+                <div class="topdescription-text">
+                      Side: &nbsp;
+                                          1                                              - Der blev fundet 3 poster.                    &nbsp;&nbsp;<a class="" href="javascript:startStavekontrol(1,'forfatter=blah');">Mente du noget andet? Tjek for lignende ord ></a>
+                  </div>
+        
+        
+          
+                    <div class="sortby">
+          <form id="sortByForm" name="sortByForm" method="post" action="">
+          Sortering:
+                                                    <input type="hidden" name="sort" value="aar" id="sortByFormValue" />
+                          <a id="sortby_aar" href="javascript:void(0)" title="Sorter efter &Aring;r" class="sortbyLink sortbyselected">
+              &Aring;r              <img src="common/pics/ikoner/ikon-sortering-valgt.png" alt="Sorter efter &Aring;r" border="0"/>
+            </a>
+                         |                           <a id="sortby_forfatter" href="javascript:void(0)" title="Sorter efter Forfatter" class="sortbyLink">
+              Forfatter              <img src="common/pics/ikoner/ikon-sorter-efter.png" alt="Sorter efter Forfatter" border="0"/>
+            </a>
+                         |                           <a id="sortby_titel" href="javascript:void(0)" title="Sorter efter Titel" class="sortbyLink">
+              Titel              <img src="common/pics/ikoner/ikon-sorter-efter.png" alt="Sorter efter Titel" border="0"/>
+            </a>
+                         |                           <a id="sortby_emne" href="javascript:void(0)" title="Sorter efter Emne" class="sortbyLink">
+              Emne              <img src="common/pics/ikoner/ikon-sorter-efter.png" alt="Sorter efter Emne" border="0"/>
+            </a>
+                    </form>
+        </div>
+                      
+        
+
+                          <div class="next-container">
+                                      </div>
+                  
+        </div><!-- id="topdescription" end -->
+
+      
+
+              <!-- RESULTAT: HIT=3 STEP=5 -->
+
+                  <!-- show_xml_vrk -->
+
+<script language="javascript" type="text/javascript">
+  /* <![CDATA[ */
+          // faneblade under værker:
+          $(document).ready(function(){
+            $(function() {
+              $("ul.tabs1").tabs("div.panes1 > div.pane1");
+            });
+          });
+          /* ]]> */
+</script>
+
+
+
+
+<div class="mainitem">
+  <div class="itemshort">
+    <div class="title">
+      <a class="linkOpenOrCloseBlock" href="javascript:openOrCloseBlock('item1')" title="Se komplet beskrivelse af Osirus : the official mixtape"><h5 style="margin:0px;padding:0px"><span id="linkSign-item1">[+]</span>&nbsp;Osirus : the official mixtape</h5></a>
+      <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lfc&amp;term1=Ol'%20Dirty%20Bastard">Ol' Dirty Bastard</a>      <!-- <a href="#" class="title-dropdown-link" title="Se komplet beskrivelse af ''"></a> -->
+    </div>
+    <div class="itemshortformater">
+
+
+      
+            <span class="labelKvikbestilling">Bestil uanset udgave:</span> &nbsp;
+                  <a href="https://bibliotek.dk/bestil_1.php?recid=%28lid%3D25618270+og+lok%3D870970%29&amp;bestil_kopi_candidate="
+         class="popupwindow"
+         rel="windowNew"
+         title="Bestil CD (MUSIK): 'Ol' Dirty Bastard: Osirus : the official mixtape - p 2004' nu">
+                <img src="common/pics/ikoner/ikon_cd.gif"
+             alt="Bestil CD (MUSIK): 'Ol' Dirty Bastard: Osirus : the official mixtape - p 2004' nu" />
+        
+      </a>
+
+      
+                  
+
+
+
+    </div>
+  </div><!-- itemshort end -->
+
+  <div id="item1" class="itemfull" style="font-size:100%;">
+
+    <div class="titledesc">
+      <div style="float:right; width:35%; display: block;">
+
+        <div class="vaerk-komment">
+
+              <!-- pjo ADHL -->
+          <div style="display:none" id="adhl_870970_25618270" class="ADHL_webservice">
+            <p style="margin-bottom:0px" id="show_870970_25618270" >
+              Andre der har lånt denne har også lånt:            </p>
+          </div>
+
+          <!-- END ADHL -->
+            </div>
+
+        <div id="addi.25618270" class="imagespace hideObject">
+                    <a class="lnk" id="addi.25618270.new"><img src="" class="addi-image" id="addi.25618270.img" alt="Forside" /></a>
+                  </div>
+      </div><!-- end float right-->
+
+      <div class="first-descriptiontitle">&nbsp;</div>
+            <div class="description">Emne: <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=hip%20hop">hip hop</a> ; <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=gangsta%20rap">gangsta rap</a> ; <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=vokal">vokal</a> ; <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=rap">rap</a> ; <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=2000-2009">2000-2009</a> ; <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=USA">USA</a></div>
+      
+
+<div class="ucd_webservice" id="ucd_870970_25618270">&nbsp;</div>
+
+          </div><!-- titledesc end -->
+
+    <div style="display:block; clear:both; float:left; width:99%; margin-top: 1em; margin-left: 3em; margin-bottom: 2em; margin-right: 2em;">
+
+      <!-- the tabs -->
+      <ul class="tabs tabs1">
+            <li id="tab_1_0"><a href="javascript:void(0)" class="tab_materiale" style=""><img src="common/pics/ikon_cd.gif" height="16" alt="" title="CD (MUSIK)" />CD (musik)</a></li>
+    
+          <li class="clearfix" />
+      </ul>
+
+      <!-- tab "panes" -->
+      <div class="panes panes1">
+
+  
+            <div class="pane pane1" id="pane_1_0">
+          <div class="paneShow" id="div_1_0">
+    
+              
+      <!-- top- & bund div slut -->
+
+          <!-- bestil_gruppe -->
+            <div style="border: 0px solid red; clear:both" class="clearfix">
+
+        
+              <div class="paneright">
+      
+        
+                        <div class="orderbutton" style="border-left: 1px solid #2c6a2c;border-top: 1px solid #2c6a2c" >
+                  <a href="https://bibliotek.dk/bestil_1.php?recid=%28lid%3D25618270+og+lok%3D870970%29&amp;bestil_kopi_candidate="
+                     class="popupwindow"
+                     rel="windowNew"
+                     title="Bestil cd (musik) denne udgave Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard">
+                    <img src="common/pics/ikoner/ikon-bestil-nu.png"
+                         alt="Bestil cd (musik) denne udgave 'Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard'"
+                         border="0" />
+                    Bestil cd (musik) denne udgave                  </a>
+                </div>
+        
+      
+    
+    
+    <!-- hvilke biblioteker pjo -->
+                      <p><a href="hvilke_biblioteker.php?vrk_recid=%28lid%3D25618270+og+lok%3D870970%29&amp;bib_nr="
+                      class="popupwindow"
+          rel="windowNew"
+                      title="Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard">
+                   <b> Se hvilke biblioteker der har materialet</b>
+                </a></p>
+      
+                              <p><a href="pop_vis.php?target=lektor&amp;format=pop_up&amp;ccl=ld%3d(25618270)"
+                      class="popupwindow"
+                      rel="windowNew"
+                      title="Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard">
+                    Se materialevurdering                </a></p>
+                                </div>
+
+            </div>
+      <!-- bestil_gruppe slut -->
+      
+
+      
+
+                    
+            <div class="paneleft">
+        <img src="common/pics/ikon_cd.gif" height="16" alt="" title="CD (MUSIK)" />        CD (musik): JC, p 2004        &bull;<b> 30</b> biblioteker &bull;        <img src="common/pics/bn_anmeldelse.gif" alt="Der er link til anmeldelser i denne post" /><br/>
+        Ol' Dirty Bastard m. fl.<br />1 cd<br />Opstilling i folkebiblioteker:  Rock<br />JC SSR 9016<br />Pris ved udgivelsen: kr. 159,00<br />Indhold:<br />Pop shots (Wu-Tang) ; Dirty dirty / ft. Rhymefest ; Go go go / ft. Blah of Blahzay Blahzay ; Who can make it happen like dirt? ; High in the clouds / ft. Black Rob ; Rahzel (skit 1) ; Dirty run ; Stand up / ft. Cappadonna ; Don't stop ma (Out of control) ; If y'all want war / ft. Royal Flush ; Pussy keep calling ; Down South ; Rahzel (skit 2) ; Caked up / ft. Baby Sham ; Fuck y'all ; Move back ; Fire (dirty dirty alt version) ; Pop shots (Clinton Sparks remix)
+                    </div>
+
+
+            <div  class="paneright" style="border:0px solid blue">
+
+        
+
+        
+        
+
+
+        
+        
+    
+
+
+                      <p>
+                <a href="vis.php?term1=lid%3D25618270+og+lok%3D870970&amp;vis_ccl=Anmeldelse+af%3A+Osirus&amp;format=a&amp;origin=nada"
+                   title="Få henvisning til anmeldelser Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard">
+                  Få henvisning til anmeldelser                </a>
+              </p>
+        
+        <!-- pjo link til infomedia; this part is for viewing óne article  -->
+        
+                <!-- pjo link to infomedia; this part is for viewing reviews -->
+                      <p id="infomedia_review">
+                <a href="infomedia.php?operation=getReview&amp;faust=25618270"
+                   class="popupwindow"
+                   rel="windowLeftTop"
+                   title="Læs artiklen:Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard" >
+                  <span class="red">Læs anmeldelser fra Infomedia</span>              </a></p>
+        
+         <!--end enable infomedia -->
+
+        
+                      <p>
+                <a href="pluk.php?arg=hip+hop%3Agangsta+rap%3Avokal%3Arap%3A2000-2009%3AUSA&amp;sklitt=&amp;mattype=CD"
+                   class="popupwindow"
+                   rel="inspiration"
+                   title="find titler der ligner &quot;Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard&quot;" >
+                  Find titler der ligner                </a>
+              </p>
+        
+                      <p style="position:relative; visibility:hidden"
+                 id="lit-1_0">
+                <a href="vis.php?field1=lem&amp;term1=Ol%27+Dirty+Bastard"
+                   title="S&oslash;g litteratur om Ol&#039; Dirty Bastard">
+                  S&oslash;g litteratur om                  Ol' Dirty Bastard                </a>
+              </p>
+        
+        
+        
+       <!-- -->
+                      <p id="openurl-1_0" style="display:none" class="open_url_jquery" url="http://linkresolver.dbc.dk/resolve?url_ctx_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Actx&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc&amp;rfr_id=info%3Asid%2Fbibliotekdk&amp;rft_id=25618270-870970&amp;rft.creator=+Ol%27+Dirty+Bastard&amp;rft.title=Osirus&amp;rft.publisher=JC&amp;rft.date=2004&amp;rft.type=music&amp;rft.format=cd&amp;rft.language=eng&amp;rft.dkdcplusdk5=78.794&amp;url_ver=Z39.88-2004&amp;opt_xslt=service_check">
+                <a href="openurl.php?url=http%3A%2F%2Flinkresolver.dbc.dk%2Fresolve%3Furl_ctx_fmt%3Dinfo%253Aofi%252Ffmt%253Akev%253Amtx%253Actx%26rft_val_fmt%3Dinfo%253Aofi%252Ffmt%253Akev%253Amtx%253Adc%26rfr_id%3Dinfo%253Asid%252Fbibliotekdk%26rft_id%3D25618270-870970%26rft.creator%3D%2BOl%2527%2BDirty%2BBastard%26rft.title%3DOsirus%26rft.publisher%3DJC%26rft.date%3D2004%26rft.type%3Dmusic%26rft.format%3Dcd%26rft.language%3Deng%26rft.dkdcplusdk5%3D78.794%26url_ver%3DZ39.88-2004%26opt_xslt%3Doutput&amp;stat=openurl"
+                   class="popupwindow"
+                   rel="windowNew"
+                   title="openURL">
+                  Søg videre på nettet                </a>
+              </p>
+              <!--  -->
+
+        
+            </div><!-- class="paneright" -->
+
+      
+
+            <div class="paneleft">
+
+                      <input id="cid_1_0"
+                     type="checkbox"
+                     value="lid%3D25618270+og+lok%3D870970%1CCD%1COl%27+Dirty+Bastard%3Cbr+%2F%3EOsirus.+p+2004%1C%1C1%1Cdfa%1C1%1C%1Cikon_cd%1C"
+                     name="tilkurv"
+                     onclick="this.focus()";
+                     class="left"
+                     style="margin-left:0.2em; margin-right:0.4em; margin-top:0.5em; width:14px;"
+                     title="Læg 'Ol' Dirty Bastard: Osirus : the official mixtape - p 2004' i kurv"
+                                          accesskey="k" />
+
+        <label for="cid_1_0" class="left" style="cursor:pointer;">
+                <img src="common/pics/ikoner/ikon_kurv.gif"
+         onclick="function (){this.parentNode.click();}"
+                     alt="Læg 'Ol' Dirty Bastard: Osirus : the official mixtape - p 2004' i kurv" border="0"
+                     style="cursor:pointer;"/>&nbsp;(Tilføj til kurv, bestil senere)        </label>
+        
+        <!-- pjo share link -->
+        <!-- AddThis Button BEGIN -->
+
+        <div class="addthis_toolbox addthis_default_style left" style="margin-left:1.5em; margin-top:0.5em;">
+    <a href="http://www.addthis.com/bookmark.php"
+       class="addthis_button_compact"
+       addthis:url="http://bibliotek.dk/linkme.php?ccl=lid%3D25618270+og+lok%3D870970&amp;fortit=Ol' Dirty Bastard  Osirus : the official mixtape Ol' Dirty Bastard"
+       addthis:title="An Example Title"
+       addthis:description="An Example Description">share</a>
+        </div>
+        <script type="text/javascript">
+ /* <![CDATA[ */
+var addthis_config = {
+services_compact: 'facebook, twitter, arto, gmail, linkedin,hotmail',
+services_exclude: 'print,email'
+}
+/* ]]> */
+        </script>
+        <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4b5ee27f07701a72"></script>
+
+        <!-- AddThis Button END -->
+        <!-- end share -->
+        <!-- Add2Any  BEGIN -->
+        <!--<div class="left" style="margin-left:1.5em; margin-top:0.5em;">
+      <a class="a2a_dd" href="http://www.addtoany.com/share_save">Share</a>
+      <script language="javascript" type="text/javascript">
+        /*<![CDATA[*/
+a2a_config = {
+    linkurl: 'http://bibliotek.dk/linkme.php?ccl=lid%3D25618270+og+lok%3D870970'
+};
+/* ]]> */
+      </script>
+      <script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+    </div>-->
+        <!-- Add2Any  END -->
+            </div>
+            <div class="panefull"></div>
+                </div><!--  class="panelShow" -->
+        </div><!--  class="pane" -->
+      </div>
+    </div>
+  </div><!-- itemfull -->
+</div>
+                  <!-- show_xml_vrk -->
+
+<script language="javascript" type="text/javascript">
+  /* <![CDATA[ */
+          // faneblade under værker:
+          $(document).ready(function(){
+            $(function() {
+              $("ul.tabs2").tabs("div.panes2 > div.pane2");
+            });
+          });
+          /* ]]> */
+</script>
+
+
+
+
+<div class="mainitem">
+  <div class="itemshort">
+    <div class="title">
+      <a class="linkOpenOrCloseBlock" href="javascript:openOrCloseBlock('item2')" title="Se komplet beskrivelse af Steppin' Out"><h5 style="margin:0px;padding:0px"><span id="linkSign-item2">[+]</span>&nbsp;Steppin' Out</h5></a>
+            <!-- <a href="#" class="title-dropdown-link" title="Se komplet beskrivelse af ''"></a> -->
+    </div>
+    <div class="itemshortformater">
+
+
+      
+
+
+
+    </div>
+  </div><!-- itemshort end -->
+
+  <div id="item2" class="itemfull" style="font-size:100%;">
+
+    <div class="titledesc">
+      <div style="float:right; width:35%; display: block;">
+
+        <div class="vaerk-komment">
+
+              <!-- pjo ADHL -->
+          <div style="display:none" id="adhl_150014_0000000010349652" class="ADHL_webservice">
+            <p style="margin-bottom:0px" id="show_150014_0000000010349652" >
+              Andre der har lånt denne har også lånt:            </p>
+          </div>
+
+          <!-- END ADHL -->
+            </div>
+
+        <div id="addi.0000000010349652" class="imagespace hideObject">
+                    <a class="lnk" id="addi.0000000010349652.new"><img src="" class="addi-image" id="addi.0000000010349652.img" alt="Forside" /></a>
+                  </div>
+      </div><!-- end float right-->
+
+      <div class="first-descriptiontitle">&nbsp;</div>
+            <div class="description">Emne: <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lem&amp;term1=reggae">reggae</a></div>
+      
+
+<div class="ucd_webservice" id="ucd_150014_0000000010349652">&nbsp;</div>
+
+          </div><!-- titledesc end -->
+
+    <div style="display:block; clear:both; float:left; width:99%; margin-top: 1em; margin-left: 3em; margin-bottom: 2em; margin-right: 2em;">
+
+      <!-- the tabs -->
+      <ul class="tabs tabs2">
+            <li id="tab_2_0"><a href="javascript:void(0)" class="tab_materiale" style=""><img src="common/pics/ikon_net_musik.gif" height="16" alt="" title="MUSIK (NET)" />Musik (net)</a></li>
+    
+          <li class="clearfix" />
+      </ul>
+
+      <!-- tab "panes" -->
+      <div class="panes panes2">
+
+  
+            <div class="pane pane2" id="pane_2_0">
+          <div class="paneShow" id="div_2_0">
+    
+              
+      <!-- top- & bund div slut -->
+
+          <!-- bestil_gruppe -->
+            <div style="border: 0px solid red; clear:both" class="clearfix">
+
+        
+              <div class="paneright">
+      
+        
+        
+      
+    
+    
+    <!-- hvilke biblioteker pjo -->
+      
+                        </div>
+
+            </div>
+      <!-- bestil_gruppe slut -->
+      
+
+      
+
+                    
+            <div class="paneleft">
+        <img src="common/pics/ikon_net_musik.gif" height="16" alt="" title="MUSIK (NET)" />        Musik (net): WM Germany, 1997                <br/>
+        sangtekst: S. Johnson J.Jones, musiker: Earl 16<br /><br />Indhold: <br />Going To Africa<br />Going To Africa<br />Promised Land<br />Zion City<br />Freedom Wave<br />Herbman Corner<br />Natural Roots<br />Purify<br />Steppin' Out<br />Cyber Town<br />Is It Because I'm Black<br />Inner City Blues<br /><a class='lnk' href=http://bibzoom.shop2download.com/cgi-bin/WebObjects/TShop.woa/wa/PSShop/MusicCollection?sku=0000000010349652 target="_blank">Download fra BibZoom.dk</a>
+                    </div>
+
+
+            <div  class="paneright" style="border:0px solid blue">
+
+        
+
+        
+                      <p>
+                <a href="forwurl.php?url=http://bibzoom.shop2download.com/cgi-bin/WebObjects/TShop.woa/wa/PSShop/MusicCollection?sku=0000000010349652&amp;stat=online"
+                   class="popupwindow u_link"
+                   rel="windowLeftTop">
+                  G&aring; til netversion                </a>
+                              </p>
+              <!-- PJO webarkiv --><!-- todo: li tag -->
+              <p id="netarkiv_0000000010349652" style="display:none">
+                <a href="webarkiv.php?lid=0000000010349652&amp;lok=150014"
+                   class="popupwindow u_link"
+                   rel="online">
+                  Intet resultat med linket ovenfor?<br/>- se version i DBC Webarkiv (PDF)                </a>
+              </p>
+        
+
+
+        
+        
+    
+
+
+        
+        <!-- pjo link til infomedia; this part is for viewing óne article  -->
+        
+                <!-- pjo link to infomedia; this part is for viewing reviews -->
+        
+         <!--end enable infomedia -->
+
+        
+                      <p>
+                <a href="pluk.php?arg=reggae&amp;sklitt=&amp;mattype=Musik+net"
+                   class="popupwindow"
+                   rel="inspiration"
+                   title="find titler der ligner &quot;Steppin' Out&quot;" >
+                  Find titler der ligner                </a>
+              </p>
+        
+        
+        
+        
+       <!-- -->
+                      <p id="openurl-2_0" style="display:none" class="open_url_jquery" url="http://linkresolver.dbc.dk/resolve?url_ctx_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Actx&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc&amp;rfr_id=info%3Asid%2Fbibliotekdk&amp;rft_id=0000000010349652-150014&amp;rft.title=Steppin+Out&amp;rft.publisher=WM+Germany&amp;rft.date=1997&amp;rft.type=music&amp;url_ver=Z39.88-2004&amp;opt_xslt=service_check">
+                <a href="openurl.php?url=http%3A%2F%2Flinkresolver.dbc.dk%2Fresolve%3Furl_ctx_fmt%3Dinfo%253Aofi%252Ffmt%253Akev%253Amtx%253Actx%26rft_val_fmt%3Dinfo%253Aofi%252Ffmt%253Akev%253Amtx%253Adc%26rfr_id%3Dinfo%253Asid%252Fbibliotekdk%26rft_id%3D0000000010349652-150014%26rft.title%3DSteppin%2BOut%26rft.publisher%3DWM%2BGermany%26rft.date%3D1997%26rft.type%3Dmusic%26url_ver%3DZ39.88-2004%26opt_xslt%3Doutput&amp;stat=openurl"
+                   class="popupwindow"
+                   rel="windowNew"
+                   title="openURL">
+                  Søg videre på nettet                </a>
+              </p>
+              <!--  -->
+
+        
+            </div><!-- class="paneright" -->
+
+      
+
+            <div class="paneleft">
+
+                      <input id="cid_2_0"
+                     type="checkbox"
+                     value="lid%3D0000000010349652+og+lok%3D150014%1CMusik+net%1CSteppin%27+Out.+1997%1Chttp%3A%2F%2Fbibzoom.shop2download.com%2Fcgi-bin%2FWebObjects%2FTShop.woa%2Fwa%2FPSShop%2FMusicCollection%3Fsku%3D0000000010349652%1C%1Cdfa%1C1%1C%1Cikon_net_musik%1C"
+                     name="tilkurv"
+                     onclick="this.focus()";
+                     class="left"
+                     style="margin-left:0.2em; margin-right:0.4em; margin-top:0.5em; width:14px;"
+                     title="Læg 'Steppin' Out - 1997' i kurv"
+                                          accesskey="k" />
+
+        <label for="cid_2_0" class="left" style="cursor:pointer;">
+                <img src="common/pics/ikoner/ikon_kurv.gif"
+         onclick="function (){this.parentNode.click();}"
+                     alt="Læg 'Steppin' Out - 1997' i kurv" border="0"
+                     style="cursor:pointer;"/>&nbsp;(Tilføj til kurv, bestil senere)        </label>
+        
+        <!-- pjo share link -->
+        <!-- AddThis Button BEGIN -->
+
+        <div class="addthis_toolbox addthis_default_style left" style="margin-left:1.5em; margin-top:0.5em;">
+    <a href="http://www.addthis.com/bookmark.php"
+       class="addthis_button_compact"
+       addthis:url="http://bibliotek.dk/linkme.php?ccl=lid%3D0000000010349652+og+lok%3D150014&amp;fortit=Steppin' Out"
+       addthis:title="An Example Title"
+       addthis:description="An Example Description">share</a>
+        </div>
+        <script type="text/javascript">
+ /* <![CDATA[ */
+var addthis_config = {
+services_compact: 'facebook, twitter, arto, gmail, linkedin,hotmail',
+services_exclude: 'print,email'
+}
+/* ]]> */
+        </script>
+        <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4b5ee27f07701a72"></script>
+
+        <!-- AddThis Button END -->
+        <!-- end share -->
+        <!-- Add2Any  BEGIN -->
+        <!--<div class="left" style="margin-left:1.5em; margin-top:0.5em;">
+      <a class="a2a_dd" href="http://www.addtoany.com/share_save">Share</a>
+      <script language="javascript" type="text/javascript">
+        /*<![CDATA[*/
+a2a_config = {
+    linkurl: 'http://bibliotek.dk/linkme.php?ccl=lid%3D0000000010349652+og+lok%3D150014'
+};
+/* ]]> */
+      </script>
+      <script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+    </div>-->
+        <!-- Add2Any  END -->
+            </div>
+            <div class="panefull"></div>
+                </div><!--  class="panelShow" -->
+        </div><!--  class="pane" -->
+      </div>
+    </div>
+  </div><!-- itemfull -->
+</div>
+                  <!-- show_xml_vrk -->
+
+<script language="javascript" type="text/javascript">
+  /* <![CDATA[ */
+          // faneblade under værker:
+          $(document).ready(function(){
+            $(function() {
+              $("ul.tabs3").tabs("div.panes3 > div.pane3");
+            });
+          });
+          /* ]]> */
+</script>
+
+
+
+
+<div class="mainitem">
+  <div class="itemshort">
+    <div class="title">
+      <a class="linkOpenOrCloseBlock" href="javascript:openOrCloseBlock('item3')" title="Se komplet beskrivelse af The clock comes down the stairs"><h5 style="margin:0px;padding:0px"><span id="linkSign-item3">[+]</span>&nbsp;The clock comes down the stairs</h5></a>
+      <a class='lnk' href="vis.php?base=&amp;field_aar=year_eq&amp;field1=lfo&amp;term1=Microdisney">Microdisney</a>      <!-- <a href="#" class="title-dropdown-link" title="Se komplet beskrivelse af ''"></a> -->
+    </div>
+    <div class="itemshortformater">
+
+
+      
+            <span class="labelKvikbestilling">Bestil uanset udgave:</span> &nbsp;
+                  <a href="https://bibliotek.dk/bestil_1.php?recid=%28lid%3D04338405+og+lok%3D870970%29&amp;bestil_kopi_candidate="
+         class="popupwindow"
+         rel="windowNew"
+         title="Bestil GRAMMOFONPLADE: 'Microdisney: The clock comes down the stairs' nu">
+                <img src="common/pics/ikoner/ikon_grammofonplade.gif"
+             alt="Bestil GRAMMOFONPLADE: 'Microdisney: The clock comes down the stairs' nu" />
+        
+      </a>
+
+      
+                  
+
+
+
+    </div>
+  </div><!-- itemshort end -->
+
+  <div id="item3" class="itemfull" style="font-size:100%;">
+
+    <div class="titledesc">
+      <div style="float:right; width:35%; display: block;">
+
+        <div class="vaerk-komment">
+
+              <!-- pjo ADHL -->
+          <div style="display:none" id="adhl_870970_04338405" class="ADHL_webservice">
+            <p style="margin-bottom:0px" id="show_870970_04338405" >
+              Andre der har lånt denne har også lånt:            </p>
+          </div>
+
+          <!-- END ADHL -->
+            </div>
+
+        <div id="addi.04338405" class="imagespace hideObject">
+                    <a class="lnk" id="addi.04338405.new"><img src="" class="addi-image" id="addi.04338405.img" alt="Forside" /></a>
+                  </div>
+      </div><!-- end float right-->
+
+      <div class="first-descriptiontitle">&nbsp;</div>
+      
+
+<div class="ucd_webservice" id="ucd_870970_04338405">&nbsp;</div>
+
+          </div><!-- titledesc end -->
+
+    <div style="display:block; clear:both; float:left; width:99%; margin-top: 1em; margin-left: 3em; margin-bottom: 2em; margin-right: 2em;">
+
+      <!-- the tabs -->
+      <ul class="tabs tabs3">
+            <li id="tab_3_0"><a href="javascript:void(0)" class="tab_materiale" style=""><img src="common/pics/ikon_grammofonplade.gif" height="16" alt="" title="GRAMMOFONPLADE" />GRAMMOFONPLADE</a></li>
+    
+          <li class="clearfix" />
+      </ul>
+
+      <!-- tab "panes" -->
+      <div class="panes panes3">
+
+  
+            <div class="pane pane3" id="pane_3_0">
+          <div class="paneShow" id="div_3_0">
+    
+              
+      <!-- top- & bund div slut -->
+
+          <!-- bestil_gruppe -->
+            <div style="border: 0px solid red; clear:both" class="clearfix">
+
+        
+              <div class="paneright">
+      
+        
+                        <div class="orderbutton" style="border-left: 1px solid #2c6a2c;border-top: 1px solid #2c6a2c" >
+                  <a href="https://bibliotek.dk/bestil_1.php?recid=%28lid%3D04338405+og+lok%3D870970%29&amp;bestil_kopi_candidate="
+                     class="popupwindow"
+                     rel="windowNew"
+                     title="Bestil plade denne udgave Microdisney  The clock comes down the stairs Microdisney">
+                    <img src="common/pics/ikoner/ikon-bestil-nu.png"
+                         alt="Bestil plade denne udgave 'Microdisney  The clock comes down the stairs Microdisney'"
+                         border="0" />
+                    Bestil plade denne udgave                  </a>
+                </div>
+        
+      
+    
+    
+    <!-- hvilke biblioteker pjo -->
+                      <p><a href="hvilke_biblioteker.php?vrk_recid=%28lid%3D04338405+og+lok%3D870970%29&amp;bib_nr="
+                      class="popupwindow"
+          rel="windowNew"
+                      title="Microdisney  The clock comes down the stairs Microdisney">
+                   <b> Se hvilke biblioteker der har materialet</b>
+                </a></p>
+      
+                        </div>
+
+            </div>
+      <!-- bestil_gruppe slut -->
+      
+
+      
+
+                    
+            <div class="paneleft">
+        <img src="common/pics/ikon_grammofonplade.gif" height="16" alt="" title="GRAMMOFONPLADE" />        GRAMMOFONPLADE: Rough Trade        &bull;<b> 2</b> biblioteker &bull;        <br/>
+        Microdisney (Sean O'Hagen, Tom Fenner, Ed Flesh, Blah Blah) med June Miles, Geoffrey Richardson, Richard St. Jeffe m. fl.<br />1 grammofonplade, Stereo<br />Opstilling i folkebiblioteker:  Rock<br />Tekster p&#229; inderpose<br />Rough Trade ROUGH 85<br />Pris ved udgivelsen: kr. 107.50<br />Indhold:<br />Horse overboard ; Birthday girl ; Past ; Humane ; Are you happy? ; Genius ; Begging bowl ; A friend with a big mouth ; Goodbye it's 1987 ; And
+                    </div>
+
+
+            <div  class="paneright" style="border:0px solid blue">
+
+        
+
+        
+        
+
+
+        
+        
+    
+
+
+        
+        <!-- pjo link til infomedia; this part is for viewing óne article  -->
+        
+                <!-- pjo link to infomedia; this part is for viewing reviews -->
+        
+         <!--end enable infomedia -->
+
+        
+        
+                      <p style="position:relative; visibility:hidden"
+                 id="lit-3_0">
+                <a href="vis.php?field1=lem&amp;term1=Microdisney"
+                   title="S&oslash;g litteratur om Microdisney">
+                  S&oslash;g litteratur om                  Microdisney                </a>
+              </p>
+        
+        
+        
+       <!-- -->
+                      <p id="openurl-3_0" style="display:none" class="open_url_jquery" url="http://linkresolver.dbc.dk/resolve?url_ctx_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Actx&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Adc&amp;rfr_id=info%3Asid%2Fbibliotekdk&amp;rft_id=04338405-870970&amp;rft.creator=Microdisney&amp;rft.title=The+clock+comes+down+the+stairs&amp;rft.aucorp=Microdisney&amp;rft.publisher=Rough+Trade&amp;rft.type=music&amp;rft.format=gramophone&amp;rft.dkdcplusdk5=78.794&amp;url_ver=Z39.88-2004&amp;opt_xslt=service_check">
+                <a href="openurl.php?url=http%3A%2F%2Flinkresolver.dbc.dk%2Fresolve%3Furl_ctx_fmt%3Dinfo%253Aofi%252Ffmt%253Akev%253Amtx%253Actx%26rft_val_fmt%3Dinfo%253Aofi%252Ffmt%253Akev%253Amtx%253Adc%26rfr_id%3Dinfo%253Asid%252Fbibliotekdk%26rft_id%3D04338405-870970%26rft.creator%3DMicrodisney%26rft.title%3DThe%2Bclock%2Bcomes%2Bdown%2Bthe%2Bstairs%26rft.aucorp%3DMicrodisney%26rft.publisher%3DRough%2BTrade%26rft.type%3Dmusic%26rft.format%3Dgramophone%26rft.dkdcplusdk5%3D78.794%26url_ver%3DZ39.88-2004%26opt_xslt%3Doutput&amp;stat=openurl"
+                   class="popupwindow"
+                   rel="windowNew"
+                   title="openURL">
+                  Søg videre på nettet                </a>
+              </p>
+              <!--  -->
+
+        
+            </div><!-- class="paneright" -->
+
+      
+
+            <div class="paneleft">
+
+                      <input id="cid_3_0"
+                     type="checkbox"
+                     value="lid%3D04338405+og+lok%3D870970%1CGRAMMOFONPLADE%1CMicrodisney%3Cbr+%2F%3EThe+clock+comes+down+the+stairs%1C%1C1%1Cdfa%1C1%1C%1Cikon_grammofonplade%1C"
+                     name="tilkurv"
+                     onclick="this.focus()";
+                     class="left"
+                     style="margin-left:0.2em; margin-right:0.4em; margin-top:0.5em; width:14px;"
+                     title="Læg 'Microdisney: The clock comes down the stairs' i kurv"
+                                          accesskey="k" />
+
+        <label for="cid_3_0" class="left" style="cursor:pointer;">
+                <img src="common/pics/ikoner/ikon_kurv.gif"
+         onclick="function (){this.parentNode.click();}"
+                     alt="Læg 'Microdisney: The clock comes down the stairs' i kurv" border="0"
+                     style="cursor:pointer;"/>&nbsp;(Tilføj til kurv, bestil senere)        </label>
+        
+        <!-- pjo share link -->
+        <!-- AddThis Button BEGIN -->
+
+        <div class="addthis_toolbox addthis_default_style left" style="margin-left:1.5em; margin-top:0.5em;">
+    <a href="http://www.addthis.com/bookmark.php"
+       class="addthis_button_compact"
+       addthis:url="http://bibliotek.dk/linkme.php?ccl=lid%3D04338405+og+lok%3D870970&amp;fortit=Microdisney  The clock comes down the stairs Microdisney"
+       addthis:title="An Example Title"
+       addthis:description="An Example Description">share</a>
+        </div>
+        <script type="text/javascript">
+ /* <![CDATA[ */
+var addthis_config = {
+services_compact: 'facebook, twitter, arto, gmail, linkedin,hotmail',
+services_exclude: 'print,email'
+}
+/* ]]> */
+        </script>
+        <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#username=xa-4b5ee27f07701a72"></script>
+
+        <!-- AddThis Button END -->
+        <!-- end share -->
+        <!-- Add2Any  BEGIN -->
+        <!--<div class="left" style="margin-left:1.5em; margin-top:0.5em;">
+      <a class="a2a_dd" href="http://www.addtoany.com/share_save">Share</a>
+      <script language="javascript" type="text/javascript">
+        /*<![CDATA[*/
+a2a_config = {
+    linkurl: 'http://bibliotek.dk/linkme.php?ccl=lid%3D04338405+og+lok%3D870970'
+};
+/* ]]> */
+      </script>
+      <script type="text/javascript" src="http://static.addtoany.com/menu/page.js"></script>
+    </div>-->
+        <!-- Add2Any  END -->
+            </div>
+            <div class="panefull"></div>
+                </div><!--  class="panelShow" -->
+        </div><!--  class="pane" -->
+      </div>
+    </div>
+  </div><!-- itemfull -->
+</div>
+        
+      
+
+                      <!-- div class="resultpagenav" -->
+        <div class="next-container">
+                                      </div>
+              
+    <!-- no ccl_error end -->
+
+  <!-- loop searches end -->
+
+
+          <div class="box-group">
+
+
+
+
+
+          </div>
+
+      <!-- end of center column -->
+      </div><!--  id="c-col" end -->
+
+      <!-- right column -->
+        <div id="rh-col">
+          <!-- box 1 - start -->
+          <div class="boxborder-rh-col">
+
+
+
+
+
+
+
+
+
+          </div>
+          <!-- box 1 - end -->
+
+
+        </div>
+      <!-- right column end -->
+
+    </div><!--  id="c-block" end -->
+
+    <!-- helptexts -->
+
+
+
+     <div id="info_help_ret_sogning" class="infoDiv hideObject">
+      <p class="infoClose"><a id="infoClose_help_ret_sogning" href="javascript:void(0);"><img src="common/pics/knap_luk.png" alt="Luk" /></a></p>
+      <div><strong>Præcisér søgning</strong><br/>Klik her hvis din søgning ikke gav det ønskede resultat.<br />Så kan du rette eller tilføje ekstra søgeord.</div>
+    </div>
+     <div id="info_help_onsker" class="infoDiv hideObject">
+      <p class="infoClose"><a id="infoClose_help_onsker" href="javascript:void(0);"><img src="common/pics/knap_luk.png" alt="Luk" /></a></p>
+      <div><strong>Ønsker du at ...</strong><br />Her ser du links til andre muligheder end bestil - hvis der er andre muligheder!<br/>Netversion, køb, søg litteratur om forfatteren, find titler der ligner, find henvisninger til anmeldelser, gå til netmusik.</div>
+    </div>
+     <div id="info_help_sorter" class="infoDiv hideObject">
+      <p class="infoClose"><a id="infoClose_help_sorter" href="javascript:void(0);"><img src="common/pics/knap_luk.png" alt="Luk" /></a></p>
+      <div>Søgeresultatet er sorteret så de nyeste poster vises først.<br />Vælg en anden sortering i rullemenuen og klik på Vis-knappen.<br />Emne: her sorteres posterne, så poster med dit søgeord angivet som emne kommer før poster, hvor ordet blot står i titel eller omtale.</div>
+    </div>
+     <div id="info_help_rss" class="infoDiv hideObject">
+      <p class="infoClose"><a id="infoClose_help_rss" href="javascript:void(0);"><img src="common/pics/knap_luk.png" alt="Luk" /></a></p>
+      <div>Med RSS-feed kan du få nye poster på denne søgning ind i din RSS-reader eller browser <a class="lnk" href="javascript:void(0)" onclick="PopWinxy('help.php?help=rss','help',600,500,2,2)">Læs mere om RSS</a></div>
+    </div>
+     <div id="info_help_tilgaengelighed_" class="infoDiv hideObject">
+      <p class="infoClose"><a id="infoClose_help_tilgaengelighed_" href="javascript:void(0);"><img src="common/pics/knap_luk.png" alt="Luk" /></a></p>
+      <div>Klik her for at åbne en hjælpeside, der fortæller, hvordan synshæmmede bedst muligt benytter bibliotek.dk</div>
+    </div>
+
+
+
+    <!-- helptexts end -->
+
+
+
+
+
+  <!-- START OF SmartSource Data Collector TAG -->
+<!-- Copyright (c) 1996-2008 WebTrends Inc.  All rights reserved. -->
+<!-- Version: 8.5.0 -->
+<!-- Tag Builder Version: 2.0.0  -->
+<!-- Created: 8/14/2008 1:33:20 PM -->
+<script src="common/javascripts/kpi_webtrends.js" type="text/javascript"></script>
+<!-- *********************************************************************************** -->
+<!-- Warning: The two script blocks below must remain inline. Moving them to an external -->
+<!-- JavaScript include file can cause serious problems with cross-domain tracking.      -->
+<!-- *********************************************************************************** -->
+<script type="text/javascript">
+//<![CDATA[
+var _tag=new WebTrends();
+_tag.dcsGetId();
+//]]>>
+</script>
+<script type="text/javascript">
+//<![CDATA[
+// Add custom parameters here.
+//_tag.DCSext.param_name=param_value;
+_tag.dcsCollect();
+//]]>>
+</script>
+<noscript>
+<div><img alt="DCSIMG" id="DCSIMG" width="1" height="1" src="http://visionize10.visionize.dk/dcsnowt11u3uwyq88lyx9gzjr_6e6g/njs.gif?dcsuri=/nojavascript&amp;WT.js=No&amp;WT.tv=8.5.0" /></div>
+</noscript>
+<!-- END OF SmartSource Data Collector TAG -->
+
+
+
+
+<script language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+if (document.getElementById("stavecheck_wait")) document.getElementById("stavecheck_wait").style.display = "none";
+});
+/* ]]> */
+</script><script language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+if (document.getElementById("lit-1_0")) document.getElementById("lit-1_0").style.visibility="visible"; if (document.getElementById("onsker-1_0")) document.getElementById("onsker-1_0").style.visibility="visible";
+});
+/* ]]> */
+</script>
+<script language="javascript" type="text/javascript">
+/* <![CDATA[ */
+$(document).ready(function() {
+if (document.getElementById("lit-3_0")) document.getElementById("lit-3_0").style.visibility="visible"; if (document.getElementById("onsker-3_0")) document.getElementById("onsker-3_0").style.visibility="visible";
+});
+/* ]]> */
+</script>
+
+</body></html>

@@ -264,7 +264,52 @@ swapinfix(">=", 300, "<=");
 swapinfix(">", 300, "<");
 infixr("&&", 200);
 infixr("||", 200);
+// ['cond' cond1 body1 cond2 body2 ... bodyelse]
+prefix2("if");
 infixr("else", 200);
+pp["else"] = function (node, indent) {
+    return blockstr(node[1], indent) + " else " + blockstr(node[2], indent);
+};
+macros["if"] = function (obj) {
+    //print("\n\n" + uneval(obj));
+    if (obj[2][0] === "else") {
+        array_push(obj, obj[2][2]);
+        obj[2] = obj[2][1];
+        if (obj[3][0] === "cond") {
+            var child = obj[3];
+            obj[3] = child[1];
+            var i = 2;
+            while (i < len(child)) {
+                array_push(obj, child[i]);
+                i = i + 1;
+            };
+        };
+    };
+    obj[0] = "cond";
+    //print(uneval(obj));
+    return obj;
+};
+pp["cond"] = function (node, indent) {
+    //print('\n\n' + uneval(node));
+    var acc = [];
+    var i = 2;
+    while (i < len(node)) {
+        array_push(acc, "if " + prettyprint(node[i - 1], indent) + " " + blockstr(node[i], indent));
+        i = i + 2;
+    };
+    //print(uneval(acc));
+    acc = array_join(acc, " else ");
+    if (i === len(node)) {
+        acc = acc + " else " + blockstr(node[i - 1], indent);
+    };
+    //print(uneval(acc));
+    return acc;
+};
+//    pp[id] = function (node, indent) {
+//        return node[0] + " " + prettyprint(node[1], indent) + " " + blockstr(node[2], indent);
+//    };
+//
+//
 infix("=", 100);
 infix("in", 50);
 list("(", ")", "paren");
@@ -288,12 +333,9 @@ pp["table"] = function (node, indent) {
 };
 list("[", "]", "array");
 map(prefix, ["var", "return", "-", "!"]);
-map(prefix2, ["while", "for", "if", "function"]);
+map(prefix2, ["while", "for", "function"]);
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " string", " number", " comment"]);
 // pretty printing
-pp["else"] = function (node, indent) {
-    return blockstr(node[1], indent) + " else " + blockstr(node[2], indent);
-};
 pp[" string"] = function (node) {
     var str = node[1];
     var result = ["\""];

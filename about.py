@@ -10,22 +10,22 @@ print """Content-Type: text/html; charset=UTF-8
          <link type="text/css" rel="stylesheet" href="/static/style.css" />
    </head>
    <body>
-   <div data-role="page">
+   <div data-role="page" data-theme="c">
    <div data-role="header">
    <h1>about demo.solsort.dk</h1>
    </div>
    <div data-role="content">
    <div>
-        demo.solsort.dk is development sandbox and demo site, just for the fun of it. Questions and comments are welcome, see solsort.dk for contact info.
+        demo.solsort.dk is development sandbox and demo site. Questions and comments are welcome, see <a href="http://solsort.dk">solsort.dk</a> for contact info.
    </div>
    <div>
         Disclaimer: this is just experiments, and may not be fit for anything at all, all usage is on your own risk ;-)
    </div>
-<h2>bibliotek.dk</h2>
-<div>This is just a temporary mashup/demo prototype, with the purpose of motivating DBC to make a mobile edition of bibliotek.dk. It is not directly related to the real bibliotek.dk, except that it uses that as a data source.</div>
+<h2>bibliotek...</h2>
+<div>This is just a temporary mashup / tech demo / prototype using <a href="http://webservice.bibliotek.dk/soeg/">http://webservice.bibliotek.dk/soeg/</a>.
 <h2>Thesaurus</h2>
 <div>
-Long time ago I stumbled on a nice research project at Princeton, which made a word-relation database freely available.  hmmm. couldn't that be used to create a free mobile thesaurus... clickyticlick ... a bit of rearranging and the data are suddenly nice thesaurus entries... clickyticlick ... whoops, now there is a mobile website :)
+Long time ago I stumbled on a nice research project at Princeton, which made a word-relation database freely available.  hmmm. couldn't that be used to create a free mobile thesaurus... clickety-click ... a bit of rearranging and the data are suddenly nice thesaurus entries... clickety-click ... whoops, now there is a mobile website :)
 </div>
 <h3>Thesaurus database entries</h3>
 <div>

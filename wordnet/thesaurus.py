@@ -22,10 +22,14 @@ word = params.getfirst("word")
 title = word
 if word == None:
     import random
-    title = "solsort.dk thesaurus"
+    title = "Thesaurus"
     alphabet = 'qwertyuiopasdfghjklzxcvbnm'
     word = random.choice(alphabet) + random.choice(alphabet) + random.choice(alphabet) + " "
+if word[-1] == ' ':
+    title = "Thesaurus"
 word = word.lower().replace(' ', '_')
+#title += ' <a href="/">(solsort.dk)</a>'
+title = title.replace('_', ' ')
 
 print """
 <!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN"
@@ -38,8 +42,10 @@ print """
         <script src="/static/jquery.mobile.min.js"></script>
         <link type="text/css" rel="stylesheet" href="/static/style.css" />
 </head> 
-<body><div data-role="page" data-theme="c"><div data-role="content">
-""" % (title,)
+<body><div data-role="page" data-theme="c"> <div data-role="header"> <h1>%s</h1> <a href="/about" class="ui-btn-right">About</a> </div> 
+
+<div data-role="content">
+""" % (title,title)
 
 
 def toLink(word):
@@ -99,7 +105,6 @@ def body():
 
 body()
 print """
-<div class="licenselink"><a href="/about">about</a></div>
 </div></div>
 </body></html>
 """

@@ -9,18 +9,22 @@ print """Content-Type: text/html; charset=UTF-8
          <link type="text/css" rel="stylesheet" href="/static/style.css" />
    </head>
    <body>
-   <div data-role="page">
-   <div data-role="header">
-   <h1>demo.solsort.dk</h1>
-   </div>
+   <div data-role="page" data-theme="c">
+        <div data-role="header"> 
+            <h1>demo.solsort.dk</h1> 
+            <a href="about" class="ui-btn-right">About</a> 
+        </div> 
    <div data-role="content">
-         Development sandbox.
-         <ul>
-            <li><a href="oldthesaurus">Thesaurus</a> (simple mobile html)</li>
-            <li><a href="thesaurus">Thesaurus</a> (smartphone optimised with graceful degradation)</li>
-            <li><a href="bib">Very first drafts of mobile version of bibliotek.dk</a> (smartphone optimised with graceful degradation)</li>
+         <h2>Development sandbox</h2>
+
+         <ul data-role="listview" data-inset="true" data-dividertheme="a">
+            <li data-role="list-divider">Demos</li> 
+
+            <li><h3><a href="thesaurus">Thesaurus</a></h3></li>
+            <li><h3><a href="bib">Mobilt bibliotek...</a> </h3>
+                <p>(very preliminary/draft/no-relation-to-reality etc.)</p></li>
          </ul>
-         <a href="about">about</a>
+         <div><strong>Warning: smartphone optimised with some graceful degradation.</strong> These pages uses mobile web development libraries which are still in prerelease and buggy... this means that the pages may render suboptimally (Firefox), or not work (some versions of Internet Explorer). Should in theory work fine on Meego, iPhone, Android, as well as low-end phones with html, but not javascript support. </div>
        </div>
    </div>
    </body>

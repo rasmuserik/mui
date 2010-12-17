@@ -125,6 +125,9 @@ function is_array(obj) {
 function idx(obj, id) {
     return obj[id];
 }
+function get(obj, id, default_value) {
+    return obj[id] || default_value;
+}
 function unshift(arr, obj) {
     arr.unshift(obj);
 }

@@ -103,19 +103,25 @@ var tailstr = function (node, indent, str) {
 var infixstr = function (name) {
     return function (node, indent) {
         var left = prettyprint(node[1], indent);
+        if (get(bp, node[1][0], 1000) < bp[name]) {
+            left = "(" + left + ")";
+        };
         var right = prettyprint(node[2], indent);
+        if (get(bp, node[2][0], 1000) <= bp[name]) {
+            right = "(" + right + ")";
+        };
         return left + " " + name + " " + right;
     };
 };
 var infixrstr = function (name) {
     return function (node, indent) {
         var left = prettyprint(node[1], indent);
-        if (get(bp, node[1], 1000) <= bp[name]) {
+        if (get(bp, node[1][0], 1000) <= bp[name]) {
             left = "(" + left + ")";
         };
         var right = prettyprint(node[2], indent);
-        if (get(bp, node[2], 1000) < bp[name]) {
-            right = "(" + left + ")";
+        if (get(bp, node[2][0], 1000) < bp[name]) {
+            right = "(" + right + ")";
         };
         return left + " " + name + " " + right;
     };
@@ -180,6 +186,7 @@ var swapinfix = function (id, prio, name) {
 var infixr = function (id, prio, name) {
     name = name || id;
     bp[id] = prio;
+    bp[name] = prio;
     led[id] = function (left, token) {
         return [name, left, parse(prio - 1)];
     };
@@ -223,7 +230,7 @@ var prefix2 = function (id) {
         return [id, parse(), parse()];
     };
     pp[id] = function (node, indent) {
-        return node[0] + " " + prettyprint(node[1], indent) + " " + blockstr(node[2], indent);
+        return node[0] + " (" + prettyprint(node[1], indent) + ") " + blockstr(node[2], indent);
     };
 };
 /////////////////////////////////////////
@@ -316,7 +323,7 @@ pp["cond"] = function (node, indent) {
     var acc = [];
     var i = 2;
     while (i < len(node)) {
-        array_push(acc, "if " + prettyprint(node[i - 1], indent) + " " + blockstr(node[i], indent));
+        array_push(acc, "if (" + prettyprint(node[i - 1], indent) + ") " + blockstr(node[i], indent));
         i = i + 2;
     };
     acc = array_join(acc, " else ");
@@ -328,6 +335,14 @@ pp["cond"] = function (node, indent) {
 //
 //
 list("(", ")", "paren");
+macros["paren"] = function (obj) {
+    if (len(obj) === 2) {
+        return obj[1];
+    } else {
+        return obj;
+    };
+};
+//
 infix("=", 100);
 list("{", "}", "table");
 pp["table"] = function (node, indent) {
@@ -349,9 +364,28 @@ pp["table"] = function (node, indent) {
 };
 list("[", "]", "array");
 map(prefix, ["var", "return", "!"]);
-map(prefix2, ["while", "for", "function"]);
-map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " string", " number", " comment"]);
-// pretty printing
+map(prefix2, ["while", "for"]);
+//
+// [function [args ...] ...]
+prefix2("function");
+macros["function"];
+macros["function"] = function (node) {
+    if (node[1][0] !== "paren") {
+        node[1] = ["paren", node[1]];
+    };
+    node[1][0] = "args";
+    return node;
+};
+pp["function"] = function (node, indent) {
+    return "function (" + array_join(map(prettyprint, tail(node[1])), ", ") + ") " + blockstr(node[2], indent);
+};
+//
+// 
+map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " number"]);
+//
+// String literals
+//
+passthrough(" string");
 pp[" string"] = function (node) {
     var str = node[1];
     var result = ["\""];
@@ -376,6 +410,10 @@ pp[" string"] = function (node) {
     array_push(result, "\"");
     return array_join(result, "");
 };
+// 
+// Comments
+//
+passthrough(" comment");
 pp[" comment"] = function (node) {
     return "//" + node[1];
 };

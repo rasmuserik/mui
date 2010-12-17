@@ -1,4 +1,9 @@
 load("stdlib.js");
+//
+// defines
+var IDENTIFIER = " id ";
+var STRING = " string ";
+var NUMBER = " num ";
 /////////////////////////////////////////////
 // Tokeniser
 //
@@ -44,12 +49,12 @@ function next_token() {
             push_char();
         };
         skip_char();
-        return [" string", pop_string()];
+        return [STRING, pop_string()];
     } else if (char_is(num)) {
         while (char_is(num)) {
             push_char();
         };
-        return [" number", pop_string()];
+        return [NUMBER, pop_string()];
         // varname
     } else if (char_is(alphanum)) {
         while (char_is(alphanum)) {
@@ -239,7 +244,7 @@ var prefix2 = function (id) {
 // Parser
 //
 function default_nud(o) {
-    unshift(o, " id");
+    unshift(o, IDENTIFIER);
     return o;
 };
 var macros = {};
@@ -273,6 +278,8 @@ function is_separator(c) {
 };
 infixlist("(", ")", 600, "call");
 infixlist("[", "]", 600, "subscript");
+//
+// Standard binary operators
 infix("*", 500);
 infix("%", 500);
 infix("/", 500);
@@ -356,8 +363,8 @@ function ls_table(node, indent) {
     var i = 1;
     var ind = indent + indentinc;
     while (len(i < node)) {
-        if (node[i][0] === " id") {
-            node[i][0] = " string";
+        if (node[i][0] === IDENTIFIER) {
+            node[i][0] = STRING;
         };
         array_push(acc, lightscript(node[i], ind) + ": " + lightscript(node[i + 1], ind));
         i = i + 2;
@@ -403,11 +410,11 @@ function ls_function(node, indent) {
 ls["function"] = ls_function;
 //
 // 
-map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " number"]);
+map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
 //
 // String literals
 //
-passthrough(" string");
+passthrough(STRING);
 function ls_string(node) {
     var str = node[1];
     var result = ["\""];
@@ -432,7 +439,7 @@ function ls_string(node) {
     array_push(result, "\"");
     return array_join(result, "");
 };
-ls[" string"] = ls_string;
+ls[STRING] = ls_string;
 // 
 // Comments
 //

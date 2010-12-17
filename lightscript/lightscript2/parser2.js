@@ -416,7 +416,11 @@ map(prefix2, ["while", "for"]);
 prefix2("function");
 var default_function_name = "__anonymous_function__";
 function macros_function(node) {
-    return node;
+    var result = node[2];
+    assert(node[0] === "table");
+    unshift(result, "define");
+    result[1] = node[1];
+    return result;
 };
 macros["function"] = macros_function;
 function ls_function(node, indent) {
@@ -426,7 +430,12 @@ function ls_function(node, indent) {
     };
     return "function " + name + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(node[2], indent);
 };
-ls["function"] = ls_function;
+function ls_define(node, indent) {
+    var block = tail(node);
+    block[0] = "table";
+    return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(block, indent);
+};
+ls["define"] = ls_define;
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
@@ -472,7 +481,7 @@ ls[COMMENT] = function _(node) {
     return "//" + node[1];
 };
 // List pretty printer
-function listpp(list, acc, indent) {
+function yolan(list, acc, indent) {
     function nspace(n) {
         var result;
         result = "";
@@ -491,7 +500,7 @@ function listpp(list, acc, indent) {
     var length;
     if (! acc) {
         acc = [];
-        listpp(list, acc, 4);
+        yolan(list, acc, 4);
         return array_join(acc, "");
     } else if (list[0] === NUMBER) {
         array_push(acc, list[1]);
@@ -527,7 +536,7 @@ function listpp(list, acc, indent) {
             array_push(seppos, len(acc));
             array_push(acc, "");
         };
-        length = length + 1 + listpp(list[i], acc, indent + 4);
+        length = length + 1 + yolan(list[i], acc, indent + 4);
         first = false;
         i = i + 1;
     };
@@ -551,7 +560,7 @@ token = next_token();
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
         //print(uneval(t));
-        print(listpp(t));
+        //        print(yolan(t));
         var lineend;
         if (t[0] === COMMENT) {
             lineend = "";

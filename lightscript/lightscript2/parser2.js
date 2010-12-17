@@ -154,7 +154,14 @@ function ls_default(node, indent) {
     if (is_string(node)) {
         return node;
     } else {
-        return "UNEXPECTED" + uneval(node);
+        assert(is_string(node[0]));
+        var acc = [];
+        var i = 1;
+        while (i < len(node)) {
+            array_push(acc, lightscript(node[i], indent));
+            i = i + 1;
+        };
+        return node[0] + "(" + array_join(acc, ", ") + ")";
     };
 };
 function lightscript(node, indent) {
@@ -281,7 +288,15 @@ function parse(rbp) {
 function is_separator(c) {
     return string_contains(";,:", c);
 };
+//
 infixlist("(", ")", 600, "call");
+function macros_call(node) {
+    if (is_string(node[1])) {
+        node = tail(node);
+    };
+    return node;
+};
+macros["call"] = macros_call;
 //
 // Standard binary operators
 infixlist("[", "]", 600, "get");
@@ -400,19 +415,6 @@ map(prefix2, ["while", "for"]);
 prefix2("function");
 var default_function_name = "__anonymous_function__";
 function macros_function(node) {
-    var name = default_function_name;
-    // Handle function names
-    if (node[1][0] === "call") {
-        assert(is_string(node[1][1]));
-        name = node[1][1];
-        node[1] = tail(node[1]);
-        node[1][0] = "paren";
-    };
-    // Handle optimised away parenthesis with one element
-    if (node[1][0] !== "paren") {
-        node[1] = ["paren", node[1]];
-    };
-    node[1][0] = name;
     return node;
 };
 macros["function"] = macros_function;

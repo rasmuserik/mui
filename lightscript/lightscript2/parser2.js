@@ -284,7 +284,16 @@ function is_separator(c) {
 infixlist("(", ")", 600, "call");
 //
 // Standard binary operators
-infixlist("[", "]", 600, "subscript");
+infixlist("[", "]", 600, "get");
+function ls_get(node, indent) {
+    if (len(node) === 3) {
+        return lightscript(node[1], indent) + "[" + lightscript(node[2], indent) + "]";
+    } else {
+        unshift(node, "call");
+        return lightscript(node, indent);
+    };
+};
+ls["get"] = ls_get;
 //
 // Standard binary operators
 infix("*", 500);

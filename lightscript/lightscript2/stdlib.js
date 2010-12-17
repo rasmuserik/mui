@@ -41,11 +41,12 @@ var getch = (function () {
 function listpp(list, acc, indent) {
     if (! acc) {
         acc = [];
-        listpp(list, acc, 0);
+        listpp(list, acc, 1);
         return array_join(acc, "");
     };
     if (! is_array(list)) {
-        var str = uneval(list);
+        var str = "" + list;
+        //uneval(list);
         array_push(acc, str);
         return len(str);
     };
@@ -66,16 +67,16 @@ function listpp(list, acc, indent) {
     var nspace = function (n) {
         var result = "";
         while (n > 0) {
-            result = result + " ";
+            result = result + "  ";
             n = n - 1;
         };
         return result;
     };
     var sep;
     if (length > 72 - indent) {
-        sep = ",\n" + nspace(indent);
+        sep = "\n" + nspace(indent);
     } else {
-        sep = ", ";
+        sep = " ";
     };
     i = 0;
     while (i < len(seppos)) {
@@ -121,6 +122,9 @@ function get_type(obj) {
 }
 function is_array(obj) {
     return obj.constructor === Array
+}
+function is_string(obj) {
+    return typeof (obj) === "string"
 }
 function idx(obj, id) {
     return obj[id];

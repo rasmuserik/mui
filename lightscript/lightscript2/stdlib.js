@@ -131,6 +131,8 @@ function get(obj, id, default_value) {
 function unshift(arr, obj) {
     arr.unshift(obj);
 }
+function assert() {
+}
 STRING_TYPE = get_type("")
 
 

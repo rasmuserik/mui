@@ -369,15 +369,29 @@ map(prefix2, ["while", "for"]);
 // [function [args ...] ...]
 prefix2("function");
 macros["function"];
+var default_function_name = "__anonymous_function__";
 macros["function"] = function (node) {
+    var name = default_function_name;
+    // Handle function names
+    if (node[1][0] === "call") {
+        assert(node[1][1][0] === "id");
+        name = node[1][1][1];
+        node[1] = tail(node[1]);
+        node[1][0] = "paren";
+    };
+    // Handle optimised away parenthesis with one element
     if (node[1][0] !== "paren") {
         node[1] = ["paren", node[1]];
     };
-    node[1][0] = "args";
+    node[1][0] = name;
     return node;
 };
 pp["function"] = function (node, indent) {
-    return "function (" + array_join(map(prettyprint, tail(node[1])), ", ") + ") " + blockstr(node[2], indent);
+    var name = node[1][0];
+    if (name === default_function_name) {
+        name = "";
+    };
+    return "function " + name + "(" + array_join(map(prettyprint, tail(node[1])), ", ") + ") " + blockstr(node[2], indent);
 };
 //
 // 

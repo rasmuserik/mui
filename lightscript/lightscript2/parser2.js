@@ -4,17 +4,17 @@ load("stdlib.js");
 //
 var c = " ";
 var str = "";
-var char_is = function (str) {
+function char_is(str) {
     return string_contains(str, c);
 };
-var skip_char = function () {
+function skip_char() {
     c = getch();
 };
-var push_char = function () {
+function push_char() {
     str = str + c;
     skip_char();
 };
-var pop_string = function () {
+function pop_string() {
     var result = str;
     str = "";
     return result;
@@ -23,7 +23,7 @@ var symb = "=!<>&|/*+-%";
 var num = "1234567890";
 var alphanum = num + "_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
 var EOF = ["(eof)"];
-var next_token = function () {
+function next_token() {
     while (char_is(" \n\r\t")) {
         skip_char();
     };
@@ -85,7 +85,7 @@ var next_token = function () {
 //
 var pp = {};
 var indentinc = 4;
-var indentstr = function (n) {
+function indentstr(n) {
     var i = 0;
     var result = "";
     while (i < n) {
@@ -94,14 +94,14 @@ var indentstr = function (n) {
     };
     return result;
 };
-var tailstr = function (node, indent, str) {
+function tailstr(node, indent, str) {
     node = tail(node);
     return array_join(map(function (node) {
         return prettyprint(node, indent);
     }, node), str);
 };
-var infixstr = function (name) {
-    return function (node, indent) {
+function infixstr(name) {
+    function result(node, indent) {
         var left = prettyprint(node[1], indent);
         if (get(bp, node[1][0], 1000) < bp[name]) {
             left = "(" + left + ")";
@@ -112,9 +112,10 @@ var infixstr = function (name) {
         };
         return left + " " + name + " " + right;
     };
+    return result;
 };
-var infixrstr = function (name) {
-    return function (node, indent) {
+function infixrstr(name) {
+    function result(node, indent) {
         var left = prettyprint(node[1], indent);
         if (get(bp, node[1][0], 1000) <= bp[name]) {
             left = "(" + left + ")";
@@ -125,8 +126,9 @@ var infixrstr = function (name) {
         };
         return left + " " + name + " " + right;
     };
+    return result;
 };
-var blockstr = function (node, indent) {
+function blockstr(node, indent) {
     if (node[0] !== "table") {
         return prettyprint(node, indent);
     };
@@ -142,10 +144,10 @@ var blockstr = function (node, indent) {
     };
     return acc + "\n" + indentstr(indent) + "}";
 };
-var default_prettyprint = function (node, indent) {
+function default_prettyprint(node, indent) {
     return "" + node[0];
 };
-var prettyprint = function (node, indent) {
+function prettyprint(node, indent) {
     indent = indent || 0;
     return get(pp, node[0], default_prettyprint)(node, indent);
 };
@@ -156,7 +158,7 @@ var bp = {};
 var led = {};
 var nud = {};
 // utility functions
-var readlist = function (acc, endsymb) {
+function readlist(acc, endsymb) {
     while (token[0] !== endsymb && token !== EOF) {
         var t = parse();
         if (! is_separator(t[0])) {
@@ -167,7 +169,7 @@ var readlist = function (acc, endsymb) {
     return acc;
 };
 // syntax constructors
-var infix = function (id, prio, name) {
+function infix(id, prio, name) {
     name = name || id;
     bp[id] = prio;
     led[id] = function (left, token) {
@@ -175,7 +177,7 @@ var infix = function (id, prio, name) {
     };
     pp[name] = infixstr(id);
 };
-var swapinfix = function (id, prio, name) {
+function swapinfix(id, prio, name) {
     name = name;
     bp[id] = prio;
     led[id] = function (left, token) {
@@ -183,7 +185,7 @@ var swapinfix = function (id, prio, name) {
     };
     pp[name] = infixstr(name);
 };
-var infixr = function (id, prio, name) {
+function infixr(id, prio, name) {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
@@ -192,7 +194,7 @@ var infixr = function (id, prio, name) {
     };
     pp[name] = infixrstr(id);
 };
-var infixlist = function (id, endsymb, prio, name) {
+function infixlist(id, endsymb, prio, name) {
     bp[id] = prio;
     led[id] = function (left, token) {
         return readlist([name, left], endsymb);
@@ -201,7 +203,7 @@ var infixlist = function (id, endsymb, prio, name) {
         return prettyprint(node[1], indent) + id + tailstr(tail(node), indent, ", ") + endsymb;
     };
 };
-var list = function (id, endsymb, name) {
+function list(id, endsymb, name) {
     nud[id] = function () {
         return readlist([name], endsymb);
     };
@@ -209,7 +211,7 @@ var list = function (id, endsymb, name) {
         return id + tailstr(node, indent, ", ") + endsymb;
     };
 };
-var passthrough = function (id) {
+function passthrough(id) {
     nud[id] = function (token) {
         return token;
     };
@@ -217,7 +219,7 @@ var passthrough = function (id) {
         return node[len(node) - 1];
     };
 };
-var prefix = function (id) {
+function prefix(id) {
     nud[id] = function () {
         return [id, parse()];
     };
@@ -236,18 +238,18 @@ var prefix2 = function (id) {
 /////////////////////////////////////////
 // Parser
 //
-var default_nud = function (o) {
+function default_nud(o) {
     unshift(o, " id");
     return o;
 };
 var macros = {};
-var identity = function (o) {
+function identity(o) {
     return o;
 };
-var apply_macros = function (obj) {
+function apply_macros(obj) {
     return get(macros, obj[0], identity)(obj);
 };
-var parse = function (rbp) {
+function parse(rbp) {
     rbp = rbp || 0;
     var t = token;
     token = next_token();
@@ -266,7 +268,7 @@ var parse = function (rbp) {
 //
 // Definition of operator precedence and type
 //
-var is_separator = function (c) {
+function is_separator(c) {
     return string_contains(";,:", c);
 };
 infixlist("(", ")", 600, "call");
@@ -279,13 +281,14 @@ infix("+", 400);
 // [- a ?b?]
 infix("-", 400);
 prefix("-");
-pp["-"] = function (node, indent) {
+function pp_sub(node, indent) {
     if (len(node) === 2) {
         return "-" + prettyprint(node[1], indent);
     } else {
         return prettyprint(node[1], indent) + " - " + blockstr(node[2], indent);
     };
 };
+pp["-"] = pp_sub;
 //
 infix("==", 300, "===");
 infix("===", 300);
@@ -302,7 +305,7 @@ infixr("||", 200, "or");
 //
 prefix2("if");
 infixr("else", 200);
-macros["if"] = function (obj) {
+function macros_if(obj) {
     if (obj[2][0] === "else") {
         array_push(obj, obj[2][2]);
         obj[2] = obj[2][1];
@@ -319,7 +322,8 @@ macros["if"] = function (obj) {
     obj[0] = "cond";
     return obj;
 };
-pp["cond"] = function (node, indent) {
+macros["if"] = macros_if;
+function pp_cond(node, indent) {
     var acc = [];
     var i = 2;
     while (i < len(node)) {
@@ -332,20 +336,22 @@ pp["cond"] = function (node, indent) {
     };
     return acc;
 };
+pp["cond"] = pp_cond;
 //
 //
 list("(", ")", "paren");
-macros["paren"] = function (obj) {
+function macros_paren(obj) {
     if (len(obj) === 2) {
         return obj[1];
     } else {
         return obj;
     };
 };
+macros["paren"] = macros_paren;
 //
 infix("=", 100);
 list("{", "}", "table");
-pp["table"] = function (node, indent) {
+function pp_table(node, indent) {
     var acc = [];
     var i = 1;
     var ind = indent + indentinc;
@@ -362,15 +368,15 @@ pp["table"] = function (node, indent) {
         return "{\n" + indentstr(ind) + array_join(acc, ",\n" + indentstr(ind)) + "\n" + indentstr(indent) + "}";
     };
 };
+pp["table"] = pp_table;
 list("[", "]", "array");
 map(prefix, ["var", "return", "!"]);
 map(prefix2, ["while", "for"]);
 //
 // [function [args ...] ...]
 prefix2("function");
-macros["function"];
 var default_function_name = "__anonymous_function__";
-macros["function"] = function (node) {
+function macros_function(node) {
     var name = default_function_name;
     // Handle function names
     if (node[1][0] === "call") {
@@ -386,13 +392,15 @@ macros["function"] = function (node) {
     node[1][0] = name;
     return node;
 };
-pp["function"] = function (node, indent) {
+macros["function"] = macros_function;
+function pp_function(node, indent) {
     var name = node[1][0];
     if (name === default_function_name) {
         name = "";
     };
     return "function " + name + "(" + array_join(map(prettyprint, tail(node[1])), ", ") + ") " + blockstr(node[2], indent);
 };
+pp["function"] = pp_function;
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " number"]);
@@ -400,7 +408,7 @@ map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " number"]);
 // String literals
 //
 passthrough(" string");
-pp[" string"] = function (node) {
+function pp_string(node) {
     var str = node[1];
     var result = ["\""];
     var i = 0;
@@ -424,6 +432,7 @@ pp[" string"] = function (node) {
     array_push(result, "\"");
     return array_join(result, "");
 };
+pp[" string"] = pp_string;
 // 
 // Comments
 //

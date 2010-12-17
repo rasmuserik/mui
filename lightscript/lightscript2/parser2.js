@@ -392,12 +392,7 @@ function macros_while(node) {
     return result;
 };
 macros["while"] = macros_while;
-function ls_while(node, indent) {
-    var block = tail(node);
-    block[0] = "table";
-    return "while (" + lightscript(node[1], indent) + ") " + ls_block(block, indent);
-};
-ls["while"] = ls_while;
+ls["while"] = function _(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
 prefix2("function");
@@ -415,18 +410,8 @@ function macros_function(node) {
     return result;
 };
 macros["function"] = macros_function;
-function ls_define(node, indent) {
-    var block = tail(node);
-    block[0] = "table";
-    return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(block, indent);
-};
-ls["define"] = ls_define;
-function ls_lambda(node, indent) {
-    var block = tail(node);
-    block[0] = "table";
-    return "function _(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }";
-};
-ls["lambda"] = ls_lambda;
+ls["define"] = function _(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
+ls["lambda"] = function _(node, indent) { return "function _(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);

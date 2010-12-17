@@ -91,12 +91,11 @@ function next_token() {
 // LightScript pretty printer
 //
 var ls = {};
-var indentinc = 4;
-function indentstr(n) {
+function nspace(n) {
     var i = 0;
     var result = "";
     while (i < n) {
-        result = result + " ";
+        result = result + "    ";
         i = i + 1;
     };
     return result;
@@ -140,13 +139,13 @@ function ls_block(node, indent) {
     var i = 1;
     var prevcomment = false;
     while (i < len(node)) {
-        acc = acc + "\n" + indentstr(indent + indentinc) + lightscript(node[i], indent + indentinc);
+        acc = acc + "\n" + nspace(indent + 1) + lightscript(node[i], indent + 1);
         if (node[i][0] !== COMMENT) {
             acc = acc + ";";
         };
         i = i + 1;
     };
-    return acc + "\n" + indentstr(indent) + "}";
+    return acc + "\n" + nspace(indent) + "}";
 };
 function ls_default(node, indent) {
     if (is_string(node)) {
@@ -401,7 +400,7 @@ list("{", "}", "table");
 function ls_table(node, indent) {
     var acc = [];
     var i = 1;
-    var ind = indent + indentinc;
+    var ind = indent + 1;
     while (i < len(node)) {
         if (is_string(node[i])) {
             node[i] = [STRING, node[i][0]];
@@ -412,7 +411,7 @@ function ls_table(node, indent) {
     if (len(acc) === 0) {
         return "{}";
     } else {
-        return "{\n" + indentstr(ind) + array_join(acc, ",\n" + indentstr(ind)) + "\n" + indentstr(indent) + "}";
+        return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
     };
 };
 ls["table"] = ls_table;
@@ -495,15 +494,6 @@ ls[COMMENT] = function _(node) {
 };
 // List pretty printer
 function yolan(list, acc, indent) {
-    function nspace(n) {
-        var result;
-        result = "";
-        while (0 < n) {
-            result = result + " ";
-            n = n - 1;
-        };
-        return result;
-    };
     var str;
     var i;
     var escape;
@@ -513,7 +503,7 @@ function yolan(list, acc, indent) {
     var length;
     if (! acc) {
         acc = [];
-        yolan(list, acc, 4);
+        yolan(list, acc, 1);
         return array_join(acc, "");
     } else if (is_string(list)) {
         array_push(acc, list);
@@ -553,7 +543,7 @@ function yolan(list, acc, indent) {
             array_push(seppos, len(acc));
             array_push(acc, " ");
         };
-        length = length + 1 + yolan(list[i], acc, indent + 4);
+        length = length + 1 + yolan(list[i], acc, indent + 1);
         first = false;
         i = i + 1;
     };
@@ -568,7 +558,7 @@ function yolan(list, acc, indent) {
         i = i + 1;
     };
     if (is_array(list[len(list) - 1]) && list[len(list) - 1][0] === COMMENT) {
-        array_push(acc, strjoin("\n", nspace(indent - 4)));
+        array_push(acc, strjoin("\n", nspace(indent - 1)));
     };
     array_push(acc, "]");
     return length;

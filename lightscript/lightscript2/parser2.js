@@ -135,22 +135,6 @@ function ls_infixr(name) {
     return result;
 };
 function ls_block(node, indent) {
-    if (node[0] !== "table") {
-        return lightscript(node, indent);
-    };
-    var acc = "{";
-    var i = 1;
-    var prevcomment = false;
-    while (i < len(node)) {
-        acc = acc + "\n" + indentstr(indent + indentinc) + lightscript(node[i], indent + indentinc);
-        if (node[i][0] !== COMMENT) {
-            acc = acc + ";";
-        };
-        i = i + 1;
-    };
-    return acc + "\n" + indentstr(indent) + "}";
-};
-function ls_tailblock(node, indent) {
     var acc = "{";
     var i = 1;
     var prevcomment = false;
@@ -335,7 +319,7 @@ function ls_sub(node, indent) {
     if (len(node) === 2) {
         return "-" + lightscript(node[1], indent);
     } else {
-        return lightscript(node[1], indent) + " - " + ls_block(node[2], indent);
+        return lightscript(node[1], indent) + " - " + lightscript(node[2], indent);
     };
 };
 ls["-"] = ls_sub;
@@ -385,10 +369,10 @@ function macros_if(obj) {
 };
 macros["if"] = macros_if;
 ls["if"] = function _(node, indent) {
-    return "if (" + lightscript(node[1], indent) + ") " + ls_tailblock(tail(node), indent);
+    return "if (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent);
 };
 ls["else"] = function _(node, indent) {
-    return ls_tailblock(node, indent);
+    return ls_block(node, indent);
 };
 function indent_lightscript(indent) {
     return function _(node) {

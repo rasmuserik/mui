@@ -102,7 +102,7 @@ function indentstr(n) {
 };
 function ls_tail(node, indent, str) {
     node = tail(node);
-    return array_join(map(function (node) {
+    return array_join(map(function _(node) {
         return lightscript(node, indent);
     }, node), str);
 };
@@ -182,7 +182,7 @@ function readlist(acc, endsymb) {
 function infix(id, prio, name) {
     name = name || id;
     bp[id] = prio;
-    led[id] = function (left, token) {
+    led[id] = function _(left, token) {
         return [name, left, parse(prio)];
     };
     ls[name] = ls_infix(id);
@@ -190,7 +190,7 @@ function infix(id, prio, name) {
 function swapinfix(id, prio, name) {
     name = name;
     bp[id] = prio;
-    led[id] = function (left, token) {
+    led[id] = function _(left, token) {
         return [name, parse(prio), left];
     };
     ls[name] = ls_infix(name);
@@ -199,49 +199,49 @@ function infixr(id, prio, name) {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
-    led[id] = function (left, token) {
+    led[id] = function _(left, token) {
         return [name, left, parse(prio - 1)];
     };
     ls[name] = ls_infixr(id);
 };
 function infixlist(id, endsymb, prio, name) {
     bp[id] = prio;
-    led[id] = function (left, token) {
+    led[id] = function _(left, token) {
         return readlist([name, left], endsymb);
     };
-    ls[name] = function (node, indent) {
+    ls[name] = function _(node, indent) {
         return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb;
     };
 };
 function list(id, endsymb, name) {
-    nud[id] = function () {
+    nud[id] = function _() {
         return readlist([name], endsymb);
     };
-    ls[name] = function (node, indent) {
+    ls[name] = function _(node, indent) {
         return id + ls_tail(node, indent, ", ") + endsymb;
     };
 };
 function passthrough(id) {
-    nud[id] = function (token) {
+    nud[id] = function _(token) {
         return token;
     };
-    ls[id] = function (node, indent) {
+    ls[id] = function _(node, indent) {
         return node[len(node) - 1];
     };
 };
 function prefix(id) {
-    nud[id] = function () {
+    nud[id] = function _() {
         return [id, parse()];
     };
-    ls[id] = function (node, indent) {
+    ls[id] = function _(node, indent) {
         return node[0] + " " + lightscript(node[1], indent);
     };
 };
-var prefix2 = function (id) {
-    nud[id] = function () {
+var prefix2 = function _(id) {
+    nud[id] = function _() {
         return [id, parse(), parse()];
     };
-    ls[id] = function (node, indent) {
+    ls[id] = function _(node, indent) {
         return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent);
     };
 };
@@ -430,7 +430,7 @@ map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
 //
 // 
 passthrough(IDENTIFIER);
-macros[IDENTIFIER] = function (obj) {
+macros[IDENTIFIER] = function _(obj) {
     return obj[1];
 };
 // String literals
@@ -465,7 +465,7 @@ ls[STRING] = ls_string;
 // Comments
 //
 passthrough(COMMENT);
-ls[COMMENT] = function (node) {
+ls[COMMENT] = function _(node) {
     return "//" + node[1];
 };
 //

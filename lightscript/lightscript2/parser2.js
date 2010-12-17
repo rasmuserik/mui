@@ -4,6 +4,7 @@ load("stdlib.js");
 var IDENTIFIER = " id ";
 var STRING = " string ";
 var NUMBER = " num ";
+var COMMENT = " comment ";
 /////////////////////////////////////////////
 // Tokeniser
 //
@@ -71,7 +72,7 @@ function next_token() {
                 while (c !== undefined && c !== "\n") {
                     push_char();
                 };
-                return [" comment", pop_string()];
+                return [COMMENT, pop_string()];
             };
         };
         while (char_is(symb)) {
@@ -142,7 +143,7 @@ function ls_block(node, indent) {
     var prevcomment = false;
     while (i < len(node)) {
         acc = acc + "\n" + indentstr(indent + indentinc) + lightscript(node[i], indent + indentinc);
-        if (node[i][0] !== " comment") {
+        if (node[i][0] !== COMMENT) {
             acc = acc + ";";
         };
         i = i + 1;
@@ -150,7 +151,11 @@ function ls_block(node, indent) {
     return acc + "\n" + indentstr(indent) + "}";
 };
 function ls_default(node, indent) {
-    return "" + node[0];
+    if (is_string(node)) {
+        return node;
+    } else {
+        return "UNEXPECTED" + uneval(node);
+    };
 };
 function lightscript(node, indent) {
     indent = indent || 0;
@@ -277,6 +282,8 @@ function is_separator(c) {
     return string_contains(";,:", c);
 };
 infixlist("(", ")", 600, "call");
+//
+// Standard binary operators
 infixlist("[", "]", 600, "subscript");
 //
 // Standard binary operators
@@ -363,8 +370,8 @@ function ls_table(node, indent) {
     var i = 1;
     var ind = indent + indentinc;
     while (len(i < node)) {
-        if (node[i][0] === IDENTIFIER) {
-            node[i][0] = STRING;
+        if (is_string(node[i][0])) {
+            node[i][0] = [STRING, node[i][0]];
         };
         array_push(acc, lightscript(node[i], ind) + ": " + lightscript(node[i + 1], ind));
         i = i + 2;
@@ -387,8 +394,8 @@ function macros_function(node) {
     var name = default_function_name;
     // Handle function names
     if (node[1][0] === "call") {
-        assert(node[1][1][0] === "id");
-        name = node[1][1][1];
+        assert(is_string(node[1][1]));
+        name = node[1][1];
         node[1] = tail(node[1]);
         node[1][0] = "paren";
     };
@@ -412,6 +419,11 @@ ls["function"] = ls_function;
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
 //
+// 
+passthrough(IDENTIFIER);
+macros[IDENTIFIER] = function (obj) {
+    return obj[1];
+};
 // String literals
 //
 passthrough(STRING);
@@ -443,8 +455,8 @@ ls[STRING] = ls_string;
 // 
 // Comments
 //
-passthrough(" comment");
-ls[" comment"] = function (node) {
+passthrough(COMMENT);
+ls[COMMENT] = function (node) {
     return "//" + node[1];
 };
 //
@@ -454,9 +466,9 @@ token = next_token();
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
         //print(uneval(t));
-        //print(listls(t));
+        //print(listpp(t));
         var lineend;
-        if (t[0] === " comment") {
+        if (t[0] === COMMENT) {
             lineend = "";
         } else {
             lineend = ";";

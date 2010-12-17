@@ -1,11 +1,12 @@
 load("stdlib.js");
 //
-// defines
+// Defines
+//
 var IDENTIFIER = " id ";
 var STRING = " string ";
 var NUMBER = " num ";
 var COMMENT = " comment ";
-/////////////////////////////////////////////
+//
 // Tokeniser
 //
 var c = " ";
@@ -86,7 +87,7 @@ function next_token() {
         return [pop_string()];
     };
 };
-//////////////////////////////////////
+//
 // LightScript pretty printer
 //
 var ls = {};
@@ -327,7 +328,7 @@ ls["-"] = ls_sub;
 infix("==", 300, "===");
 infix("===", 300, "eq?");
 infix("!=", 300, "!==");
-infix("!==", 300);
+infix("!==", 300, "neq?");
 infix("<=", 300);
 infix("<", 300);
 swapinfix(">=", 300, "<=");
@@ -514,6 +515,9 @@ function yolan(list, acc, indent) {
         acc = [];
         yolan(list, acc, 4);
         return array_join(acc, "");
+    } else if (is_string(list)) {
+        array_push(acc, list);
+        return len(list);
     } else if (list[0] === NUMBER) {
         array_push(acc, list[1]);
         return 1;
@@ -534,9 +538,10 @@ function yolan(list, acc, indent) {
         };
         array_push(acc, "'");
         return len(str);
-    } else if (is_string(list)) {
-        array_push(acc, list);
-        return len(list);
+    };
+    if (list[0] === COMMENT) {
+        array_push(acc, "; " + list[1]);
+        return 1000;
     };
     array_push(acc, "[");
     length = 1;
@@ -546,7 +551,7 @@ function yolan(list, acc, indent) {
     while (i < len(list)) {
         if (! first) {
             array_push(seppos, len(acc));
-            array_push(acc, "");
+            array_push(acc, " ");
         };
         length = length + 1 + yolan(list[i], acc, indent + 4);
         first = false;
@@ -557,10 +562,13 @@ function yolan(list, acc, indent) {
     } else {
         sep = " ";
     };
-    i = 0;
+    i = 1;
     while (i < len(seppos)) {
         put(acc, seppos[i], sep);
         i = i + 1;
+    };
+    if (is_array(list[len(list) - 1]) && list[len(list) - 1][0] === COMMENT) {
+        array_push(acc, strjoin("\n", nspace(indent - 4)));
     };
     array_push(acc, "]");
     return length;

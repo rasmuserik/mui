@@ -150,6 +150,19 @@ function ls_block(node, indent) {
     };
     return acc + "\n" + indentstr(indent) + "}";
 };
+function ls_tailblock(node, indent) {
+    var acc = "{";
+    var i = 1;
+    var prevcomment = false;
+    while (i < len(node)) {
+        acc = acc + "\n" + indentstr(indent + indentinc) + lightscript(node[i], indent + indentinc);
+        if (node[i][0] !== COMMENT) {
+            acc = acc + ";";
+        };
+        i = i + 1;
+    };
+    return acc + "\n" + indentstr(indent) + "}";
+};
 function ls_default(node, indent) {
     if (is_string(node)) {
         return node;
@@ -342,36 +355,48 @@ infixr("||", 200, "or");
 //
 prefix2("if");
 infixr("else", 200);
+function untable(obj) {
+    if (obj[0] === "table") {
+        return tail(obj);
+    } else {
+        return [obj];
+    };
+};
 function macros_if(obj) {
-    if (obj[2][0] === "else") {
-        array_push(obj, obj[2][2]);
-        obj[2] = obj[2][1];
-        if (obj[3][0] === "cond") {
-            var child = obj[3];
-            obj[3] = child[1];
-            var i = 2;
-            while (i < len(child)) {
-                array_push(obj, child[i]);
-                i = i + 1;
+    var result;
+    if (obj[2][0] === "table") {
+        result = cons("if", obj[2]);
+        result[1] = obj[1];
+    } else if (obj[2][0] === "else") {
+        if (obj[2][2][0] === "cond") {
+            result = cons("cond", obj[2][2]);
+            result[1] = cons("if", cons(obj[1], untable(obj[2][1])));
+        } else {
+            result = ["cond", cons("if", cons(obj[1], untable(obj[2][1]))), cons("else", untable(obj[2][2]))];
+            if (result[2][1][0] === "if") {
+                result[2] = result[2][1];
             };
         };
+    } else {
+        print("ERROR: " + uneval(obj));
+        assert(false);
     };
-    obj[0] = "cond";
-    return obj;
+    return result;
 };
 macros["if"] = macros_if;
+ls["if"] = function _(node, indent) {
+    return "if (" + lightscript(node[1], indent) + ") " + ls_tailblock(tail(node), indent);
+};
+ls["else"] = function _(node, indent) {
+    return ls_tailblock(node, indent);
+};
+function indent_lightscript(indent) {
+    return function _(node) {
+        return lightscript(node, indent);
+    };
+};
 function ls_cond(node, indent) {
-    var acc = [];
-    var i = 2;
-    while (i < len(node)) {
-        array_push(acc, "if (" + lightscript(node[i - 1], indent) + ") " + ls_block(node[i], indent));
-        i = i + 2;
-    };
-    acc = array_join(acc, " else ");
-    if (i === len(node)) {
-        acc = acc + " else " + ls_block(node[i - 1], indent);
-    };
-    return acc;
+    return array_join(map(indent_lightscript(indent), tail(node)), " else ");
 };
 ls["cond"] = ls_cond;
 //

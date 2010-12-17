@@ -100,8 +100,25 @@ var tailstr = function (node, indent, str) {
         return prettyprint(node, indent);
     }, node), str);
 };
-var infixstr = function (node, indent) {
-    return prettyprint(node[1], indent) + " " + node[0] + " " + prettyprint(node[2], indent);
+var infixstr = function (name) {
+    return function (node, indent) {
+        var left = prettyprint(node[1], indent);
+        var right = prettyprint(node[2], indent);
+        return left + " " + name + " " + right;
+    };
+};
+var infixrstr = function (name) {
+    return function (node, indent) {
+        var left = prettyprint(node[1], indent);
+        if (get(bp, node[1], 1000) <= bp[name]) {
+            left = "(" + left + ")";
+        };
+        var right = prettyprint(node[2], indent);
+        if (get(bp, node[2], 1000) < bp[name]) {
+            right = "(" + left + ")";
+        };
+        return left + " " + name + " " + right;
+    };
 };
 var blockstr = function (node, indent) {
     if (node[0] !== "table") {
@@ -150,7 +167,7 @@ var infix = function (id, prio, name) {
     led[id] = function (left, token) {
         return [name, left, parse(prio)];
     };
-    pp[name] = infixstr;
+    pp[name] = infixstr(id);
 };
 var swapinfix = function (id, prio, name) {
     name = name;
@@ -158,7 +175,7 @@ var swapinfix = function (id, prio, name) {
     led[id] = function (left, token) {
         return [name, parse(prio), left];
     };
-    pp[name] = infixstr;
+    pp[name] = infixstr(name);
 };
 var infixr = function (id, prio, name) {
     name = name || id;
@@ -166,7 +183,7 @@ var infixr = function (id, prio, name) {
     led[id] = function (left, token) {
         return [name, left, parse(prio - 1)];
     };
-    pp[name] = infixstr;
+    pp[name] = infixrstr(id);
 };
 var infixlist = function (id, endsymb, prio, name) {
     bp[id] = prio;
@@ -251,17 +268,28 @@ infix("*", 500);
 infix("%", 500);
 infix("/", 500);
 infix("+", 400);
+//
+// [- a ?b?]
 infix("-", 400);
-infix("===", 300);
+prefix("-");
+pp["-"] = function (node, indent) {
+    if (len(node) === 2) {
+        return "-" + prettyprint(node[1], indent);
+    } else {
+        return prettyprint(node[1], indent) + " - " + blockstr(node[2], indent);
+    };
+};
+//
 infix("==", 300, "===");
-infix("!==", 300);
+infix("===", 300);
 infix("!=", 300, "!==");
+infix("!==", 300);
 infix("<=", 300);
 infix("<", 300);
 swapinfix(">=", 300, "<=");
 swapinfix(">", 300, "<");
-infixr("&&", 200);
-infixr("||", 200);
+infixr("&&", 200, "and");
+infixr("||", 200, "or");
 //
 // ['cond' cond1 body1 cond2 body2 ... bodyelse]
 //
@@ -320,7 +348,7 @@ pp["table"] = function (node, indent) {
     };
 };
 list("[", "]", "array");
-map(prefix, ["var", "return", "-", "!"]);
+map(prefix, ["var", "return", "!"]);
 map(prefix2, ["while", "for", "function"]);
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", " id", " string", " number", " comment"]);
 // pretty printing
@@ -350,13 +378,6 @@ pp[" string"] = function (node) {
 };
 pp[" comment"] = function (node) {
     return "//" + node[1];
-};
-pp["-"] = function (node, indent) {
-    if (len(node) === 2) {
-        return "-" + prettyprint(node[1], indent);
-    } else {
-        return prettyprint(node[1], indent) + " - " + blockstr(node[2], indent);
-    };
 };
 //
 // dump

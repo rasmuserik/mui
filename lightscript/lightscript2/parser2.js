@@ -257,8 +257,7 @@ var prefix2 = function _(id) {
 // Parser
 //
 function default_nud(o) {
-    unshift(o, IDENTIFIER);
-    return o;
+    return cons(IDENTIFIER, o);
 };
 var macros = {};
 function identity(o) {
@@ -305,8 +304,7 @@ function ls_get(node, indent) {
     if (len(node) === 3) {
         return lightscript(node[1], indent) + "[" + lightscript(node[2], indent) + "]";
     } else {
-        unshift(node, "call");
-        return lightscript(node, indent);
+        return lightscript(cons("call", node), indent);
     };
 };
 ls["get"] = ls_get;
@@ -340,7 +338,7 @@ swapinfix(">", 300, "<");
 infixr("&&", 200, "and");
 infixr("||", 200, "or");
 //
-// ['cond' cond1 body1 cond2 body2 ... bodyelse]
+// [cond [if cond1 body1...] [if cond2 body2...] ... [else bodyelse...]]
 //
 prefix2("if");
 infixr("else", 200);
@@ -410,26 +408,31 @@ function ls_table(node, indent) {
 ls["table"] = ls_table;
 list("[", "]", "array");
 map(prefix, ["var", "return", "!"]);
-map(prefix2, ["while", "for"]);
-//
-// [function [args ...] ...]
-prefix2("function");
-var default_function_name = "__anonymous_function__";
-function macros_function(node) {
-    var result = node[2];
+// [while condition body...]
+map(prefix2, ["while"]);
+function macros_while(node) {
+    var result = cons("while", node[2]);
     assert(node[0] === "table");
-    unshift(result, "define");
+    result[1] = node[1];
+    return result;
+};
+macros["while"] = macros_while;
+function ls_while(node, indent) {
+    var block = tail(node);
+    block[0] = "table";
+    return "while (" + lightscript(node[1], indent) + ") " + ls_block(block, indent);
+};
+ls["while"] = ls_while;
+// [define [fnname args...] body...]
+// [lambda [args...] expr]
+prefix2("function");
+function macros_function(node) {
+    var result = cons("define", node[2]);
+    assert(node[0] === "table");
     result[1] = node[1];
     return result;
 };
 macros["function"] = macros_function;
-function ls_function(node, indent) {
-    var name = node[1][0];
-    if (name === default_function_name) {
-        name = "";
-    };
-    return "function " + name + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(node[2], indent);
-};
 function ls_define(node, indent) {
     var block = tail(node);
     block[0] = "table";
@@ -560,7 +563,7 @@ token = next_token();
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
         //print(uneval(t));
-        //        print(yolan(t));
+        //print(yolan(t));
         var lineend;
         if (t[0] === COMMENT) {
             lineend = "";

@@ -84,8 +84,10 @@ function idx(obj, id) {
 function get(obj, id, default_value) {
     return obj[id] || default_value;
 }
-function unshift(arr, obj) {
-    arr.unshift(obj);
+function cons(obj, arr) {
+    var result = arr;
+    result.unshift(obj);
+    return result;
 }
 function assert() {
 }

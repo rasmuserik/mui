@@ -189,6 +189,7 @@ function readlist(acc, endsymb) {
 function infix(id, prio, name) {
     name = name || id;
     bp[id] = prio;
+    bp[name] = prio;
     led[id] = function _(left, token) {
         return [name, left, parse(prio)];
     };
@@ -329,7 +330,7 @@ function ls_sub(node, indent) {
 ls["-"] = ls_sub;
 //
 infix("==", 300, "===");
-infix("===", 300);
+infix("===", 300, "eq?");
 infix("!=", 300, "!==");
 infix("!==", 300);
 infix("<=", 300);
@@ -387,15 +388,15 @@ function macros_paren(obj) {
 };
 macros["paren"] = macros_paren;
 //
-infix("=", 100);
+infix("=", 100, "set");
 list("{", "}", "table");
 function ls_table(node, indent) {
     var acc = [];
     var i = 1;
     var ind = indent + indentinc;
-    while (len(i < node)) {
-        if (is_string(node[i][0])) {
-            node[i][0] = [STRING, node[i][0]];
+    while (i < len(node)) {
+        if (is_string(node[i])) {
+            node[i] = [STRING, node[i][0]];
         };
         array_push(acc, lightscript(node[i], ind) + ": " + lightscript(node[i + 1], ind));
         i = i + 2;
@@ -470,6 +471,79 @@ passthrough(COMMENT);
 ls[COMMENT] = function _(node) {
     return "//" + node[1];
 };
+// List pretty printer
+function listpp(list, acc, indent) {
+    function nspace(n) {
+        var result;
+        result = "";
+        while (0 < n) {
+            result = result + " ";
+            n = n - 1;
+        };
+        return result;
+    };
+    var str;
+    var i;
+    var escape;
+    var seppos;
+    var first;
+    var sep;
+    var length;
+    if (! acc) {
+        acc = [];
+        listpp(list, acc, 4);
+        return array_join(acc, "");
+    } else if (list[0] === NUMBER) {
+        array_push(acc, list[1]);
+        return 1;
+    } else if (list[0] === STRING) {
+        escape = {
+            "\n": "\\n",
+            "'": "\\'",
+            "\t": "\\t",
+            "\\": "\\\\",
+            "\r": "\\r"
+        };
+        str = list[1];
+        array_push(acc, "'");
+        i = 0;
+        while (i < len(str)) {
+            array_push(acc, escape[str[i]] || str[i]);
+            i = i + 1;
+        };
+        array_push(acc, "'");
+        return len(str);
+    } else if (is_string(list)) {
+        array_push(acc, list);
+        return len(list);
+    };
+    array_push(acc, "[");
+    length = 1;
+    seppos = [];
+    first = true;
+    i = 0;
+    while (i < len(list)) {
+        if (! first) {
+            array_push(seppos, len(acc));
+            array_push(acc, "");
+        };
+        length = length + 1 + listpp(list[i], acc, indent + 4);
+        first = false;
+        i = i + 1;
+    };
+    if (110 - indent < length) {
+        sep = strjoin("\n", nspace(indent));
+    } else {
+        sep = " ";
+    };
+    i = 0;
+    while (i < len(seppos)) {
+        put(acc, seppos[i], sep);
+        i = i + 1;
+    };
+    array_push(acc, "]");
+    return length;
+};
 //
 // dump
 //
@@ -477,7 +551,7 @@ token = next_token();
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
         //print(uneval(t));
-        //print(listpp(t));
+        print(listpp(t));
         var lineend;
         if (t[0] === COMMENT) {
             lineend = "";

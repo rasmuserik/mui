@@ -176,6 +176,53 @@ function lightscript_curried(indent) {
     return function(node) { return lightscript(node, indent) };
 };
 //
+// JavaScript pretty printer
+//
+//
+var js = {};
+function js_tail(node, indent, str) {
+    return array_join(map(javascript_curried(indent), tail(node)), str);
+};
+function js_infix(name) {
+    return pp_infix(javascript, name);
+};
+function js_infixr(name) {
+    return pp_infixr(javascript, name);
+};
+function js_block(node, indent) {
+    var acc = "{";
+    var i = 1;
+    var prevcomment = false;
+    while (i < len(node)) {
+        acc = acc + "\n" + nspace(indent + 1) + javascript(node[i], indent + 1);
+        if (node[i][0] !== COMMENT) {
+            acc = acc + ";";
+        };
+        i = i + 1;
+    };
+    return acc + "\n" + nspace(indent) + "}";
+};
+function js_default(node, indent) {
+    if (is_string(node)) {
+        return node;
+    } else {
+        assert(is_string(node[0]));
+        var acc = [];
+        var i = 1;
+        while (i < len(node)) {
+            array_push(acc, javascript(node[i], indent));
+            i = i + 1;
+        };
+        return node[0] + "(" + array_join(acc, ", ") + ")";
+    };
+};
+function javascript(node, indent) {
+    indent = indent || 0;
+    return get(js, node[0], js_default)(node, indent);
+};
+function javascript_curried(indent) {
+    return function(node) { return javascript(node, indent) };
+};
 //  Operator constructors
 //
 var bp = {};
@@ -199,11 +246,11 @@ function infix(id, prio, name) {
     bp[name] = prio;
     led[id] = function(left, token) { return [name, left, parse(prio)] };
     ls[name] = ls_infix(id);
+    js[name] = js_infix(id);
 };
 function swapinfix(id, prio, name) {
     bp[id] = prio;
     led[id] = function(left, token) { return [name, parse(prio), left] };
-    ls[name] = ls_infix(name);
 };
 function infixr(id, prio, name) {
     name = name || id;
@@ -211,27 +258,33 @@ function infixr(id, prio, name) {
     bp[name] = prio;
     led[id] = function(left, token) { return [name, left, parse(prio - 1)] };
     ls[name] = ls_infixr(id);
+    js[name] = js_infixr(id);
 };
 function infixlist(id, endsymb, prio, name) {
     bp[id] = prio;
     led[id] = function(left, token) { return readlist([name, left], endsymb) };
     ls[name] = function(node, indent) { return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb };
+    js[name] = function(node, indent) { return javascript(node[1], indent) + id + js_tail(tail(node), indent, ", ") + endsymb };
 };
 function list(id, endsymb, name) {
     nud[id] = function() { return readlist([name], endsymb) };
     ls[name] = function(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
+    js[name] = function(node, indent) { return id + js_tail(node, indent, ", ") + endsymb };
 };
 function passthrough(id) {
     nud[id] = function(token) { return token };
     ls[id] = function(node, indent) { return node[len(node) - 1] };
+    js[id] = function(node, indent) { return node[len(node) - 1] };
 };
 function prefix(id) {
     nud[id] = function() { return [id, parse()] };
     ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
+    js[id] = function(node, indent) { return node[0] + " " + javascript(node[1], indent) };
 };
 var prefix2 = function _(id) {
     nud[id] = function() { return [id, parse(), parse()] };
     ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
+    js[id] = function(node, indent) { return node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent) };
 };
 //
 //  Parser
@@ -300,14 +353,18 @@ infix("+", 400);
 //
 infix("-", 400);
 prefix("-");
-function ls_sub(node, indent) {
-    if (len(node) === 2) {
-        return "-" + lightscript(node[1], indent);
-    } else {
-        return lightscript(node[1], indent) + " - " + lightscript(node[2], indent);
+function pp_sub(pp) {
+    function sub(node, indent) {
+        if (len(node) === 2) {
+            return "-" + pp(node[1], indent);
+        } else {
+            return pp(node[1], indent) + " - " + pp(node[2], indent);
+        };
     };
+    return sub;
 };
-ls["-"] = ls_sub;
+ls["-"] = pp_sub(lightscript);
+js["-"] = pp_sub(javascript);
 //
 infix("==", 300, "===");
 infix("===", 300, "eq?");

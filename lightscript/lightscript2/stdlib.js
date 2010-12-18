@@ -73,7 +73,7 @@ function get_type(obj) {
     return typeof(obj);
 }
 function is_array(obj) {
-    return obj.constructor === Array
+    return obj && obj.constructor === Array
 }
 function is_string(obj) {
     return typeof (obj) === "string"

@@ -158,14 +158,13 @@ function ls_default(node, indent) {
     if (is_string(node)) {
         return node;
     } else {
-        assert(is_string(node[0]));
         var acc = [];
         var i = 1;
         while (i < len(node)) {
             array_push(acc, lightscript(node[i], indent));
             i = i + 1;
         };
-        return node[0] + "(" + array_join(acc, ", ") + ")";
+        return lightscript(node[0], indent) + "(" + array_join(acc, ", ") + ")";
     };
 };
 function lightscript(node, indent) {
@@ -206,14 +205,13 @@ function js_default(node, indent) {
     if (is_string(node)) {
         return node;
     } else {
-        assert(is_string(node[0]));
         var acc = [];
         var i = 1;
         while (i < len(node)) {
             array_push(acc, javascript(node[i], indent));
             i = i + 1;
         };
-        return node[0] + "(" + array_join(acc, ", ") + ")";
+        return javascript(node[0], indent) + "(" + array_join(acc, ", ") + ")";
     };
 };
 function javascript(node, indent) {
@@ -377,7 +375,7 @@ swapinfix(">", 300, "<");
 infixr("&&", 250, "and");
 infixr("||", 200, "or");
 //
-// [cond [if cond1 body1...] [if cond2 body2...] ... [else bodyelse...]]
+// [cond [cond1 body1...] [cond2 body2...] ... [else bodyelse...]]
 //
 prefix2("if");
 infixr("else", 200);
@@ -391,17 +389,14 @@ function untable(obj) {
 function macros_if(obj) {
     var result;
     if (obj[2][0] === "table") {
-        result = cons("if", obj[2]);
-        result[1] = obj[1];
+        result = ["cond", obj[2]];
+        result[1][0] = obj[1];
     } else if (obj[2][0] === "else") {
         if (obj[2][2][0] === "cond") {
             result = cons("cond", obj[2][2]);
-            result[1] = cons("if", cons(obj[1], untable(obj[2][1])));
+            result[1] = cons(obj[1], untable(obj[2][1]));
         } else {
-            result = ["cond", cons("if", cons(obj[1], untable(obj[2][1]))), cons("else", untable(obj[2][2]))];
-            if (result[2][1][0] === "if") {
-                result[2] = result[2][1];
-            };
+            result = ["cond", cons(obj[1], untable(obj[2][1])), cons("else", untable(obj[2][2]))];
         };
     } else {
         print("ERROR: " + uneval(obj));
@@ -410,10 +405,18 @@ function macros_if(obj) {
     return result;
 };
 macros["if"] = macros_if;
-ls["if"] = function(node, indent) { return "if (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
-ls["else"] = function(node, indent) { return ls_block(node, indent) };
+function ls_condcasecurried(indent) {
+    function result(node) {
+        if (node[0] === "else") {
+            return ls_block(node, indent);
+        } else {
+            return "if (" + lightscript(node[0], indent) + ") " + ls_block(node, indent);
+        };
+    };
+    return result;
+};
 function ls_cond(node, indent) {
-    return array_join(map(lightscript_curried(indent), tail(node)), " else ");
+    return array_join(map(ls_condcasecurried(indent), tail(node)), " else ");
 };
 ls["cond"] = ls_cond;
 //

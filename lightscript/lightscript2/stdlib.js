@@ -85,11 +85,12 @@ function get(obj, id, default_value) {
     return obj[id] || default_value;
 }
 function cons(obj, arr) {
-    var result = arr;
+    var result = arr.slice(0);
     result.unshift(obj);
     return result;
 }
-function assert() {
+function assert(ok) {
+    if(!ok) throw "ASSERT ERROR";
 }
 STRING_TYPE = get_type("")
 

@@ -1,6 +1,6 @@
 load("stdlib.js");
 //
-// Defines
+//  Defines
 //
 var IDENTIFIER = " id ";
 var STRING = " string ";
@@ -8,7 +8,7 @@ var NUMBER = " num ";
 var COMMENT = " comment ";
 var PAREN = " paren ";
 //
-// Tokeniser
+//  Tokeniser
 //
 var c = " ";
 var str = "";
@@ -89,7 +89,7 @@ function next_token() {
     };
 };
 //
-// General pretty printing utilities
+//  General pretty printing utilities
 //
 function nspace(n) {
     var i = 0;
@@ -129,7 +129,7 @@ function pp_infixr(prettyprinter, name) {
     return result;
 };
 //
-// LightScript pretty printer
+//  LightScript pretty printer
 //
 var ls = {};
 function ls_tail(node, indent, str) {
@@ -176,7 +176,7 @@ function lightscript_curried(indent) {
     return function(node) { return lightscript(node, indent) };
 };
 //
-// Operator constructors
+//  Operator constructors
 //
 var bp = {};
 var led = {};
@@ -201,7 +201,6 @@ function infix(id, prio, name) {
     ls[name] = ls_infix(id);
 };
 function swapinfix(id, prio, name) {
-    name = name;
     bp[id] = prio;
     led[id] = function(left, token) { return [name, parse(prio), left] };
     ls[name] = ls_infix(name);
@@ -234,8 +233,8 @@ var prefix2 = function _(id) {
     nud[id] = function() { return [id, parse(), parse()] };
     ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
 };
-/////////////////////////////////////////
-// Parser
+//
+//  Parser
 //
 function default_nud(o) {
     return cons(IDENTIFIER, o);
@@ -262,9 +261,9 @@ function parse(rbp) {
     return left;
 };
 //
-// Syntax definitions
+//  Syntax definitions
 //
-// Definition of operator precedence and type
+//  Definition of operator precedence and type
 //
 function is_separator(c) {
     return string_contains(";,:", c);
@@ -279,7 +278,7 @@ function macros_call(node) {
 };
 macros["call"] = macros_call;
 //
-// Standard binary operators
+// 
 infixlist("[", "]", 600, "get");
 function ls_get(node, indent) {
     if (len(node) === 3) {
@@ -291,12 +290,14 @@ function ls_get(node, indent) {
 ls["get"] = ls_get;
 //
 // Standard binary operators
+//
 infix("*", 500);
 infix("%", 500);
 infix("/", 500);
 infix("+", 400);
 //
 // [- a ?b?]
+//
 infix("-", 400);
 prefix("-");
 function ls_sub(node, indent) {
@@ -391,17 +392,20 @@ function ls_table(node, indent) {
 };
 ls["table"] = ls_table;
 list("[", "]", "array");
-map(prefix, ["var", "return", "!"]);
+map(prefix, ["return", "!"]);
 // [while condition body...]
 map(prefix2, ["while"]);
 function macros_while(node) {
     var result = cons("while", node[2]);
-    assert(node[0] === "table");
+    assert(node[2][0] === "table");
     result[1] = node[1];
     return result;
 };
 macros["while"] = macros_while;
 ls["while"] = function(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
+// [var ...]
+list("var", ";", "var");
+ls["var"] = function(node, indent) { return "var " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
 prefix2("function");
@@ -412,8 +416,10 @@ function macros_function(node) {
     if (is_string(result[1])) {
         result[1] = [PAREN, result[1]];
     };
-    if (len(result) === 3 && result[1][0] === PAREN) {
-        result[0] = "\\";
+    if (result[1][0] === PAREN) {
+        assert(len(result) === 3);
+        result[0] = "lambda";
+        result[1][0] = "args";
         if (result[2][0] === "return") {
             result[2] = result[2][1];
         };
@@ -422,7 +428,7 @@ function macros_function(node) {
 };
 macros["function"] = macros_function;
 ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
-ls["\\"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
+ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
@@ -459,19 +465,15 @@ function ls_string(node) {
 };
 ls[STRING] = ls_string;
 // 
-// Comments
+//  Comments
 //
 passthrough(COMMENT);
 ls[COMMENT] = function(node) { return "//" + node[1] };
-// List pretty printer
+//
+//  List pretty printer
+//
 function yolan(list, acc, indent) {
-    var str;
-    var i;
-    var escape;
-    var seppos;
-    var first;
-    var sep;
-    var length;
+    var str, i, escape, seppos, first, sep, length;
     if (! acc) {
         acc = [];
         yolan(list, acc, 1);
@@ -501,7 +503,7 @@ function yolan(list, acc, indent) {
         return len(str);
     };
     if (list[0] === COMMENT) {
-        array_push(acc, "; " + list[1]);
+        array_push(acc, ";" + list[1]);
         return 1000;
     };
     array_push(acc, "[");
@@ -540,8 +542,8 @@ function yolan(list, acc, indent) {
 token = next_token();
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
-        //        print(uneval(t));
-        //        print(yolan(t));
+        //print("\n--------------\n" +uneval(t));
+        //print("\n" + yolan(t));
         var lineend;
         if (t[0] === COMMENT) {
             lineend = "";

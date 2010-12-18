@@ -7,6 +7,7 @@ var STRING = " string ";
 var NUMBER = " num ";
 var COMMENT = " comment ";
 var PAREN = " paren ";
+var CURLY = "dict";
 //
 //  Tokeniser
 //
@@ -221,12 +222,15 @@ function javascript(node, indent) {
 function javascript_curried(indent) {
     return function(node) { return javascript(node, indent) };
 };
-//  Operator constructors
+//
+//   Operator constructors
 //
 var bp = {};
 var led = {};
 var nud = {};
+//
 // utility functions
+//
 function readlist(acc, endsymb) {
     while (token[0] !== endsymb && token !== EOF) {
         var t = parse();
@@ -237,7 +241,9 @@ function readlist(acc, endsymb) {
     token = next_token();
     return acc;
 };
+//
 // syntax constructors
+//
 function infix(id, prio, name) {
     name = name || id;
     bp[id] = prio;
@@ -322,10 +328,7 @@ function is_separator(c) {
 //
 infixlist("(", ")", 600, "call");
 function macros_call(node) {
-    if (is_string(node[1])) {
-        node = tail(node);
-    };
-    return node;
+    return tail(node);
 };
 macros["call"] = macros_call;
 //
@@ -335,6 +338,7 @@ function ls_get(node, indent) {
     if (len(node) === 3) {
         return lightscript(node[1], indent) + "[" + lightscript(node[2], indent) + "]";
     } else {
+        assert(len(node) === 4);
         return lightscript(cons("call", node), indent);
     };
 };
@@ -380,7 +384,7 @@ infixr("||", 200, "or");
 prefix2("if");
 infixr("else", 200);
 function untable(obj) {
-    if (obj[0] === "table") {
+    if (obj[0] === CURLY) {
         return tail(obj);
     } else {
         return [obj];
@@ -388,7 +392,7 @@ function untable(obj) {
 };
 function macros_if(obj) {
     var result;
-    if (obj[2][0] === "table") {
+    if (obj[2][0] === CURLY) {
         result = ["cond", obj[2]];
         result[1][0] = obj[1];
     } else if (obj[2][0] === "else") {
@@ -432,7 +436,9 @@ function macros_paren(obj) {
 macros[PAREN] = macros_paren;
 //
 infix("=", 100, "set");
-list("{", "}", "table");
+//
+// table
+list("{", "}", CURLY);
 function ls_table(node, indent) {
     var acc = [];
     var i = 1;
@@ -450,14 +456,14 @@ function ls_table(node, indent) {
         return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
     };
 };
-ls["table"] = ls_table;
+ls[CURLY] = ls_table;
 list("[", "]", "array");
 map(prefix, ["return", "!"]);
 // [while condition body...]
 map(prefix2, ["while"]);
 function macros_while(node) {
     var result = cons("while", node[2]);
-    assert(node[2][0] === "table");
+    assert(node[2][0] === CURLY);
     result[1] = node[1];
     return result;
 };
@@ -471,7 +477,7 @@ ls["var"] = function(node, indent) { return "var " + array_join(map(lightscript_
 prefix2("function");
 function macros_function(node) {
     var result = cons("define", node[2]);
-    assert(node[2][0] === "table");
+    assert(node[2][0] === CURLY);
     result[1] = node[1];
     if (is_string(result[1])) {
         result[1] = [PAREN, result[1]];

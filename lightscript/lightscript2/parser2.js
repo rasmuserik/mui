@@ -173,7 +173,7 @@ function lightscript(node, indent) {
     return get(ls, node[0], ls_default)(node, indent);
 };
 function lightscript_curried(indent) {
-    return function _(node) { return lightscript(node, indent) };
+    return function(node) { return lightscript(node, indent) };
 };
 //
 // Operator constructors
@@ -197,42 +197,42 @@ function infix(id, prio, name) {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
-    led[id] = function _(left, token) { return [name, left, parse(prio)] };
+    led[id] = function(left, token) { return [name, left, parse(prio)] };
     ls[name] = ls_infix(id);
 };
 function swapinfix(id, prio, name) {
     name = name;
     bp[id] = prio;
-    led[id] = function _(left, token) { return [name, parse(prio), left] };
+    led[id] = function(left, token) { return [name, parse(prio), left] };
     ls[name] = ls_infix(name);
 };
 function infixr(id, prio, name) {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
-    led[id] = function _(left, token) { return [name, left, parse(prio - 1)] };
+    led[id] = function(left, token) { return [name, left, parse(prio - 1)] };
     ls[name] = ls_infixr(id);
 };
 function infixlist(id, endsymb, prio, name) {
     bp[id] = prio;
-    led[id] = function _(left, token) { return readlist([name, left], endsymb) };
-    ls[name] = function _(node, indent) { return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb };
+    led[id] = function(left, token) { return readlist([name, left], endsymb) };
+    ls[name] = function(node, indent) { return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb };
 };
 function list(id, endsymb, name) {
-    nud[id] = function _() { return readlist([name], endsymb) };
-    ls[name] = function _(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
+    nud[id] = function() { return readlist([name], endsymb) };
+    ls[name] = function(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
 };
 function passthrough(id) {
-    nud[id] = function _(token) { return token };
-    ls[id] = function _(node, indent) { return node[len(node) - 1] };
+    nud[id] = function(token) { return token };
+    ls[id] = function(node, indent) { return node[len(node) - 1] };
 };
 function prefix(id) {
-    nud[id] = function _() { return [id, parse()] };
-    ls[id] = function _(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
+    nud[id] = function() { return [id, parse()] };
+    ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
 };
 var prefix2 = function _(id) {
-    nud[id] = function _() { return [id, parse(), parse()] };
-    ls[id] = function _(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
+    nud[id] = function() { return [id, parse(), parse()] };
+    ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
 };
 /////////////////////////////////////////
 // Parser
@@ -352,8 +352,8 @@ function macros_if(obj) {
     return result;
 };
 macros["if"] = macros_if;
-ls["if"] = function _(node, indent) { return "if (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
-ls["else"] = function _(node, indent) { return ls_block(node, indent) };
+ls["if"] = function(node, indent) { return "if (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
+ls["else"] = function(node, indent) { return ls_block(node, indent) };
 function ls_cond(node, indent) {
     return array_join(map(lightscript_curried(indent), tail(node)), " else ");
 };
@@ -401,7 +401,7 @@ function macros_while(node) {
     return result;
 };
 macros["while"] = macros_while;
-ls["while"] = function _(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
+ls["while"] = function(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
 prefix2("function");
@@ -410,10 +410,10 @@ function macros_function(node) {
     assert(node[2][0] === "table");
     result[1] = node[1];
     if (is_string(result[1])) {
-        result[1] = cons(PAREN, result[1]);
+        result[1] = [PAREN, result[1]];
     };
-    if (len(result) === 3 && (result[1][0] === "_" || result[1][0] === PAREN)) {
-        result[0] = "lambda";
+    if (len(result) === 3 && result[1][0] === PAREN) {
+        result[0] = "\\";
         if (result[2][0] === "return") {
             result[2] = result[2][1];
         };
@@ -421,15 +421,15 @@ function macros_function(node) {
     return result;
 };
 macros["function"] = macros_function;
-ls["define"] = function _(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
-ls["lambda"] = function _(node, indent) { return "function _(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
+ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
+ls["\\"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
 //
 // 
 passthrough(IDENTIFIER);
-macros[IDENTIFIER] = function _(obj) { return obj[1] };
+macros[IDENTIFIER] = function(obj) { return obj[1] };
 // String literals
 //
 passthrough(STRING);
@@ -462,7 +462,7 @@ ls[STRING] = ls_string;
 // Comments
 //
 passthrough(COMMENT);
-ls[COMMENT] = function _(node) { return "//" + node[1] };
+ls[COMMENT] = function(node) { return "//" + node[1] };
 // List pretty printer
 function yolan(list, acc, indent) {
     var str;
@@ -540,8 +540,8 @@ function yolan(list, acc, indent) {
 token = next_token();
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
-        //print(uneval(t));
-        //print(yolan(t));
+        //        print(uneval(t));
+        //        print(yolan(t));
         var lineend;
         if (t[0] === COMMENT) {
             lineend = "";

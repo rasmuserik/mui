@@ -88,9 +88,8 @@ function next_token() {
     };
 };
 //
-// LightScript pretty printer
+// General pretty printing utilities
 //
-var ls = {};
 function nspace(n) {
     var i = 0;
     var result = "";
@@ -100,17 +99,13 @@ function nspace(n) {
     };
     return result;
 };
-function ls_tail(node, indent, str) {
-    node = tail(node);
-    return array_join(map(function _(node) { return lightscript(node, indent) }, node), str);
-};
-function ls_infix(name) {
+function pp_infix(prettyprinter, name) {
     function result(node, indent) {
-        var left = lightscript(node[1], indent);
+        var left = prettyprinter(node[1], indent);
         if (get(bp, node[1][0], 1000) < bp[name]) {
             left = "(" + left + ")";
         };
-        var right = lightscript(node[2], indent);
+        var right = prettyprinter(node[2], indent);
         if (get(bp, node[2][0], 1000) <= bp[name]) {
             right = "(" + right + ")";
         };
@@ -118,19 +113,32 @@ function ls_infix(name) {
     };
     return result;
 };
-function ls_infixr(name) {
+function pp_infixr(prettyprinter, name) {
     function result(node, indent) {
-        var left = lightscript(node[1], indent);
+        var left = prettyprinter(node[1], indent);
         if (get(bp, node[1][0], 1000) <= bp[name]) {
             left = "(" + left + ")";
         };
-        var right = lightscript(node[2], indent);
+        var right = prettyprinter(node[2], indent);
         if (get(bp, node[2][0], 1000) < bp[name]) {
             right = "(" + right + ")";
         };
         return left + " " + name + " " + right;
     };
     return result;
+};
+//
+// LightScript pretty printer
+//
+var ls = {};
+function ls_tail(node, indent, str) {
+    return array_join(map(lightscript_curried(indent), tail(node)), str);
+};
+function ls_infix(name) {
+    return pp_infix(lightscript, name);
+};
+function ls_infixr(name) {
+    return pp_infixr(lightscript, name);
 };
 function ls_block(node, indent) {
     var acc = "{";
@@ -163,7 +171,10 @@ function lightscript(node, indent) {
     indent = indent || 0;
     return get(ls, node[0], ls_default)(node, indent);
 };
-///////////////////////////////////////
+function lightscript_curried(indent) {
+    return function _(node) { return lightscript(node, indent) };
+};
+//
 // Operator constructors
 //
 var bp = {};
@@ -342,11 +353,8 @@ function macros_if(obj) {
 macros["if"] = macros_if;
 ls["if"] = function _(node, indent) { return "if (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
 ls["else"] = function _(node, indent) { return ls_block(node, indent) };
-function indent_lightscript(indent) {
-    return function _(node) { return lightscript(node, indent) };
-};
 function ls_cond(node, indent) {
-    return array_join(map(indent_lightscript(indent), tail(node)), " else ");
+    return array_join(map(lightscript_curried(indent), tail(node)), " else ");
 };
 ls["cond"] = ls_cond;
 //
@@ -402,7 +410,6 @@ function macros_function(node) {
     result[1] = node[1];
     if (len(result) === 3 && result[1][0] === "_") {
         result[0] = "lambda";
-        result[1] = tail(result[1]);
         if (result[2][0] === "return") {
             result[2] = result[2][1];
         };
@@ -411,7 +418,7 @@ function macros_function(node) {
 };
 macros["function"] = macros_function;
 ls["define"] = function _(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
-ls["lambda"] = function _(node, indent) { return "function _(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
+ls["lambda"] = function _(node, indent) { return "function _(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);

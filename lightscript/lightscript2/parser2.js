@@ -6,6 +6,7 @@ var IDENTIFIER = " id ";
 var STRING = " string ";
 var NUMBER = " num ";
 var COMMENT = " comment ";
+var PAREN = " paren ";
 //
 // Tokeniser
 //
@@ -315,7 +316,7 @@ infix("<=", 300);
 infix("<", 300);
 swapinfix(">=", 300, "<=");
 swapinfix(">", 300, "<");
-infixr("&&", 200, "and");
+infixr("&&", 250, "and");
 infixr("||", 200, "or");
 //
 // [cond [if cond1 body1...] [if cond2 body2...] ... [else bodyelse...]]
@@ -359,7 +360,7 @@ function ls_cond(node, indent) {
 ls["cond"] = ls_cond;
 //
 //
-list("(", ")", "paren");
+list("(", ")", PAREN);
 function macros_paren(obj) {
     if (len(obj) === 2) {
         return obj[1];
@@ -367,7 +368,7 @@ function macros_paren(obj) {
         return obj;
     };
 };
-macros["paren"] = macros_paren;
+macros[PAREN] = macros_paren;
 //
 infix("=", 100, "set");
 list("{", "}", "table");
@@ -408,7 +409,10 @@ function macros_function(node) {
     var result = cons("define", node[2]);
     assert(node[2][0] === "table");
     result[1] = node[1];
-    if (len(result) === 3 && result[1][0] === "_") {
+    if (is_string(result[1])) {
+        result[1] = cons(PAREN, result[1]);
+    };
+    if (len(result) === 3 && (result[1][0] === "_" || result[1][0] === PAREN)) {
         result[0] = "lambda";
         if (result[2][0] === "return") {
             result[2] = result[2][1];

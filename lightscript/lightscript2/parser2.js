@@ -479,7 +479,7 @@ function macros_function(node) {
     if (result[1][0] === PAREN) {
         assert(len(result) === 3);
         result[0] = "lambda";
-        result[1][0] = "args";
+        result[1] = tail(result[1]);
         if (result[2][0] === "return") {
             result[2] = result[2][1];
         };
@@ -488,7 +488,7 @@ function macros_function(node) {
 };
 macros["function"] = macros_function;
 ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
-ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
+ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);

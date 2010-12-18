@@ -457,10 +457,31 @@ function ls_table(node, indent) {
     };
 };
 ls[CURLY] = ls_table;
+function js_table(node, indent) {
+    var acc = [];
+    var i = 1;
+    var ind = indent + 1;
+    while (i < len(node)) {
+        if (is_string(node[i])) {
+            node[i] = [STRING, node[i][0]];
+        };
+        array_push(acc, javascript(node[i], ind) + ": " + javascript(node[i + 1], ind));
+        i = i + 2;
+    };
+    if (len(acc) === 0) {
+        return "{}";
+    } else {
+        return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
+    };
+};
+js[CURLY] = js_table;
+// [array arrayelements...]
 list("[", "]", "array");
-map(prefix, ["return", "!"]);
+// [return expr]
+prefix("return");
+prefix("!");
 // [while condition body...]
-map(prefix2, ["while"]);
+prefix2("while");
 function macros_while(node) {
     var result = cons("while", node[2]);
     assert(node[2][0] === CURLY);
@@ -469,9 +490,13 @@ function macros_while(node) {
 };
 macros["while"] = macros_while;
 ls["while"] = function(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
+js["while"] = function(node, indent) { return "while (" + javascript(node[1], indent) + ") " + js_block(tail(node), indent) };
+//
 // [var ...]
 list("var", ";", "var");
 ls["var"] = function(node, indent) { return "var " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
+js["var"] = function(node, indent) { return "var " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
+//
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
 prefix2("function");
@@ -495,15 +520,17 @@ function macros_function(node) {
 macros["function"] = macros_function;
 ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
 ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
+js["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent) };
+js["lambda"] = function(node, indent) { return "function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }" };
 //
 // 
-map(passthrough, [";", ":", ",", ")", "}", "(eof)", IDENTIFIER, NUMBER]);
+map(passthrough, [";", ":", ",", ")", "}", "(eof)", NUMBER]);
 //
 // 
 passthrough(IDENTIFIER);
 macros[IDENTIFIER] = function(obj) { return obj[1] };
-// String literals
 //
+// String literals
 passthrough(STRING);
 function ls_string(node) {
     var str = node[1];
@@ -530,11 +557,12 @@ function ls_string(node) {
     return array_join(result, "");
 };
 ls[STRING] = ls_string;
+js[STRING] = ls["STRING"];
 // 
 //  Comments
-//
 passthrough(COMMENT);
 ls[COMMENT] = function(node) { return "//" + node[1] };
+js[COMMENT] = ls[COMMENT];
 //
 //  List pretty printer
 //

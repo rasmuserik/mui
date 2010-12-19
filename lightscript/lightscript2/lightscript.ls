@@ -121,33 +121,21 @@ function nspace(n) {
     };
     return result;
 };
-function pp_infix(prettyprinter, name) {
-    function result(node, indent) {
-        var left = prettyprinter(node[1], indent);
-        if (get(bp, node[1][0], 1000) < bp[name]) {
-            left = "(" + left + ")";
-        };
-        var right = prettyprinter(node[2], indent);
-        if (get(bp, node[2][0], 1000) <= bp[name]) {
-            right = "(" + right + ")";
-        };
-        return left + " " + name + " " + right;
+// print node, with parenthesis if needed
+// ie. if the head of the node has lower priority than prio
+// then add parenthesis around it.
+function pp_prio(prettyprinter, node, indent, prio) {
+    if (get(bp, node[0], 1000) < prio) {
+        return "(" + prettyprinter(node, indent) + ")";
+    } else {
+        return prettyprinter(node, indent);
     };
-    return result;
+};
+function pp_infix(prettyprinter, name) {
+    return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name]) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name] + 1) };
 };
 function pp_infixr(prettyprinter, name) {
-    function result(node, indent) {
-        var left = prettyprinter(node[1], indent);
-        if (get(bp, node[1][0], 1000) <= bp[name]) {
-            left = "(" + left + ")";
-        };
-        var right = prettyprinter(node[2], indent);
-        if (get(bp, node[2][0], 1000) < bp[name]) {
-            right = "(" + right + ")";
-        };
-        return left + " " + name + " " + right;
-    };
-    return result;
+    return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name] + 1) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name]) };
 };
 //
 //  LightScript pretty printer

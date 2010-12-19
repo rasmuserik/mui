@@ -285,7 +285,7 @@ function prefix(id) {
     ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
     js[id] = function(node, indent) { return node[0] + " " + javascript(node[1], indent) };
 };
-var prefix2 = function _(id) {
+function prefix2(id) {
     nud[id] = function() { return [id, parse(), parse()] };
     ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
     js[id] = function(node, indent) { return node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent) };

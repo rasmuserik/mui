@@ -51,11 +51,23 @@ function put(obj, key, val) {
 function map(fn, list) {
     return list.map(fn);
 }
+function fold(fn, list, acc) {
+    var i = 0;
+    while(i < len(list)) {
+        acc = fn(list[i], acc);
+        i = i + 1;
+    }
+    return acc;
+}
 function array_join(list, sep) {
     return list.join(sep);
 }
 function array_push(list, elem) {
-    return list.push(elem);
+    list.push(elem);
+}
+function push(list, elem) {
+    list.push(elem);
+    return list;
 }
 function string_contains(str, c) {
     return str.indexOf(c) != -1;

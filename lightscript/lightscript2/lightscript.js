@@ -96,7 +96,6 @@ function next_token() {
 //  General pretty printing utilities
 //
 function string_literal(str) {
-    var result = ["\""];
     var escape = {
         "\n": "\\n",
         "\"": "\\\"",
@@ -104,17 +103,11 @@ function string_literal(str) {
         "\\": "\\\\",
         "\r": "\\r"
     };
-    var i = 0;
-    while (i < len(str)) {
-        array_push(result, get(escape, str[i], str[i]));
-        i = i + 1;
-    };
-    array_push(result, "\"");
-    return array_join(result, "");
+    return array_join(push(fold(function(elem, acc) { return push(acc, get(escape, elem, elem)) }, str, ["\""]), "\""), "");
 };
 function nspace(n) {
-    var i = 0;
     var result = "";
+    var i = 0;
     while (i < n) {
         result = result + "    ";
         i = i + 1;

@@ -140,6 +140,13 @@ function pp_block(prettyprinter, node, indent) {
     };
     return fold(_, tail(node), "{") + "\n" + nspace(indent) + "}";
 };
+function pp_default(pp, node, indent) {
+    if (is_string(node)) {
+        return node;
+    } else {
+        return pp(node[0], indent) + "(" + array_join(fold(function(elem, acc) { return push(acc, pp(elem, indent)) }, tail(node), []), ", ") + ")";
+    };
+};
 //
 //  LightScript pretty printer
 //
@@ -157,17 +164,7 @@ function ls_block(node, indent) {
     return pp_block(lightscript, node, indent);
 };
 function ls_default(node, indent) {
-    if (is_string(node)) {
-        return node;
-    } else {
-        var acc = [];
-        var i = 1;
-        while (i < len(node)) {
-            array_push(acc, lightscript(node[i], indent));
-            i = i + 1;
-        };
-        return lightscript(node[0], indent) + "(" + array_join(acc, ", ") + ")";
-    };
+    return pp_default(lightscript, node, indent);
 };
 function lightscript(node, indent) {
     indent = indent || 0;
@@ -194,17 +191,7 @@ function js_block(node, indent) {
     return pp_block(javascript, node, indent);
 };
 function js_default(node, indent) {
-    if (is_string(node)) {
-        return node;
-    } else {
-        var acc = [];
-        var i = 1;
-        while (i < len(node)) {
-            array_push(acc, javascript(node[i], indent));
-            i = i + 1;
-        };
-        return javascript(node[0], indent) + "(" + array_join(acc, ", ") + ")";
-    };
+    return pp_default(javascript, node, indent);
 };
 function javascript(node, indent) {
     indent = indent || 0;

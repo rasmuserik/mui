@@ -17,9 +17,11 @@ function char_is(str) {
     return string_contains(str, c);
 };
 function skip_char() {
+    global c;
     c = getch();
 };
 function push_char() {
+    global str;
     str = str + c;
     skip_char();
 };
@@ -33,6 +35,7 @@ var num = "1234567890";
 var alphanum = num + "_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
 var EOF = ["(eof)"];
 function next_token() {
+    global c;
     while (char_is(" \n\r\t")) {
         skip_char();
     };

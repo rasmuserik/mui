@@ -519,6 +519,9 @@ js["while"] = function(node, indent) { return "while (" + javascript(node[1], in
 list("var", ";", "var");
 ls["var"] = function(node, indent) { return "var " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
 js["var"] = function(node, indent) { return "var " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
+list("global", ";", "global");
+ls["global"] = function(node, indent) { return "global " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
+js["global"] = function(node, indent) { return "//global " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
 //
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
@@ -657,6 +660,18 @@ function yolan(list, acc, indent) {
 // dump
 //
 token = next_token();
+var prettyprinter;
+if (arguments[0] === "lightscript") {
+    prettyprinter = lightscript;
+} else if (arguments[0] === "yolan") {
+    prettyprinter = yolan;
+} else if (arguments[0] === "javascript") {
+    prettyprinter = javascript;
+} else {
+    print("expects \"lightscript\", \"yolan\", or \"javascript\" as first argument");
+    print("using lightscript as default");
+    prettyprinter = lightscript;
+};
 while ((t = parse()) !== EOF) {
     if (uneval(t) !== uneval([";"])) {
         //print("\n--------------\n" +uneval(t));
@@ -667,6 +682,8 @@ while ((t = parse()) !== EOF) {
         } else {
             lineend = ";";
         };
-        print(javascript(t) + lineend);
+        print(prettyprinter(t) + lineend);
     };
 };
+var a, b, c;
+//global a, b, c;

@@ -1,1 +1,1 @@
-git commit -m "lightscript2: $*"
+./run.sh && git commit -m "lightscript2: $*"

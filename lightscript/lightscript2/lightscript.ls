@@ -95,6 +95,23 @@ function next_token() {
 //
 //  General pretty printing utilities
 //
+function string_literal(str) {
+    var result = ["\""];
+    var escape = {
+        "\n": "\\n",
+        "\"": "\\\"",
+        "\t": "\\t",
+        "\\": "\\\\",
+        "\r": "\\r"
+    };
+    var i = 0;
+    while (i < len(str)) {
+        array_push(result, get(escape, str[i], str[i]));
+        i = i + 1;
+    };
+    array_push(result, "\"");
+    return array_join(result, "");
+};
 function nspace(n) {
     var i = 0;
     var result = "";
@@ -561,31 +578,7 @@ macros[IDENTIFIER] = function(obj) { return obj[1] };
 //
 // String literals
 passthrough(STRING);
-function ls_string(node) {
-    var str = node[1];
-    var result = ["\""];
-    var i = 0;
-    while (i < len(str)) {
-        var c = str[i];
-        if (c === "\\") {
-            array_push(result, "\\\\");
-        } else if (c === "\n") {
-            array_push(result, "\\n");
-        } else if (c === "\r") {
-            array_push(result, "\\r");
-        } else if (c === "\t") {
-            array_push(result, "\\t");
-        } else if (c === "\"") {
-            array_push(result, "\\\"");
-        } else {
-            array_push(result, c);
-        };
-        i = i + 1;
-    };
-    array_push(result, "\"");
-    return array_join(result, "");
-};
-ls[STRING] = ls_string;
+ls[STRING] = function(node) { return string_literal(node[1]) };
 js[STRING] = ls[STRING];
 // 
 //  Comments
@@ -596,7 +589,7 @@ js[COMMENT] = ls[COMMENT];
 //  List pretty printer
 //
 function yolan(list, acc, indent) {
-    var str, i, escape, seppos, first, sep, length;
+    var str, i, seppos, first, sep, length;
     if (! acc) {
         acc = [];
         yolan(list, acc, 1);
@@ -608,22 +601,7 @@ function yolan(list, acc, indent) {
         array_push(acc, list[1]);
         return 1;
     } else if (list[0] === STRING) {
-        escape = {
-            "\n": "\\n",
-            "'": "\\'",
-            "\t": "\\t",
-            "\\": "\\\\",
-            "\r": "\\r"
-        };
-        str = list[1];
-        array_push(acc, "'");
-        i = 0;
-        while (i < len(str)) {
-            array_push(acc, escape[str[i]] || str[i]);
-            i = i + 1;
-        };
-        array_push(acc, "'");
-        return len(str);
+        return len(string_literal(list[1]));
     };
     if (list[0] === COMMENT) {
         array_push(acc, ";" + list[1]);

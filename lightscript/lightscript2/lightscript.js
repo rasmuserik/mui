@@ -130,6 +130,16 @@ function pp_infix(prettyprinter, name) {
 function pp_infixr(prettyprinter, name) {
     return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name] + 1) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name]) };
 };
+function pp_block(prettyprinter, node, indent) {
+    function _(elem, acc) {
+        acc = acc + "\n" + nspace(indent + 1) + prettyprinter(elem, indent + 1);
+        if (elem[0] !== COMMENT) {
+            acc = acc + ";";
+        };
+        return acc;
+    };
+    return fold(_, tail(node), "{") + "\n" + nspace(indent) + "}";
+};
 //
 //  LightScript pretty printer
 //
@@ -144,17 +154,7 @@ function ls_infixr(name) {
     return pp_infixr(lightscript, name);
 };
 function ls_block(node, indent) {
-    var acc = "{";
-    var i = 1;
-    var prevcomment = false;
-    while (i < len(node)) {
-        acc = acc + "\n" + nspace(indent + 1) + lightscript(node[i], indent + 1);
-        if (node[i][0] !== COMMENT) {
-            acc = acc + ";";
-        };
-        i = i + 1;
-    };
-    return acc + "\n" + nspace(indent) + "}";
+    return pp_block(lightscript, node, indent);
 };
 function ls_default(node, indent) {
     if (is_string(node)) {
@@ -191,17 +191,7 @@ function js_infixr(name) {
     return pp_infixr(javascript, name);
 };
 function js_block(node, indent) {
-    var acc = "{";
-    var i = 1;
-    var prevcomment = false;
-    while (i < len(node)) {
-        acc = acc + "\n" + nspace(indent + 1) + javascript(node[i], indent + 1);
-        if (node[i][0] !== COMMENT) {
-            acc = acc + ";";
-        };
-        i = i + 1;
-    };
-    return acc + "\n" + nspace(indent) + "}";
+    return pp_block(javascript, node, indent);
 };
 function js_default(node, indent) {
     if (is_string(node)) {

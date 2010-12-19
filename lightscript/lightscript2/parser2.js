@@ -343,6 +343,15 @@ function ls_get(node, indent) {
     };
 };
 ls["get"] = ls_get;
+function js_get(node, indent) {
+    if (len(node) === 3) {
+        return javascript(node[1], indent) + "[" + javascript(node[2], indent) + "]";
+    } else {
+        assert(len(node) === 4);
+        return javascript(cons("call", node), indent);
+    };
+};
+js["get"] = js_get;
 //
 // Standard binary operators
 //
@@ -423,6 +432,20 @@ function ls_cond(node, indent) {
     return array_join(map(ls_condcasecurried(indent), tail(node)), " else ");
 };
 ls["cond"] = ls_cond;
+function js_condcasecurried(indent) {
+    function result(node) {
+        if (node[0] === "else") {
+            return js_block(node, indent);
+        } else {
+            return "if (" + javascript(node[0], indent) + ") " + js_block(node, indent);
+        };
+    };
+    return result;
+};
+function js_cond(node, indent) {
+    return array_join(map(js_condcasecurried(indent), tail(node)), " else ");
+};
+js["cond"] = js_cond;
 //
 //
 list("(", ")", PAREN);
@@ -557,7 +580,7 @@ function ls_string(node) {
     return array_join(result, "");
 };
 ls[STRING] = ls_string;
-js[STRING] = ls["STRING"];
+js[STRING] = ls[STRING];
 // 
 //  Comments
 passthrough(COMMENT);
@@ -600,7 +623,7 @@ function yolan(list, acc, indent) {
         array_push(acc, ";" + list[1]);
         return 1000;
     };
-    array_push(acc, "[");
+    array_push(acc, "(");
     length = 1;
     seppos = [];
     first = true;
@@ -614,12 +637,12 @@ function yolan(list, acc, indent) {
         first = false;
         i = i + 1;
     };
-    if (110 - indent < length) {
+    if (80 - indent < length) {
         sep = strjoin("\n", nspace(indent));
     } else {
         sep = " ";
     };
-    i = 1;
+    i = 0;
     while (i < len(seppos)) {
         put(acc, seppos[i], sep);
         i = i + 1;
@@ -627,7 +650,7 @@ function yolan(list, acc, indent) {
     if (is_array(list[len(list) - 1]) && list[len(list) - 1][0] === COMMENT) {
         array_push(acc, strjoin("\n", nspace(indent - 1)));
     };
-    array_push(acc, "]");
+    array_push(acc, ")");
     return length;
 };
 //
@@ -644,6 +667,6 @@ while ((t = parse()) !== EOF) {
         } else {
             lineend = ";";
         };
-        print(lightscript(t) + lineend);
+        print(javascript(t) + lineend);
     };
 };

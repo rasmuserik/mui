@@ -25,6 +25,7 @@ function push_char() {
     skip_char();
 };
 function pop_string() {
+    global str;
     var result = str;
     str = "";
     return result;
@@ -236,6 +237,7 @@ var nud = {};
 // utility functions
 //
 function readlist(acc, endsymb) {
+    global token;
     while (token[0] !== endsymb && token !== EOF) {
         var t = parse();
         if (! is_separator(t[0])) {
@@ -281,11 +283,13 @@ function list(id, endsymb, name) {
     nud[id] = function() { return readlist([name], endsymb) };
     ls[name] = function(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
     js[name] = function(node, indent) { return id + js_tail(node, indent, ", ") + endsymb };
+    py[name] = function(node, indent) { return id + py_tail(node, indent, ", ") + endsymb };
 };
 function passthrough(id) {
     nud[id] = function(token) { return token };
     ls[id] = function(node, indent) { return node[len(node) - 1] };
     js[id] = function(node, indent) { return node[len(node) - 1] };
+    py[id] = function(node, indent) { return node[len(node) - 1] };
 };
 function prefix(id) {
     nud[id] = function() { return [id, parse()] };
@@ -313,6 +317,7 @@ function apply_macros(obj) {
     return get(macros, obj[0], identity)(obj);
 };
 function parse(rbp) {
+    global token;
     rbp = rbp || 0;
     var t = token;
     token = next_token();
@@ -435,7 +440,7 @@ function macros_if(obj) {
             result = ["cond", cons(obj[1], untable(obj[2][1])), cons("else", untable(obj[2][2]))];
         };
     } else {
-        print("ERROR: " + uneval(obj));
+        print("ERROR: " + str(obj));
         assert(false);
     };
     return result;
@@ -607,7 +612,7 @@ ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + 
 ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 js["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent) };
 js["lambda"] = function(node, indent) { return "function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }" };
-py["define"] = function(node, indent) { return "def " + node[1][0] + "(" + array_join(map(python, tail(node[1])), ", ") + "):" + py_block(tail(node), indent) };
+py["define"] = function(node, indent) { return "def " + node[1][0] + "(" + array_join(map(function(s) { return s + " = None" }, map(python, tail(node[1]))), ", ") + "):" + py_block(tail(node), indent) };
 function py_lambda(node, indent) {
     if (len(node[1]) === 0) {
         node[1] = ["__PYTHON_LAMBDA_NOARGS__"];
@@ -676,7 +681,7 @@ function yolan(list, acc, indent) {
     };
     i = 0;
     while (i < len(seppos)) {
-        put(acc, seppos[i], sep);
+        acc[seppos[i]] = sep;
         i = i + 1;
     };
     if (is_array(list[len(list) - 1]) && list[len(list) - 1][0] === COMMENT) {
@@ -689,7 +694,7 @@ function yolan(list, acc, indent) {
 // dump
 //
 token = next_token();
-var prettyprinter;
+var prettyprinter = undefined;
 if (arguments[0] === "lightscript") {
     prettyprinter = lightscript;
 } else if (arguments[0] === "yolan") {
@@ -698,7 +703,7 @@ if (arguments[0] === "lightscript") {
     print("load(\"stdlib.js\");");
     prettyprinter = javascript;
 } else if (arguments[0] === "python") {
-    print("from stdlib.js import *");
+    print("from stdlib import *");
     prettyprinter = python;
 } else {
     print("expects \"lightscript\", \"yolan\", or \"javascript\" as first argument");
@@ -708,7 +713,7 @@ if (arguments[0] === "lightscript") {
 //
 t = parse();
 while (t !== EOF) {
-    if (uneval(t) !== uneval([";"])) {
+    if (t[0] !== ";") {
         //print("\n--------------\n" +uneval(t));
         //print("\n" + yolan(t));
         var lineend;

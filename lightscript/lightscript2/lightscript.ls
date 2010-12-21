@@ -471,60 +471,29 @@ infix("=", 100, "set");
 //
 // table
 list("{", "}", CURLY);
-function ls_table(node, indent) {
-    var acc = [];
-    var i = 1;
-    var ind = indent + 1;
-    while (i < len(node)) {
-        if (is_string(node[i])) {
-            node[i] = [STRING, node[i][0]];
+function pp_table(prettyprinter) {
+    function result(node, indent) {
+        var acc = [];
+        var i = 1;
+        var ind = indent + 1;
+        while (i < len(node)) {
+            if (is_string(node[i])) {
+                node[i] = [STRING, node[i][0]];
+            };
+            array_push(acc, prettyprinter(node[i], ind) + ": " + prettyprinter(node[i + 1], ind));
+            i = i + 2;
         };
-        array_push(acc, lightscript(node[i], ind) + ": " + lightscript(node[i + 1], ind));
-        i = i + 2;
-    };
-    if (len(acc) === 0) {
-        return "{}";
-    } else {
-        return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
-    };
-};
-ls[CURLY] = ls_table;
-function js_table(node, indent) {
-    var acc = [];
-    var i = 1;
-    var ind = indent + 1;
-    while (i < len(node)) {
-        if (is_string(node[i])) {
-            node[i] = [STRING, node[i][0]];
+        if (len(acc) === 0) {
+            return "{}";
+        } else {
+            return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
         };
-        array_push(acc, javascript(node[i], ind) + ": " + javascript(node[i + 1], ind));
-        i = i + 2;
     };
-    if (len(acc) === 0) {
-        return "{}";
-    } else {
-        return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
-    };
+    return result;
 };
-js[CURLY] = js_table;
-function py_table(node, indent) {
-    var acc = [];
-    var i = 1;
-    var ind = indent + 1;
-    while (i < len(node)) {
-        if (is_string(node[i])) {
-            node[i] = [STRING, node[i][0]];
-        };
-        array_push(acc, python(node[i], ind) + ": " + python(node[i + 1], ind));
-        i = i + 2;
-    };
-    if (len(acc) === 0) {
-        return "{}";
-    } else {
-        return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
-    };
-};
-py[CURLY] = py_table;
+ls[CURLY] = pp_table(lightscript);
+js[CURLY] = pp_table(javascript);
+py[CURLY] = pp_table(python);
 // [array arrayelements...]
 list("[", "]", "array");
 // [return expr]

@@ -201,6 +201,33 @@ function javascript_curried(indent) {
     return function(node) { return javascript(node, indent) };
 };
 //
+// Python pretty printer
+//
+//
+var py = {};
+function py_tail(node, indent, str) {
+    return array_join(map(python_curried(indent), tail(node)), str);
+};
+function py_infix(name) {
+    return pp_infix(python, name);
+};
+function py_infixr(name) {
+    return pp_infixr(python, name);
+};
+function py_block(node, indent) {
+    return fold(function(elem, acc) { return acc + "\n" + nspace(indent + 1) + python(elem, indent + 1) }, tail(node), "");
+};
+function py_default(node, indent) {
+    return pp_default(python, node, indent);
+};
+function python(node, indent) {
+    indent = indent || 0;
+    return get(py, node[0], py_default)(node, indent);
+};
+function python_curried(indent) {
+    return function(node) { return python(node, indent) };
+};
+//
 //   Operator constructors
 //
 var bp = {};
@@ -229,6 +256,7 @@ function infix(id, prio, name) {
     led[id] = function(left, token) { return [name, left, parse(prio)] };
     ls[name] = ls_infix(id);
     js[name] = js_infix(id);
+    py[name] = py_infix(id);
 };
 function swapinfix(id, prio, name) {
     bp[id] = prio;
@@ -241,12 +269,14 @@ function infixr(id, prio, name) {
     led[id] = function(left, token) { return [name, left, parse(prio - 1)] };
     ls[name] = ls_infixr(id);
     js[name] = js_infixr(id);
+    py[name] = py_infixr(id);
 };
 function infixlist(id, endsymb, prio, name) {
     bp[id] = prio;
     led[id] = function(left, token) { return readlist([name, left], endsymb) };
     ls[name] = function(node, indent) { return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb };
     js[name] = function(node, indent) { return javascript(node[1], indent) + id + js_tail(tail(node), indent, ", ") + endsymb };
+    py[name] = function(node, indent) { return python(node[1], indent) + id + py_tail(tail(node), indent, ", ") + endsymb };
 };
 function list(id, endsymb, name) {
     nud[id] = function() { return readlist([name], endsymb) };
@@ -262,11 +292,13 @@ function prefix(id) {
     nud[id] = function() { return [id, parse()] };
     ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
     js[id] = function(node, indent) { return node[0] + " " + javascript(node[1], indent) };
+    py[id] = function(node, indent) { return node[0] + " " + python(node[1], indent) };
 };
 function prefix2(id) {
     nud[id] = function() { return [id, parse(), parse()] };
     ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
     js[id] = function(node, indent) { return node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent) };
+    py[id] = function(node, indent) { return node[0] + " (" + python(node[1], indent) + ") " + py_block(node[2], indent) };
 };
 //
 //  Parser
@@ -330,6 +362,15 @@ function js_get(node, indent) {
     };
 };
 js["get"] = js_get;
+function py_get(node, indent) {
+    if (len(node) === 3) {
+        return python(node[1], indent) + "[" + python(node[2], indent) + "]";
+    } else {
+        assert(len(node) === 4);
+        return python(cons("call", node), indent);
+    };
+};
+py["get"] = py_get;
 //
 // Standard binary operators
 //
@@ -354,17 +395,22 @@ function pp_sub(pp) {
 };
 ls["-"] = pp_sub(lightscript);
 js["-"] = pp_sub(javascript);
+py["-"] = pp_sub(python);
 //
 infix("==", 300, "===");
 infix("===", 300, "eq?");
+py["eq?"] = pp_infix(python, "==");
 infix("!=", 300, "!==");
 infix("!==", 300, "neq?");
+py["neq?"] = pp_infix(python, "!=");
 infix("<=", 300);
 infix("<", 300);
 swapinfix(">=", 300, "<=");
 swapinfix(">", 300, "<");
 infixr("&&", 250, "and");
+py["and"] = pp_infixr(python, "and");
 infixr("||", 200, "or");
+py["or"] = pp_infixr(python, "or");
 //
 // [cond [cond1 body1...] [cond2 body2...] ... [else bodyelse...]]
 //
@@ -424,6 +470,20 @@ function js_cond(node, indent) {
     return array_join(map(js_condcasecurried(indent), tail(node)), " else ");
 };
 js["cond"] = js_cond;
+function py_condcasecurried(indent) {
+    function result(node) {
+        if (node[0] === "else") {
+            return "se:" + py_block(node, indent);
+        } else {
+            return "if " + python(node[0], indent) + ":" + py_block(node, indent);
+        };
+    };
+    return result;
+};
+function py_cond(node, indent) {
+    return array_join(map(py_condcasecurried(indent), tail(node)), "\n" + nspace(indent) + "el");
+};
+py["cond"] = py_cond;
 //
 //
 list("(", ")", PAREN);
@@ -476,11 +536,30 @@ function js_table(node, indent) {
     };
 };
 js[CURLY] = js_table;
+function py_table(node, indent) {
+    var acc = [];
+    var i = 1;
+    var ind = indent + 1;
+    while (i < len(node)) {
+        if (is_string(node[i])) {
+            node[i] = [STRING, node[i][0]];
+        };
+        array_push(acc, python(node[i], ind) + ": " + python(node[i + 1], ind));
+        i = i + 2;
+    };
+    if (len(acc) === 0) {
+        return "{}";
+    } else {
+        return "{\n" + nspace(ind) + array_join(acc, ",\n" + nspace(ind)) + "\n" + nspace(indent) + "}";
+    };
+};
+py[CURLY] = py_table;
 // [array arrayelements...]
 list("[", "]", "array");
 // [return expr]
 prefix("return");
 prefix("!");
+py["!"] = function(elem, indent) { return "not " + python(elem[1], indent) };
 // [while condition body...]
 prefix2("while");
 function macros_while(node) {
@@ -492,14 +571,17 @@ function macros_while(node) {
 macros["while"] = macros_while;
 ls["while"] = function(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
 js["while"] = function(node, indent) { return "while (" + javascript(node[1], indent) + ") " + js_block(tail(node), indent) };
+py["while"] = function(node, indent) { return "while " + python(node[1], indent) + ":" + py_block(tail(node), indent) };
 //
 // [var ...]
 list("var", ";", "var");
 ls["var"] = function(node, indent) { return "var " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
 js["var"] = function(node, indent) { return "var " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
+py["var"] = function(node, indent) { return array_join(map(python_curried(indent), tail(node)), "\n" + nspace(indent)) };
 list("global", ";", "global");
 ls["global"] = function(node, indent) { return "global " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
 js["global"] = function(node, indent) { return "//global " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
+py["global"] = function(node, indent) { return "global " + array_join(map(python_curried(indent), tail(node)), ", ") };
 //
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
@@ -526,6 +608,14 @@ ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + 
 ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 js["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent) };
 js["lambda"] = function(node, indent) { return "function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }" };
+py["define"] = function(node, indent) { return "def " + node[1][0] + "(" + array_join(map(python, tail(node[1])), ", ") + "):" + py_block(tail(node), indent) };
+function py_lambda(node, indent) {
+    if (len(node[1]) === 0) {
+        node[1] = ["__PYTHON_LAMBDA_NOARGS__"];
+    };
+    return "lambda (" + array_join(map(python, node[1]), ", ") + ") : (" + python(node[2], indent) + ")";
+};
+py["lambda"] = py_lambda;
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", NUMBER]);
@@ -538,16 +628,17 @@ macros[IDENTIFIER] = function(obj) { return obj[1] };
 passthrough(STRING);
 ls[STRING] = function(node) { return string_literal(node[1]) };
 js[STRING] = ls[STRING];
+py[STRING] = ls[STRING];
 // 
 //  Comments
 passthrough(COMMENT);
 ls[COMMENT] = function(node) { return "//" + node[1] };
 js[COMMENT] = ls[COMMENT];
+py[COMMENT] = function(node) { return "#" + node[1] };
 //
 //  List pretty printer
 //
 function yolan(list, acc, indent) {
-    var str, i, seppos, first, sep, length;
     if (! acc) {
         acc = [];
         yolan(list, acc, 1);
@@ -566,10 +657,10 @@ function yolan(list, acc, indent) {
         return 1000;
     };
     array_push(acc, "(");
-    length = 1;
-    seppos = [];
-    first = true;
-    i = 0;
+    var length = 1;
+    var seppos = [];
+    var first = true;
+    var i = 0;
     while (i < len(list)) {
         if (! first) {
             array_push(seppos, len(acc));
@@ -580,9 +671,9 @@ function yolan(list, acc, indent) {
         i = i + 1;
     };
     if (80 - indent < length) {
-        sep = strjoin("\n", nspace(indent));
+        var sep = strjoin("\n", nspace(indent));
     } else {
-        sep = " ";
+        var sep = " ";
     };
     i = 0;
     while (i < len(seppos)) {
@@ -605,24 +696,31 @@ if (arguments[0] === "lightscript") {
 } else if (arguments[0] === "yolan") {
     prettyprinter = yolan;
 } else if (arguments[0] === "javascript") {
+    print("load(\"stdlib.js\");");
     prettyprinter = javascript;
+} else if (arguments[0] === "python") {
+    print("from stdlib.js import *");
+    prettyprinter = python;
 } else {
     print("expects \"lightscript\", \"yolan\", or \"javascript\" as first argument");
     print("using lightscript as default");
     prettyprinter = lightscript;
 };
-while ((t = parse()) !== EOF) {
+//
+t = parse();
+while (t !== EOF) {
     if (uneval(t) !== uneval([";"])) {
         //print("\n--------------\n" +uneval(t));
         //print("\n" + yolan(t));
         var lineend;
-        if (t[0] === COMMENT) {
+        if (t[0] === COMMENT || prettyprinter === python) {
             lineend = "";
         } else {
             lineend = ";";
         };
         print(prettyprinter(t) + lineend);
     };
+    t = parse();
 };
 var a, b, c;
 //global a, b, c;

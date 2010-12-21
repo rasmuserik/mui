@@ -349,33 +349,20 @@ macros["call"] = macros_call;
 //
 // 
 infixlist("[", "]", 600, "get");
-function ls_get(node, indent) {
-    if (len(node) === 3) {
-        return lightscript(node[1], indent) + "[" + lightscript(node[2], indent) + "]";
-    } else {
-        assert(len(node) === 4);
-        return lightscript(cons("call", node), indent);
+function pp_get(prettyprinter) {
+    function result(node, indent) {
+        if (len(node) === 3) {
+            return prettyprinter(node[1], indent) + "[" + prettyprinter(node[2], indent) + "]";
+        } else {
+            assert(len(node) === 4);
+            return prettyprinter(cons("call", node), indent);
+        };
     };
+    return result;
 };
-ls["get"] = ls_get;
-function js_get(node, indent) {
-    if (len(node) === 3) {
-        return javascript(node[1], indent) + "[" + javascript(node[2], indent) + "]";
-    } else {
-        assert(len(node) === 4);
-        return javascript(cons("call", node), indent);
-    };
-};
-js["get"] = js_get;
-function py_get(node, indent) {
-    if (len(node) === 3) {
-        return python(node[1], indent) + "[" + python(node[2], indent) + "]";
-    } else {
-        assert(len(node) === 4);
-        return python(cons("call", node), indent);
-    };
-};
-py["get"] = py_get;
+ls["get"] = pp_get(lightscript);
+js["get"] = pp_get(javascript);
+py["get"] = pp_get(python);
 //
 // Standard binary operators
 //

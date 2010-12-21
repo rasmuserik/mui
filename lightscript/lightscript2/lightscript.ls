@@ -432,34 +432,18 @@ function macros_if(obj) {
     return result;
 };
 macros["if"] = macros_if;
-function ls_condcasecurried(indent) {
+function pp_condcasecurried(prettyprinter, pp_block, indent) {
     function result(node) {
         if (node[0] === "else") {
-            return ls_block(node, indent);
+            return pp_block(node, indent);
         } else {
-            return "if (" + lightscript(node[0], indent) + ") " + ls_block(node, indent);
+            return "if (" + prettyprinter(node[0], indent) + ") " + pp_block(node, indent);
         };
     };
     return result;
 };
-function ls_cond(node, indent) {
-    return array_join(map(ls_condcasecurried(indent), tail(node)), " else ");
-};
-ls["cond"] = ls_cond;
-function js_condcasecurried(indent) {
-    function result(node) {
-        if (node[0] === "else") {
-            return js_block(node, indent);
-        } else {
-            return "if (" + javascript(node[0], indent) + ") " + js_block(node, indent);
-        };
-    };
-    return result;
-};
-function js_cond(node, indent) {
-    return array_join(map(js_condcasecurried(indent), tail(node)), " else ");
-};
-js["cond"] = js_cond;
+ls["cond"] = function(node, indent) { return array_join(map(pp_condcasecurried(lightscript, ls_block, indent), tail(node)), " else ") };
+js["cond"] = function(node, indent) { return array_join(map(pp_condcasecurried(javascript, js_block, indent), tail(node)), " else ") };
 function py_condcasecurried(indent) {
     function result(node) {
         if (node[0] === "else") {
@@ -470,10 +454,7 @@ function py_condcasecurried(indent) {
     };
     return result;
 };
-function py_cond(node, indent) {
-    return array_join(map(py_condcasecurried(indent), tail(node)), "\n" + nspace(indent) + "el");
-};
-py["cond"] = py_cond;
+py["cond"] = function(node, indent) { return array_join(map(py_condcasecurried(indent), tail(node)), "\n" + nspace(indent) + "el") };
 //
 //
 list("(", ")", PAREN);

@@ -6,7 +6,7 @@ def getch():
         return undefined
     return c
 
-def tail(list, n):
+def tail(list, n = None):
     if n == None:
         n = 1
     return list[n:]
@@ -49,4 +49,4 @@ def cons(obj, arr):
     result.extend(arr)
     return result
 
-arguments = sys.argv
+arguments = sys.argv[1:]

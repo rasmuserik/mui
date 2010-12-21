@@ -11,7 +11,7 @@ var CURLY = "dict";
 //  Tokeniser
 //
 var c = " ";
-var str = "";
+var str_acc = "";
 function char_is(str) {
     return string_contains(str, c);
 };
@@ -20,14 +20,14 @@ function skip_char() {
     c = getch();
 };
 function push_char() {
-    global str;
-    str = str + c;
+    global str_acc;
+    str_acc = str_acc + c;
     skip_char();
 };
 function pop_string() {
-    global str;
-    var result = str;
-    str = "";
+    global str_acc;
+    var result = str_acc;
+    str_acc = "";
     return result;
 };
 var symb = "=!<>&|/*+-%";
@@ -36,10 +36,12 @@ var alphanum = num + "_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
 var EOF = ["(eof)"];
 function next_token() {
     global c;
-    while (char_is(" \n\r\t")) {
+    while (c != undefined && char_is(" \n\r\t")) {
         skip_char();
     };
-    if (c === "'" || c === "\"") {
+    if (c === undefined) {
+        return EOF;
+    } else if (c === "'" || c === "\"") {
         var quote = c;
         skip_char();
         while (c !== undefined && c !== quote) {
@@ -85,8 +87,6 @@ function next_token() {
             push_char();
         };
         return [pop_string()];
-    } else if (c === undefined) {
-        return EOF;
     } else {
         push_char();
         return [pop_string()];
@@ -118,7 +118,7 @@ function nspace(n) {
 // ie. if the head of the node has lower priority than prio
 // then add parenthesis around it.
 function pp_prio(prettyprinter, node, indent, prio) {
-    if (get(bp, node[0], 1000) < prio) {
+    if (get(bp, str(node[0]), 1000) < prio) {
         return "(" + prettyprinter(node, indent) + ")";
     } else {
         return prettyprinter(node, indent);
@@ -168,7 +168,7 @@ function ls_default(node, indent) {
 };
 function lightscript(node, indent) {
     indent = indent || 0;
-    return get(ls, node[0], ls_default)(node, indent);
+    return get(ls, str(node[0]), ls_default)(node, indent);
 };
 function lightscript_curried(indent) {
     return function(node) { return lightscript(node, indent) };
@@ -195,7 +195,7 @@ function js_default(node, indent) {
 };
 function javascript(node, indent) {
     indent = indent || 0;
-    return get(js, node[0], js_default)(node, indent);
+    return get(js, str(node[0]), js_default)(node, indent);
 };
 function javascript_curried(indent) {
     return function(node) { return javascript(node, indent) };
@@ -222,7 +222,7 @@ function py_default(node, indent) {
 };
 function python(node, indent) {
     indent = indent || 0;
-    return get(py, node[0], py_default)(node, indent);
+    return get(py, str(node[0]), py_default)(node, indent);
 };
 function python_curried(indent) {
     return function(node) { return python(node, indent) };
@@ -280,7 +280,7 @@ function infixlist(id, endsymb, prio, name) {
     py[name] = function(node, indent) { return python(node[1], indent) + id + py_tail(tail(node), indent, ", ") + endsymb };
 };
 function list(id, endsymb, name) {
-    nud[id] = function() { return readlist([name], endsymb) };
+    nud[id] = function(token) { return readlist([name], endsymb) };
     ls[name] = function(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
     js[name] = function(node, indent) { return id + js_tail(node, indent, ", ") + endsymb };
     py[name] = function(node, indent) { return id + py_tail(node, indent, ", ") + endsymb };
@@ -292,13 +292,13 @@ function passthrough(id) {
     py[id] = function(node, indent) { return node[len(node) - 1] };
 };
 function prefix(id) {
-    nud[id] = function() { return [id, parse()] };
+    nud[id] = function(token) { return [id, parse()] };
     ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
     js[id] = function(node, indent) { return node[0] + " " + javascript(node[1], indent) };
     py[id] = function(node, indent) { return node[0] + " " + python(node[1], indent) };
 };
 function prefix2(id) {
-    nud[id] = function() { return [id, parse(), parse()] };
+    nud[id] = function(token) { return [id, parse(), parse()] };
     ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
     js[id] = function(node, indent) { return node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent) };
     py[id] = function(node, indent) { return node[0] + " (" + python(node[1], indent) + ") " + py_block(node[2], indent) };
@@ -428,9 +428,8 @@ function untable(obj) {
     };
 };
 function macros_if(obj) {
-    var result;
     if (obj[2][0] === CURLY) {
-        result = ["cond", obj[2]];
+        var result = ["cond", obj[2]];
         result[1][0] = obj[1];
     } else if (obj[2][0] === "else") {
         if (obj[2][2][0] === "cond") {
@@ -612,14 +611,8 @@ ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + 
 ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 js["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent) };
 js["lambda"] = function(node, indent) { return "function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }" };
-py["define"] = function(node, indent) { return "def " + node[1][0] + "(" + array_join(map(function(s) { return s + " = None" }, map(python, tail(node[1]))), ", ") + "):" + py_block(tail(node), indent) };
-function py_lambda(node, indent) {
-    if (len(node[1]) === 0) {
-        node[1] = ["__PYTHON_LAMBDA_NOARGS__"];
-    };
-    return "lambda (" + array_join(map(python, node[1]), ", ") + ") : (" + python(node[2], indent) + ")";
-};
-py["lambda"] = py_lambda;
+py["define"] = function(node, indent) { return "def " + node[1][0] + "(" + array_join(map(function(s) { return s + " = None" }, map(python, tail(node[1]))), ", ") + "):" + py_block(tail(node), indent) + "\n" };
+py["lambda"] = function(node, indent) { return "lambda " + array_join(map(python, node[1]), ", ") + " : (" + python(node[2], indent) + ")" };
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", NUMBER]);
@@ -630,15 +623,15 @@ macros[IDENTIFIER] = function(obj) { return obj[1] };
 //
 // String literals
 passthrough(STRING);
-ls[STRING] = function(node) { return string_literal(node[1]) };
+ls[STRING] = function(node, indent) { return string_literal(node[1]) };
 js[STRING] = ls[STRING];
 py[STRING] = ls[STRING];
 // 
 //  Comments
 passthrough(COMMENT);
-ls[COMMENT] = function(node) { return "//" + node[1] };
+ls[COMMENT] = function(node, indent) { return "//" + node[1] };
 js[COMMENT] = ls[COMMENT];
-py[COMMENT] = function(node) { return "#" + node[1] };
+py[COMMENT] = function(node, indent) { return "#" + node[1] };
 //
 //  List pretty printer
 //
@@ -716,15 +709,12 @@ while (t !== EOF) {
     if (t[0] !== ";") {
         //print("\n--------------\n" +uneval(t));
         //print("\n" + yolan(t));
-        var lineend;
         if (t[0] === COMMENT || prettyprinter === python) {
-            lineend = "";
+            var lineend = "";
         } else {
-            lineend = ";";
+            var lineend = ";";
         };
         print(prettyprinter(t) + lineend);
     };
     t = parse();
 };
-var a, b, c;
-//global a, b, c;

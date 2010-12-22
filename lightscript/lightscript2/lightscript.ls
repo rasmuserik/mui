@@ -103,7 +103,7 @@ string_literal(str) = {
         "\\": "\\\\",
         "\r": "\\r"
     };
-    return array_join(push(fold(function(elem, acc) { return push(acc, get(escape, elem, elem)) }, str, ["\""]), "\""), "");
+    return array_join(push(fold((elem, acc) -> push(acc, get(escape, elem, elem)), str, ["\""]), "\""), "");
 };
 nspace(n) = {
     var result = "";
@@ -125,10 +125,10 @@ pp_prio(prettyprinter, node, indent, prio) = {
     };
 };
 pp_infix(prettyprinter, name) = {
-    return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name]) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name] + 1) };
+    return (node, indent) -> pp_prio(prettyprinter, node[1], indent, bp[name]) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name] + 1);
 };
 pp_infixr(prettyprinter, name) = {
-    return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name] + 1) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name]) };
+    return (node, indent) -> pp_prio(prettyprinter, node[1], indent, bp[name] + 1) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name]);
 };
 pp_block(prettyprinter, node, indent) = {
     _(elem, acc) = {
@@ -144,7 +144,7 @@ pp_default(pp, node, indent) = {
     if (is_string(node)) {
         return node;
     } else {
-        return pp(node[0], indent) + "(" + array_join(fold(function(elem, acc) { return push(acc, pp(elem, indent)) }, tail(node), []), ", ") + ")";
+        return pp(node[0], indent) + "(" + array_join(fold((elem, acc) -> push(acc, pp(elem, indent)), tail(node), []), ", ") + ")";
     };
 };
 //
@@ -171,7 +171,7 @@ lightscript(node, indent) = {
     return get(ls, str(node[0]), ls_default)(node, indent);
 };
 lightscript_curried(indent) = {
-    return function(node) { return lightscript(node, indent) };
+    return (node) -> lightscript(node, indent);
 };
 //
 // JavaScript pretty printer
@@ -198,7 +198,7 @@ javascript(node, indent) = {
     return get(js, str(node[0]), js_default)(node, indent);
 };
 javascript_curried(indent) = {
-    return function(node) { return javascript(node, indent) };
+    return (node) -> javascript(node, indent);
 };
 //
 // Python pretty printer
@@ -215,7 +215,7 @@ py_infixr(name) = {
     return pp_infixr(python, name);
 };
 py_block(node, indent) = {
-    return fold(function(elem, acc) { return acc + "\n" + nspace(indent + 1) + python(elem, indent + 1) }, tail(node), "");
+    return fold((elem, acc) -> acc + "\n" + nspace(indent + 1) + python(elem, indent + 1), tail(node), "");
 };
 py_default(node, indent) = {
     return pp_default(python, node, indent);
@@ -225,7 +225,7 @@ python(node, indent) = {
     return get(py, str(node[0]), py_default)(node, indent);
 };
 python_curried(indent) = {
-    return function(node) { return python(node, indent) };
+    return (node) -> python(node, indent);
 };
 //
 //   Operator constructors
@@ -254,54 +254,54 @@ infix(id, prio, name) = {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
-    led[id] = function(left, token) { return [name, left, parse(prio)] };
+    led[id] = (left, token) -> [name, left, parse(prio)];
     ls[name] = ls_infix(id);
     js[name] = js_infix(id);
     py[name] = py_infix(id);
 };
 swapinfix(id, prio, name) = {
     bp[id] = prio;
-    led[id] = function(left, token) { return [name, parse(prio), left] };
+    led[id] = (left, token) -> [name, parse(prio), left];
 };
 infixr(id, prio, name) = {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
-    led[id] = function(left, token) { return [name, left, parse(prio - 1)] };
+    led[id] = (left, token) -> [name, left, parse(prio - 1)];
     ls[name] = ls_infixr(id);
     js[name] = js_infixr(id);
     py[name] = py_infixr(id);
 };
 infixlist(id, endsymb, prio, name) = {
     bp[id] = prio;
-    led[id] = function(left, token) { return readlist([name, left], endsymb) };
-    ls[name] = function(node, indent) { return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb };
-    js[name] = function(node, indent) { return javascript(node[1], indent) + id + js_tail(tail(node), indent, ", ") + endsymb };
-    py[name] = function(node, indent) { return python(node[1], indent) + id + py_tail(tail(node), indent, ", ") + endsymb };
+    led[id] = (left, token) -> readlist([name, left], endsymb);
+    ls[name] = (node, indent) -> lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb;
+    js[name] = (node, indent) -> javascript(node[1], indent) + id + js_tail(tail(node), indent, ", ") + endsymb;
+    py[name] = (node, indent) -> python(node[1], indent) + id + py_tail(tail(node), indent, ", ") + endsymb;
 };
 list(id, endsymb, name) = {
-    nud[id] = function(token) { return readlist([name], endsymb) };
-    ls[name] = function(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
-    js[name] = function(node, indent) { return id + js_tail(node, indent, ", ") + endsymb };
-    py[name] = function(node, indent) { return id + py_tail(node, indent, ", ") + endsymb };
+    nud[id] = (token) -> readlist([name], endsymb);
+    ls[name] = (node, indent) -> id + ls_tail(node, indent, ", ") + endsymb;
+    js[name] = (node, indent) -> id + js_tail(node, indent, ", ") + endsymb;
+    py[name] = (node, indent) -> id + py_tail(node, indent, ", ") + endsymb;
 };
 passthrough(id) = {
-    nud[id] = function(token) { return token };
-    ls[id] = function(node, indent) { return node[len(node) - 1] };
-    js[id] = function(node, indent) { return node[len(node) - 1] };
-    py[id] = function(node, indent) { return node[len(node) - 1] };
+    nud[id] = (token) -> token;
+    ls[id] = (node, indent) -> node[len(node) - 1];
+    js[id] = (node, indent) -> node[len(node) - 1];
+    py[id] = (node, indent) -> node[len(node) - 1];
 };
 prefix(id) = {
-    nud[id] = function(token) { return [id, parse()] };
-    ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
-    js[id] = function(node, indent) { return node[0] + " " + javascript(node[1], indent) };
-    py[id] = function(node, indent) { return node[0] + " " + python(node[1], indent) };
+    nud[id] = (token) -> [id, parse()];
+    ls[id] = (node, indent) -> node[0] + " " + lightscript(node[1], indent);
+    js[id] = (node, indent) -> node[0] + " " + javascript(node[1], indent);
+    py[id] = (node, indent) -> node[0] + " " + python(node[1], indent);
 };
 prefix2(id) = {
-    nud[id] = function(token) { return [id, parse(), parse()] };
-    ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
-    js[id] = function(node, indent) { return node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent) };
-    py[id] = function(node, indent) { return node[0] + " (" + python(node[1], indent) + ") " + py_block(node[2], indent) };
+    nud[id] = (token) -> [id, parse(), parse()];
+    ls[id] = (node, indent) -> node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent);
+    js[id] = (node, indent) -> node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent);
+    py[id] = (node, indent) -> node[0] + " (" + python(node[1], indent) + ") " + py_block(node[2], indent);
 };
 //
 //  Parser
@@ -442,8 +442,8 @@ pp_condcasecurried(prettyprinter, pp_block, indent) = {
     };
     return result;
 };
-ls["cond"] = function(node, indent) { return array_join(map(pp_condcasecurried(lightscript, ls_block, indent), tail(node)), " else ") };
-js["cond"] = function(node, indent) { return array_join(map(pp_condcasecurried(javascript, js_block, indent), tail(node)), " else ") };
+ls["cond"] = (node, indent) -> array_join(map(pp_condcasecurried(lightscript, ls_block, indent), tail(node)), " else ");
+js["cond"] = (node, indent) -> array_join(map(pp_condcasecurried(javascript, js_block, indent), tail(node)), " else ");
 py_condcasecurried(indent) = {
     result(node) = {
         if (node[0] === "else") {
@@ -454,7 +454,7 @@ py_condcasecurried(indent) = {
     };
     return result;
 };
-py["cond"] = function(node, indent) { return array_join(map(py_condcasecurried(indent), tail(node)), "\n" + nspace(indent) + "el") };
+py["cond"] = (node, indent) -> array_join(map(py_condcasecurried(indent), tail(node)), "\n" + nspace(indent) + "el");
 //
 //
 list("(", ")", PAREN);
@@ -512,7 +512,7 @@ list("[", "]", "array");
 // [return expr]
 prefix("return");
 prefix("!");
-py["!"] = function(elem, indent) { return "not " + python(elem[1], indent) };
+py["!"] = (elem, indent) -> "not " + python(elem[1], indent);
 // [while condition body...]
 prefix2("while");
 macros_while(node) = {
@@ -522,19 +522,19 @@ macros_while(node) = {
     return result;
 };
 macros["while"] = macros_while;
-ls["while"] = function(node, indent) { return "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent) };
-js["while"] = function(node, indent) { return "while (" + javascript(node[1], indent) + ") " + js_block(tail(node), indent) };
-py["while"] = function(node, indent) { return "while " + python(node[1], indent) + ":" + py_block(tail(node), indent) };
+ls["while"] = (node, indent) -> "while (" + lightscript(node[1], indent) + ") " + ls_block(tail(node), indent);
+js["while"] = (node, indent) -> "while (" + javascript(node[1], indent) + ") " + js_block(tail(node), indent);
+py["while"] = (node, indent) -> "while " + python(node[1], indent) + ":" + py_block(tail(node), indent);
 //
 // [var ...]
 list("var", ";", "var");
-ls["var"] = function(node, indent) { return "var " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
-js["var"] = function(node, indent) { return "var " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
-py["var"] = function(node, indent) { return array_join(map(python_curried(indent), tail(node)), "\n" + nspace(indent)) };
+ls["var"] = (node, indent) -> "var " + array_join(map(lightscript_curried(indent), tail(node)), ", ");
+js["var"] = (node, indent) -> "var " + array_join(map(javascript_curried(indent), tail(node)), ", ");
+py["var"] = (node, indent) -> array_join(map(python_curried(indent), tail(node)), "\n" + nspace(indent));
 list("global", ";", "global");
-ls["global"] = function(node, indent) { return "global " + array_join(map(lightscript_curried(indent), tail(node)), ", ") };
-js["global"] = function(node, indent) { return "//global " + array_join(map(javascript_curried(indent), tail(node)), ", ") };
-py["global"] = function(node, indent) { return "global " + array_join(map(python_curried(indent), tail(node)), ", ") };
+ls["global"] = (node, indent) -> "global " + array_join(map(lightscript_curried(indent), tail(node)), ", ");
+js["global"] = (node, indent) -> "//global " + array_join(map(javascript_curried(indent), tail(node)), ", ");
+py["global"] = (node, indent) -> "global " + array_join(map(python_curried(indent), tail(node)), ", ");
 //
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
@@ -549,7 +549,7 @@ macros_function(node) = {
     if (result[1][0] === PAREN) {
         assert(len(result) === 3);
         result[0] = "lambda";
-        result[1] = tail(result[1]);
+        //result[1] = tail(result[1]);
         if (result[2][0] === "return") {
             result[2] = result[2][1];
         };
@@ -557,31 +557,41 @@ macros_function(node) = {
     return result;
 };
 macros["function"] = macros_function;
-ls["define"] = function(node, indent) { return node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") = " + ls_block(tail(node), indent) };
-ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
-js["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent) };
-js["lambda"] = function(node, indent) { return "function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }" };
-py["define"] = function(node, indent) { return "def " + node[1][0] + "(" + array_join(map(function(s) { return s + " = None" }, map(python, tail(node[1]))), ", ") + "):" + py_block(tail(node), indent) + "\n" };
-py["lambda"] = function(node, indent) { return "lambda " + array_join(map(python, node[1]), ", ") + " : (" + python(node[2], indent) + ")" };
+infixr("->", 150, "lambda");
+macros_lambda(node) = {
+    if (is_string(node[1])) {
+        node[1] = [PAREN, node[1]];
+    };
+    assert(node[1][0] === PAREN);
+    return node;
+};
+a = (x) -> x * 2;
+macros["lambda"] = macros_lambda;
+ls["define"] = (node, indent) -> node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") = " + ls_block(tail(node), indent);
+//ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
+js["define"] = (node, indent) -> "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent);
+js["lambda"] = (node, indent) -> "function(" + array_join(map(javascript, tail(node[1])), ", ") + ") { return " + javascript(node[2], indent) + " }";
+py["define"] = (node, indent) -> "def " + node[1][0] + "(" + array_join(map((s) -> s + " = None", map(python, tail(node[1]))), ", ") + "):" + py_block(tail(node), indent) + "\n";
+py["lambda"] = (node, indent) -> "lambda " + array_join(map(python, tail(node[1])), ", ") + " : (" + python(node[2], indent) + ")";
 //
 // 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", NUMBER]);
 //
 // 
 passthrough(IDENTIFIER);
-macros[IDENTIFIER] = function(obj) { return obj[1] };
+macros[IDENTIFIER] = (obj) -> obj[1];
 //
 // String literals
 passthrough(STRING);
-ls[STRING] = function(node, indent) { return string_literal(node[1]) };
+ls[STRING] = (node, indent) -> string_literal(node[1]);
 js[STRING] = ls[STRING];
 py[STRING] = ls[STRING];
 // 
 //  Comments
 passthrough(COMMENT);
-ls[COMMENT] = function(node, indent) { return "//" + node[1] };
+ls[COMMENT] = (node, indent) -> "//" + node[1];
 js[COMMENT] = ls[COMMENT];
-py[COMMENT] = function(node, indent) { return "#" + node[1] };
+py[COMMENT] = (node, indent) -> "#" + node[1];
 //
 //  List pretty printer
 //

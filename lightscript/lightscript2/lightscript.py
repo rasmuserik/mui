@@ -519,18 +519,27 @@ def macros_function(node = None):
     if result[1][0] == PAREN:
         assert(len(result) == 3)
         result[0] = "lambda"
-        result[1] = tail(result[1])
+        #result[1] = tail(result[1]);
         if result[2][0] == "return":
             result[2] = result[2][1]
     return result
 
 macros["function"] = macros_function
+infixr("->", 150, "lambda")
+def macros_lambda(node = None):
+    if is_string(node[1]):
+        node[1] = [PAREN, node[1]]
+    assert(node[1][0] == PAREN)
+    return node
+
+a = lambda x : (x * 2)
+macros["lambda"] = macros_lambda
 ls["define"] = lambda node, indent : (node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") = " + ls_block(tail(node), indent))
-ls["lambda"] = lambda node, indent : ("function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }")
+#ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 js["define"] = lambda node, indent : ("function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent))
-js["lambda"] = lambda node, indent : ("function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }")
+js["lambda"] = lambda node, indent : ("function(" + array_join(map(javascript, tail(node[1])), ", ") + ") { return " + javascript(node[2], indent) + " }")
 py["define"] = lambda node, indent : ("def " + node[1][0] + "(" + array_join(map(lambda s : (s + " = None"), map(python, tail(node[1]))), ", ") + "):" + py_block(tail(node), indent) + "\n")
-py["lambda"] = lambda node, indent : ("lambda " + array_join(map(python, node[1]), ", ") + " : (" + python(node[2], indent) + ")")
+py["lambda"] = lambda node, indent : ("lambda " + array_join(map(python, tail(node[1])), ", ") + " : (" + python(node[2], indent) + ")")
 #
 # 
 map(passthrough, [";", ":", ",", ")", "}", "(eof)", NUMBER])

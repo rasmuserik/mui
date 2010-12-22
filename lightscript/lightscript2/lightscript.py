@@ -442,7 +442,19 @@ def macros_paren(obj = None):
 
 macros[PAREN] = macros_paren
 #
+# Assignment
 infix("=", 100, "set")
+def macros_set(obj = None):
+    if is_string(obj[1]):
+        return obj
+    elif obj[1][0] == "get":
+        # put
+        return obj
+    else:
+        obj[0] = "function"
+        return macros["function"](obj)
+
+macros["set"] = macros_set
 #
 # table
 list("{", "}", CURLY)
@@ -513,7 +525,7 @@ def macros_function(node = None):
     return result
 
 macros["function"] = macros_function
-ls["define"] = lambda node, indent : ("function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent))
+ls["define"] = lambda node, indent : (node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") = " + ls_block(tail(node), indent))
 ls["lambda"] = lambda node, indent : ("function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }")
 js["define"] = lambda node, indent : ("function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent))
 js["lambda"] = lambda node, indent : ("function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }")

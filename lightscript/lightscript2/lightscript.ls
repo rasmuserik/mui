@@ -1,40 +1,40 @@
 //
 //  Defines
 //
-var IDENTIFIER = " id ";
-var STRING = " string ";
-var NUMBER = " num ";
-var COMMENT = " comment ";
-var PAREN = " paren ";
-var CURLY = "dict";
+IDENTIFIER = " id ";
+STRING = " string ";
+NUMBER = " num ";
+COMMENT = " comment ";
+PAREN = " paren ";
+CURLY = "dict";
 //
 //  Tokeniser
 //
-var c = " ";
-var str_acc = "";
-function char_is(str) {
+c = " ";
+str_acc = "";
+char_is(str) = {
     return string_contains(str, c);
 };
-function skip_char() {
+skip_char() = {
     global c;
     c = getch();
 };
-function push_char() {
+push_char() = {
     global str_acc;
     str_acc = str_acc + c;
     skip_char();
 };
-function pop_string() {
+pop_string() = {
     global str_acc;
     var result = str_acc;
     str_acc = "";
     return result;
 };
-var symb = "=!<>&|/*+-%";
-var num = "1234567890";
-var alphanum = num + "_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
-var EOF = ["(eof)"];
-function next_token() {
+symb = "=!<>&|/*+-%";
+num = "1234567890";
+alphanum = num + "_qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
+EOF = ["(eof)"];
+next_token() = {
     global c;
     while (c != undefined && char_is(" \n\r\t")) {
         skip_char();
@@ -95,7 +95,7 @@ function next_token() {
 //
 //  General pretty printing utilities
 //
-function string_literal(str) {
+string_literal(str) = {
     var escape = {
         "\n": "\\n",
         "\"": "\\\"",
@@ -105,7 +105,7 @@ function string_literal(str) {
     };
     return array_join(push(fold(function(elem, acc) { return push(acc, get(escape, elem, elem)) }, str, ["\""]), "\""), "");
 };
-function nspace(n) {
+nspace(n) = {
     var result = "";
     var i = 0;
     while (i < n) {
@@ -117,21 +117,21 @@ function nspace(n) {
 // print node, with parenthesis if needed
 // ie. if the head of the node has lower priority than prio
 // then add parenthesis around it.
-function pp_prio(prettyprinter, node, indent, prio) {
+pp_prio(prettyprinter, node, indent, prio) = {
     if (get(bp, str(node[0]), 1000) < prio) {
         return "(" + prettyprinter(node, indent) + ")";
     } else {
         return prettyprinter(node, indent);
     };
 };
-function pp_infix(prettyprinter, name) {
+pp_infix(prettyprinter, name) = {
     return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name]) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name] + 1) };
 };
-function pp_infixr(prettyprinter, name) {
+pp_infixr(prettyprinter, name) = {
     return function(node, indent) { return pp_prio(prettyprinter, node[1], indent, bp[name] + 1) + " " + name + " " + pp_prio(prettyprinter, node[2], indent, bp[name]) };
 };
-function pp_block(prettyprinter, node, indent) {
-    function _(elem, acc) {
+pp_block(prettyprinter, node, indent) = {
+    _(elem, acc) = {
         acc = acc + "\n" + nspace(indent + 1) + prettyprinter(elem, indent + 1);
         if (elem[0] !== COMMENT) {
             acc = acc + ";";
@@ -140,7 +140,7 @@ function pp_block(prettyprinter, node, indent) {
     };
     return fold(_, tail(node), "{") + "\n" + nspace(indent) + "}";
 };
-function pp_default(pp, node, indent) {
+pp_default(pp, node, indent) = {
     if (is_string(node)) {
         return node;
     } else {
@@ -150,93 +150,93 @@ function pp_default(pp, node, indent) {
 //
 //  LightScript pretty printer
 //
-var ls = {};
-function ls_tail(node, indent, str) {
+ls = {};
+ls_tail(node, indent, str) = {
     return array_join(map(lightscript_curried(indent), tail(node)), str);
 };
-function ls_infix(name) {
+ls_infix(name) = {
     return pp_infix(lightscript, name);
 };
-function ls_infixr(name) {
+ls_infixr(name) = {
     return pp_infixr(lightscript, name);
 };
-function ls_block(node, indent) {
+ls_block(node, indent) = {
     return pp_block(lightscript, node, indent);
 };
-function ls_default(node, indent) {
+ls_default(node, indent) = {
     return pp_default(lightscript, node, indent);
 };
-function lightscript(node, indent) {
+lightscript(node, indent) = {
     indent = indent || 0;
     return get(ls, str(node[0]), ls_default)(node, indent);
 };
-function lightscript_curried(indent) {
+lightscript_curried(indent) = {
     return function(node) { return lightscript(node, indent) };
 };
 //
 // JavaScript pretty printer
 //
 //
-var js = {};
-function js_tail(node, indent, str) {
+js = {};
+js_tail(node, indent, str) = {
     return array_join(map(javascript_curried(indent), tail(node)), str);
 };
-function js_infix(name) {
+js_infix(name) = {
     return pp_infix(javascript, name);
 };
-function js_infixr(name) {
+js_infixr(name) = {
     return pp_infixr(javascript, name);
 };
-function js_block(node, indent) {
+js_block(node, indent) = {
     return pp_block(javascript, node, indent);
 };
-function js_default(node, indent) {
+js_default(node, indent) = {
     return pp_default(javascript, node, indent);
 };
-function javascript(node, indent) {
+javascript(node, indent) = {
     indent = indent || 0;
     return get(js, str(node[0]), js_default)(node, indent);
 };
-function javascript_curried(indent) {
+javascript_curried(indent) = {
     return function(node) { return javascript(node, indent) };
 };
 //
 // Python pretty printer
 //
 //
-var py = {};
-function py_tail(node, indent, str) {
+py = {};
+py_tail(node, indent, str) = {
     return array_join(map(python_curried(indent), tail(node)), str);
 };
-function py_infix(name) {
+py_infix(name) = {
     return pp_infix(python, name);
 };
-function py_infixr(name) {
+py_infixr(name) = {
     return pp_infixr(python, name);
 };
-function py_block(node, indent) {
+py_block(node, indent) = {
     return fold(function(elem, acc) { return acc + "\n" + nspace(indent + 1) + python(elem, indent + 1) }, tail(node), "");
 };
-function py_default(node, indent) {
+py_default(node, indent) = {
     return pp_default(python, node, indent);
 };
-function python(node, indent) {
+python(node, indent) = {
     indent = indent || 0;
     return get(py, str(node[0]), py_default)(node, indent);
 };
-function python_curried(indent) {
+python_curried(indent) = {
     return function(node) { return python(node, indent) };
 };
 //
 //   Operator constructors
 //
-var bp = {};
-var led = {};
-var nud = {};
+bp = {};
+led = {};
+nud = {};
 //
 // utility functions
 //
-function readlist(acc, endsymb) {
+readlist(acc, endsymb) = {
     global token;
     while (token[0] !== endsymb && token !== EOF) {
         var t = parse();
@@ -250,7 +250,7 @@ function readlist(acc, endsymb) {
 //
 // syntax constructors
 //
-function infix(id, prio, name) {
+infix(id, prio, name) = {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
@@ -259,11 +259,11 @@ function infix(id, prio, name) {
     js[name] = js_infix(id);
     py[name] = py_infix(id);
 };
-function swapinfix(id, prio, name) {
+swapinfix(id, prio, name) = {
     bp[id] = prio;
     led[id] = function(left, token) { return [name, parse(prio), left] };
 };
-function infixr(id, prio, name) {
+infixr(id, prio, name) = {
     name = name || id;
     bp[id] = prio;
     bp[name] = prio;
@@ -272,32 +272,32 @@ function infixr(id, prio, name) {
     js[name] = js_infixr(id);
     py[name] = py_infixr(id);
 };
-function infixlist(id, endsymb, prio, name) {
+infixlist(id, endsymb, prio, name) = {
     bp[id] = prio;
     led[id] = function(left, token) { return readlist([name, left], endsymb) };
     ls[name] = function(node, indent) { return lightscript(node[1], indent) + id + ls_tail(tail(node), indent, ", ") + endsymb };
     js[name] = function(node, indent) { return javascript(node[1], indent) + id + js_tail(tail(node), indent, ", ") + endsymb };
     py[name] = function(node, indent) { return python(node[1], indent) + id + py_tail(tail(node), indent, ", ") + endsymb };
 };
-function list(id, endsymb, name) {
+list(id, endsymb, name) = {
     nud[id] = function(token) { return readlist([name], endsymb) };
     ls[name] = function(node, indent) { return id + ls_tail(node, indent, ", ") + endsymb };
     js[name] = function(node, indent) { return id + js_tail(node, indent, ", ") + endsymb };
     py[name] = function(node, indent) { return id + py_tail(node, indent, ", ") + endsymb };
 };
-function passthrough(id) {
+passthrough(id) = {
     nud[id] = function(token) { return token };
     ls[id] = function(node, indent) { return node[len(node) - 1] };
     js[id] = function(node, indent) { return node[len(node) - 1] };
     py[id] = function(node, indent) { return node[len(node) - 1] };
 };
-function prefix(id) {
+prefix(id) = {
     nud[id] = function(token) { return [id, parse()] };
     ls[id] = function(node, indent) { return node[0] + " " + lightscript(node[1], indent) };
     js[id] = function(node, indent) { return node[0] + " " + javascript(node[1], indent) };
     py[id] = function(node, indent) { return node[0] + " " + python(node[1], indent) };
 };
-function prefix2(id) {
+prefix2(id) = {
     nud[id] = function(token) { return [id, parse(), parse()] };
     ls[id] = function(node, indent) { return node[0] + " (" + lightscript(node[1], indent) + ") " + ls_block(node[2], indent) };
     js[id] = function(node, indent) { return node[0] + " (" + javascript(node[1], indent) + ") " + js_block(node[2], indent) };
@@ -306,17 +306,17 @@ function prefix2(id) {
 //
 //  Parser
 //
-function default_nud(o) {
+default_nud(o) = {
     return cons(IDENTIFIER, o);
 };
-var macros = {};
-function identity(o) {
+macros = {};
+identity(o) = {
     return o;
 };
-function apply_macros(obj) {
+apply_macros(obj) = {
     return get(macros, obj[0], identity)(obj);
 };
-function parse(rbp) {
+parse(rbp) = {
     global token;
     rbp = rbp || 0;
     var t = token;
@@ -336,20 +336,20 @@ function parse(rbp) {
 //
 //  Definition of operator precedence and type
 //
-function is_separator(c) {
+is_separator(c) = {
     return string_contains(";,:", c);
 };
 //
 infixlist("(", ")", 600, "call");
-function macros_call(node) {
+macros_call(node) = {
     return tail(node);
 };
 macros["call"] = macros_call;
 //
 // 
 infixlist("[", "]", 600, "get");
-function pp_get(prettyprinter) {
-    function result(node, indent) {
+pp_get(prettyprinter) = {
+    result(node, indent) = {
         if (len(node) === 3) {
             return prettyprinter(node[1], indent) + "[" + prettyprinter(node[2], indent) + "]";
         } else {
@@ -374,8 +374,8 @@ infix("+", 400);
 //
 infix("-", 400);
 prefix("-");
-function pp_sub(pp) {
-    function sub(node, indent) {
+pp_sub(pp) = {
+    sub(node, indent) = {
         if (len(node) === 2) {
             return "-" + pp(node[1], indent);
         } else {
@@ -407,14 +407,14 @@ py["or"] = pp_infixr(python, "or");
 //
 prefix2("if");
 infixr("else", 200);
-function untable(obj) {
+untable(obj) = {
     if (obj[0] === CURLY) {
         return tail(obj);
     } else {
         return [obj];
     };
 };
-function macros_if(obj) {
+macros_if(obj) = {
     if (obj[2][0] === CURLY) {
         var result = ["cond", obj[2]];
         result[1][0] = obj[1];
@@ -432,8 +432,8 @@ function macros_if(obj) {
     return result;
 };
 macros["if"] = macros_if;
-function pp_condcasecurried(prettyprinter, pp_block, indent) {
-    function result(node) {
+pp_condcasecurried(prettyprinter, pp_block, indent) = {
+    result(node) = {
         if (node[0] === "else") {
             return pp_block(node, indent);
         } else {
@@ -444,8 +444,8 @@ function pp_condcasecurried(prettyprinter, pp_block, indent) {
 };
 ls["cond"] = function(node, indent) { return array_join(map(pp_condcasecurried(lightscript, ls_block, indent), tail(node)), " else ") };
 js["cond"] = function(node, indent) { return array_join(map(pp_condcasecurried(javascript, js_block, indent), tail(node)), " else ") };
-function py_condcasecurried(indent) {
-    function result(node) {
+py_condcasecurried(indent) = {
+    result(node) = {
         if (node[0] === "else") {
             return "se:" + py_block(node, indent);
         } else {
@@ -458,7 +458,7 @@ py["cond"] = function(node, indent) { return array_join(map(py_condcasecurried(i
 //
 //
 list("(", ")", PAREN);
-function macros_paren(obj) {
+macros_paren(obj) = {
     if (len(obj) === 2) {
         return obj[1];
     } else {
@@ -467,12 +467,25 @@ function macros_paren(obj) {
 };
 macros[PAREN] = macros_paren;
 //
+// Assignment
 infix("=", 100, "set");
+macros_set(obj) = {
+    if (is_string(obj[1])) {
+        return obj;
+    } else if (obj[1][0] === "get") {
+        // put
+        return obj;
+    } else {
+        obj[0] = "function";
+        return macros["function"](obj);
+    };
+};
+macros["set"] = macros_set;
 //
 // table
 list("{", "}", CURLY);
-function pp_table(prettyprinter) {
-    function result(node, indent) {
+pp_table(prettyprinter) = {
+    result(node, indent) = {
         var acc = [];
         var i = 1;
         var ind = indent + 1;
@@ -502,7 +515,7 @@ prefix("!");
 py["!"] = function(elem, indent) { return "not " + python(elem[1], indent) };
 // [while condition body...]
 prefix2("while");
-function macros_while(node) {
+macros_while(node) = {
     var result = cons("while", node[2]);
     assert(node[2][0] === CURLY);
     result[1] = node[1];
@@ -526,7 +539,7 @@ py["global"] = function(node, indent) { return "global " + array_join(map(python
 // [define [fnname args...] body...]
 // [lambda [args...] expr]
 prefix2("function");
-function macros_function(node) {
+macros_function(node) = {
     var result = cons("define", node[2]);
     assert(node[2][0] === CURLY);
     result[1] = node[1];
@@ -544,7 +557,7 @@ function macros_function(node) {
     return result;
 };
 macros["function"] = macros_function;
-ls["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") " + ls_block(tail(node), indent) };
+ls["define"] = function(node, indent) { return node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") = " + ls_block(tail(node), indent) };
 ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, node[1]), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
 js["define"] = function(node, indent) { return "function " + node[1][0] + "(" + array_join(map(javascript, tail(node[1])), ", ") + ") " + js_block(tail(node), indent) };
 js["lambda"] = function(node, indent) { return "function(" + array_join(map(javascript, node[1]), ", ") + ") { return " + javascript(node[2], indent) + " }" };
@@ -572,7 +585,7 @@ py[COMMENT] = function(node, indent) { return "#" + node[1] };
 //
 //  List pretty printer
 //
-function yolan(list, acc, indent) {
+yolan(list, acc, indent) = {
     if (acc == undefined) {
         acc = [];
         yolan(list, acc, 1);
@@ -624,8 +637,8 @@ function yolan(list, acc, indent) {
 // dump
 //
 token = next_token();
-var prettyprinter = undefined;
-var end_line_with_semicolon = true;
+prettyprinter = undefined;
+end_line_with_semicolon = true;
 if (arguments[0] === "lightscript") {
     prettyprinter = lightscript;
 } else if (arguments[0] === "yolan") {

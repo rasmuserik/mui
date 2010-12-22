@@ -1,3 +1,4 @@
+git diff &&
 ./biggerrun.sh && 
     git diff &&
     sleep 10 &&

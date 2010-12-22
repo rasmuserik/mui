@@ -573,7 +573,7 @@ py[COMMENT] = function(node, indent) { return "#" + node[1] };
 //  List pretty printer
 //
 function yolan(list, acc, indent) {
-    if (! acc) {
+    if (acc == undefined) {
         acc = [];
         yolan(list, acc, 1);
         return array_join(acc, "");
@@ -625,16 +625,19 @@ function yolan(list, acc, indent) {
 //
 token = next_token();
 var prettyprinter = undefined;
+var end_line_with_semicolon = true;
 if (arguments[0] === "lightscript") {
     prettyprinter = lightscript;
 } else if (arguments[0] === "yolan") {
     prettyprinter = yolan;
+    end_line_with_semicolon = false;
 } else if (arguments[0] === "javascript") {
     print("load(\"stdlib.js\");");
     prettyprinter = javascript;
 } else if (arguments[0] === "python") {
     print("from stdlib import *");
     prettyprinter = python;
+    end_line_with_semicolon = false;
 } else {
     print("expects \"lightscript\", \"yolan\", or \"javascript\" as first argument");
     print("using lightscript as default");
@@ -646,10 +649,10 @@ while (t !== EOF) {
     if (t[0] !== ";") {
         //print("\n--------------\n" +uneval(t));
         //print("\n" + yolan(t));
-        if (t[0] === COMMENT || prettyprinter === python) {
-            var lineend = "";
-        } else {
+        if (end_line_with_semicolon && t[0] !== COMMENT) {
             var lineend = ";";
+        } else {
+            var lineend = "";
         };
         print(prettyprinter(t) + lineend);
     };

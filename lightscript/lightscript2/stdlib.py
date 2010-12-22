@@ -1,5 +1,7 @@
 import sys
 undefined = None
+true = True
+false = False
 def getch():
     c = sys.stdin.read(1)
     if len(c) == 0:

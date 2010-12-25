@@ -516,12 +516,10 @@ def macros_function(node = None):
     result[1] = node[1]
     if is_string(result[1]):
         result[1] = [PAREN, result[1]]
-    if result[1][0] == PAREN:
+    if result[1][0] == PAREN and result[2][0] == "return":
         assert(len(result) == 3)
         result[0] = "lambda"
-        #result[1] = tail(result[1]);
-        if result[2][0] == "return":
-            result[2] = result[2][1]
+        result[2] = result[2][1]
     return result
 
 macros["function"] = macros_function
@@ -532,7 +530,6 @@ def macros_lambda(node = None):
     assert(node[1][0] == PAREN)
     return node
 
-a = lambda x : (x * 2)
 macros["lambda"] = macros_lambda
 ls["define"] = lambda node, indent : (node[1][0] + "(" + array_join(map(lightscript, tail(node[1])), ", ") + ") = " + ls_block(tail(node), indent))
 #ls["lambda"] = function(node, indent) { return "function(" + array_join(map(lightscript, tail(node[1])), ", ") + ") { return " + lightscript(node[2], indent) + " }" };
@@ -621,8 +618,13 @@ elif arguments[0] == "python":
     print("from stdlib import *")
     prettyprinter = python
     end_line_with_semicolon = false
+elif arguments[0] == "python-appengine":
+    print("from stdlib import *")
+    print("from lightscriptappengine import *")
+    prettyprinter = python
+    end_line_with_semicolon = false
 else:
-    print("expects \"lightscript\", \"yolan\", or \"javascript\" as first argument")
+    print("expects \"lightscript\", \"yolan\", \"python\", \"python-appengine\", or \"javascript\" as first argument")
     print("using lightscript as default")
     prettyprinter = lightscript
 #
@@ -637,3 +639,6 @@ while t != EOF:
             lineend = ""
         print(prettyprinter(t) + lineend)
     t = parse()
+if arguments[0] == "python-appengine":
+    print("def main():")
+    print("    request(lightscriptrequest())")

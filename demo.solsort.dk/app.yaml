@@ -10,6 +10,8 @@ skip_files:
 - ^jquery-mobile
 - ^database.*
 handlers:
+- url: /site
+  script: site.py
 - url: /
   script: index.py
 - url: /bib

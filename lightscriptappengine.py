@@ -12,8 +12,7 @@ def parsexml(xmltext):
         stack[-2].append(stack[-1])
         stack.pop()
     def char_data(data):
-        data = data.strip()
-        if data != u"":
+        if data.strip() != u"":
             stack[-1].append(data)
 
     p = xml.parsers.expat.ParserCreate()

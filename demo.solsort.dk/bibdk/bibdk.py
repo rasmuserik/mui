@@ -34,28 +34,47 @@ def bibdkRequest(request, startRecord = "1", maximumRecords = "10"):
 
 fields = ["dc.creator", "dc.title", "dc.subject", "dc.identifier", "cql.serverChoice", "dc.identifier", "dc.date", "dc.type", "dc.language", "bath.personalName", "bath.possessingInstitution", "rec.id", "bath.notes"]
 
-searchform = """
-        <form action="/bib" method="get"> 
-            <div data-role="fieldcontain">
-            <div>
-                <label for="dc.creator">Forfatter:</label>
-                <input type="text" inputmode="latin predictOff" name="dc.creator" id="dc.creator" value="%s" /> 
-            </div><div>
-                <label for="dc.title">Titel:</label>
-                <input type="text" inputmode="latin predictOff" name="dc.title" id="dc.title" value="%s" /> 
-            </div><div>
-                <label for="dc.subject">Emne:</label>
-                <input type="text" inputmode="latin predictOff" name="dc.subject" id="dc.subject" value="%s" /> 
-            </div><div>
-                <label for="cql.serverChoice">Fritekst:</label>
-                <input type="text" inputmode="latin predictOff" name="cql.serverChoice" id="cql.serverChoice" value="%s" /> 
-            </div> 
-            </div>
-            <div>
-                <input type="submit" value="S&oslash;g" name="field" />
-            </div>
-        </form> """ % ('', '', '', '');
-header = """Content-Type: text/html; charset=UTF-8
+button = lambda title, action : (["button", title, action])
+
+def title(txt): return ["title", txt]
+def textinput(title, id): return ["textinput", title, id]
+def button(title): return ["button", title]
+def form(url, content): 
+    result = ["form", url]
+    result.extend(content)
+    return result
+
+def toHTML(ui):
+    if type(ui) == str:
+        return ui
+    elif type(ui) == unicode:
+        return ui
+    elif ui[0] is "form":
+        return u'<form action="%s" method="get"><div data-role="fieldcontain">%s</div></form>' % (ui[1], u''.join(map(toHTML, ui[2:])))
+    elif ui[0] is "textinput":
+        return u'<div><label for="%s">%s</label> <input type="text" inputmode="latin predictOff" name="%s" id="%s" value="" /></div>' % (ui[2], toHTML(ui[1]), ui[2], ui[2])
+    elif ui[0] is "button":
+        return u'<div><input type="submit" value="%s" name="submit" /></div>' % (ui[1],)
+    elif ui[0] is "links":
+        return u'<ul data-role="listview" data-inset="true" data-dividertheme="a"><li data-role="list-divider">%s</li>%s</ul>' % (ui[1], u"".join([
+            u'<li><h3><a href="%s">%s</a></h3><p>%s</p></li>' % (e[0], toHTML(e[1]), toHTML(e[2])) for e in ui[2:]]))
+    elif ui[0] is "text":
+        return u"".join(map(toHTML, ui[1:]))
+    elif ui[0] is "small":
+        return "<small>" + u"".join(map(toHTML, ui[1:])) + "</small>"
+    elif ui[0] is "menu":
+        return '<div data-role="controlgroup" data-type="horizontal">' + " ".join(['<a data-role="button" href="%s">%s</a>' % (e[0], toHTML(e[1])) for e in ui[1:]]) + '</div>'
+    else:
+        return u"unknown ui: " + ui[0]
+
+searchform = form("/bib", [
+    textinput("Forfatter:", "dc.creator"), 
+    textinput("Titel:", "dc.title"), 
+    textinput("Emne:", "dc.subject"), 
+    textinput("Fritekst:", "cql.serverChoice"), 
+    button("S&oslash;g")])
+
+htmlheader = """Content-Type: text/html; charset=UTF-8
 
 <!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN"
    "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd"> 
@@ -68,40 +87,45 @@ header = """Content-Type: text/html; charset=UTF-8
 </head> 
 <body>
 <div data-role="page" data-theme="b">
-        <div data-role="header">
-            <h1>bibliotek...</h1>
-            <a href="about" class="ui-btn-right">About</a>
-        </div>
         <div data-role="content">"""
-footer = """
+htmlfooter = """
         </div>
 </div>
 </body>
 </html>"""
+
+def cons(a, b):
+    result = [a]
+    result.extend(b)
+    return result
+
+def push(list, val):
+    list.append(val)
+    return list
 
 def printrecords(result):
     hits = int(result["hits"]) 
     startRecord = int(result['startRecord'])
     endRecord = startRecord + len(result['records']) - 1
 
-    print '<ul data-role="listview" data-dividertheme="a">'
-    print '<li data-role="list-divider">'
-    print 'Viser post %d-%d ud af %d' % (startRecord, endRecord, hits)
-    print '</li>'
-    for record in result['records']:
-        print (u'<li><h3><a href="%s">%s</a> <small>(%s)</small></h3> <p>%s</p></li>' % ( 
-                record['dc:identifier'][0],
-                u"<br/>".join(record.get('dc:title', ['Uden titel'])), 
-                u",".join(record.get('dc:date', [''])), 
-                u" & ".join(record.get('dc:creator', ['N.N.'])) )).encode('ascii', 'xmlcharrefreplace')
-        # print record
+    return push(["text", 'S&oslash;gning: "', result["query"], '"', cons("links", cons('Viser post %d-%d ud af %d' % (startRecord, endRecord, hits), [[
+        record['dc:identifier'][0], 
+        push(cons("text", record.get('dc:title', ['Uden titel'])), cons("small", " (" + ", ".join(record.get('dc:date', [''])) + ") ")),
+        u" & ".join(record.get('dc:creator', ['N.N.']))]
+            for record in result["records"]]))],
+            ["menu", ["prev", "Forrige"], ["next", "N&aelig;ste"], ["/bib", "Ny s&oslash;gning"]])
 
-    print '</ul>'
+def printheader():
+    print htmlheader
 
+def printbody(body):
+    print toHTML(body).encode('ascii', 'xmlcharrefreplace')
 
+def printfooter():
+    print htmlfooter
 
 def main():
-    print header
+    printheader()
     params = cgi.FieldStorage()
     search = []
     for param in params:
@@ -111,10 +135,10 @@ def main():
     if not len(search) is 0:
         result = bibdkRequest(search)
     if len(search) is 0 or int(result["hits"]) is 0:
-        print searchform
+        printbody(searchform)
     else:
-        printrecords(result)
+        printbody(printrecords(result))
 
-    print footer
+    printfooter()
     import mylogger
     mylogger.log("")

@@ -9,7 +9,7 @@ def bibdkRequest(request, startRecord = "1", maximumRecords = "10"):
     query = {}
     query['version'] = "1.1"
     query['operation'] = "searchRetrieve"
-    query['query'] = request
+    query['query'] = request.encode("latin-1")
     query['maximumRecords'] = maximumRecords
     query['startRecord'] = startRecord
     query['recordSchema'] = "dc"
@@ -30,6 +30,13 @@ def bibdkRequest(request, startRecord = "1", maximumRecords = "10"):
                 arr = record.get(nodename, [])
                 arr.append(node.firstChild.data.replace("&", "&amp;"))
                 record[nodename] = arr
+        def swapname(name):
+            t = name.split(",")
+            if len(t) == 2:
+                return t[1] + " " + t[0]
+            return name
+        if record.has_key("dc:creator"):
+            record["dc:creator"] = map(swapname, record["dc:creator"])
         records.append(record)
         recno = recno + 1
     return {"hits": hits, "records": records, "query": request, "startRecord": startRecord}
@@ -46,8 +53,11 @@ def form(url, content):
     result.extend(content)
     return result
 
+pagetitle = "bibliotek dk"
+
 def toXHTML(ui):
     """Transform a ui tree into jquery-mobile-html-code"""
+    global pagetitle
     if type(ui) == str:
         return ui
     elif type(ui) == unicode:
@@ -64,7 +74,10 @@ def toXHTML(ui):
     elif ui[0] is "text":
         return u"".join(map(toXHTML, ui[1:]))
     elif ui[0] is "p":
-        return "<p>" + u"".join(map(toXHTML, ui[1:])) + "</p>"
+        return u"<p>" + u"".join(map(toXHTML, ui[1:])) + u"</p>"
+    elif ui[0] is "title":
+        pagetitle =  u"".join(map(toHTML, ui[1:]))
+        return ""
     elif ui[0] is "small":
         return "<small>" + u"".join(map(toXHTML, ui[1:])) + "</small>"
     elif ui[0] is "menu":
@@ -74,6 +87,7 @@ def toXHTML(ui):
 
 def toHTML(ui):
     """Transform a ui tree into jquery-mobile-html-code"""
+    global pagetitle
     if type(ui) == str:
         return ui
     elif type(ui) == unicode:
@@ -90,24 +104,28 @@ def toHTML(ui):
     elif ui[0] is "text":
         return u"".join(map(toHTML, ui[1:]))
     elif ui[0] is "p":
-        return "<p>" + u"".join(map(toXHTML, ui[1:])) + "</p>"
+        return u"<div><p>" + u"".join(map(toXHTML, ui[1:])) + u"</p></div>"
     elif ui[0] is "small":
-        return "<small>" + u"".join(map(toHTML, ui[1:])) + "</small>"
+        return u"<small>" + u"".join(map(toHTML, ui[1:])) + u"</small>"
+    elif ui[0] is "title":
+        pagetitle =  u"".join(map(toHTML, ui[1:]))
+        return ""
     elif ui[0] is "menu":
-        return '<div data-role="controlgroup" data-type="horizontal">' + " ".join(['<a data-role="button" href="%s">%s</a>' % (e[0], toHTML(e[1])) for e in ui[1:]]) + '</div>'
+        return '<div>' + " ".join(['<a data-role="button" data-inline="true" href="%s">%s</a>' % (e[0], toHTML(e[1])) for e in ui[1:]]) + '</div>'
     else:
         return u"unknown ui: " + str(ui[0])
 
 searchform = form("/bib", [
+    ["title", "bibliotek dk"],
     textinput("Forfatter:", "dc.creator"), 
     textinput("Titel:", "dc.title"), 
     textinput("Emne:", "dc.subject"), 
     textinput("Fritekst:", "cql.serverChoice"), 
     button("S&#248;g")])
 
-xhtmlheader = '<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>solsort.dk/bibliotek...</title></head><body>'
+xhtmlheader = '<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>%(pagetitle)s</title></head><body><h3>%(pagetitle)s</h3>'
 xhtmlfooter = '</body></html>'
-htmlheader = '<!DOCTYPE html><html><head><title>solsort.dk/bibliotek...</title><link rel="stylesheet" href="/static/jquery.mobile.min.css" /><script src="http://code.jquery.com/jquery-1.4.4.min.js" type="text/ecmascript"></script><script src="/static/jquery.mobile.min.js" type="text/ecmascript"></script></head><body><div data-role="page" data-theme="b"><div data-role="content">'
+htmlheader = '<!DOCTYPE html><html><head><title>%(pagetitle)s</title><link rel="stylesheet" href="/static/jquery.mobile.min.css" /><script src="http://code.jquery.com/jquery-1.4.4.min.js" type="text/ecmascript"></script><script src="/static/jquery.mobile.min.js" type="text/ecmascript"></script></head><body><div data-role="page" data-theme="b"><div data-role="header"><h1>%(pagetitle)s</h1></div><div data-role="content">'
 htmlfooter = '</div></div></body></html>'
 
 def cons(a, b):
@@ -134,22 +152,25 @@ def printrecords(result):
 
     def shortRecordFormat(record):
         uri = record['dc:identifier'][0]
-        uri = "/bib?" + urllib.urlencode({"query": result["query"], "startRecord": record["recno"], "singleRecord": True}).replace("&", "&amp;")
+        uri = u"/bib?" + urllib.urlencode({"query": result["query"].encode('ascii', 'xmlcharrefreplace'), "startRecord": record["recno"], "singleRecord": True}).replace("&", "&amp;")
         title = ["text", record.get('dc:title', ['Uden titel'])[0], ["small", " (" + ", ".join(record.get('dc:date', [''])) + ") "]]
         subtitle = u" &amp; ".join(record.get('dc:creator', ['N.N.']))
         return [uri, title, subtitle]
 
     menu = ["menu", ["javascript:history.back(-1)", "Tilbage"]]
     if endRecord < hits:
-        menu.append(["/bib?" + urllib.urlencode({"query": result["query"], "startRecord": endRecord + 1}).replace("&", "&amp;"), "N&#230;ste"])
+        menu.append(["/bib?" + urllib.urlencode({"query": result["query"].encode("utf-8"), "startRecord": endRecord + 1}).replace("&", "&amp;"), "N&#230;ste"])
     menu.append(["/bib", "Ny s&#248;gning"])
 
     return text(["p",'S&#248;gning: "', result["query"], '"'],
             links('Viser post %d-%d ud af %d' % (startRecord, endRecord, hits), map(shortRecordFormat, result["records"])),
             menu)
 
+def sort(x):
+    x.sort()
+    return x
 def printrecord(result):
-    acc = cons("text", [["p", key, ": ", ", ".join(result["records"][0][key])] for key in result["records"][0]]);
+    acc = cons("text", [["p", ["small", key], " ", ", ".join(result["records"][0][key])] for key in sort(result["records"][0].keys()) if not key is "recno"]);
     menu = ["menu"]
     menu.append(["javascript:history.back(-1)", "Tilbage"])
     menu.append(["javascript:alert('Not implemented yet')", "Bestil"])
@@ -172,17 +193,17 @@ def printheader():
             print "application/xhtml+xml; charset=UTF-8\n"
         else:
             print "text/html; charset=UTF-8\n"
-        print xhtmlheader
+        print xhtmlheader % {"pagetitle": pagetitle}
     else:
         print "text/html; charset=UTF-8\n"
-        print htmlheader
+        print htmlheader % {"pagetitle": pagetitle}
 
 def printbody(body):
     #print body
     if smartphone:
-        print toHTML(body).encode('ascii', 'xmlcharrefreplace')
+        print toHTML(body).encode('utf-8')
     else:
-        print toXHTML(body).encode('ascii', 'xmlcharrefreplace')
+        print toXHTML(body).encode('utf-8')
 
 def printfooter():
     if smartphone:
@@ -200,8 +221,9 @@ def main():
     search = []
     for param in params:
         if param in fields:
-            search.append("%s = (%s)" % (param, params.get(param)))
-    search = " and ".join(search)
+            for word in params.get(param).split():
+                search.append(u"%s = (%s)" % (param, unicode(word, "utf-8")))
+    search = u" and ".join(search)
     search = search or params.get("query", "")
 
     if len(search) is 0:

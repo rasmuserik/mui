@@ -13,7 +13,7 @@ handlers:
 - url: /site
   script: site.py
 - url: /
-  script: index.py
+  script: bibdk/bibdk.py
 - url: /bib
   script: bibdk/bibdk.py
 - url: /favicon.ico

@@ -123,7 +123,7 @@ searchform = form("/bib", [
     textinput("Fritekst:", "cql.serverChoice"), 
     button("S&#248;g")])
 
-xhtmlheader = '<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>%(pagetitle)s</title></head><body><h3>%(pagetitle)s</h3>'
+xhtmlheader = '<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd"><html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>%(pagetitle)s</title><style type="text/css">body { margin: 1%% 2%% 1%% 2%%; font-family: sans-serif; line-height: 130%%; }</style></head><body><h1>%(pagetitle)s</h1>'
 xhtmlfooter = '</body></html>'
 htmlheader = '<!DOCTYPE html><html><head><title>%(pagetitle)s</title><link rel="stylesheet" href="/static/jquery.mobile.min.css" /><script src="http://code.jquery.com/jquery-1.4.4.min.js" type="text/ecmascript"></script><script src="/static/jquery.mobile.min.js" type="text/ecmascript"></script></head><body><div data-role="page" data-theme="b"><div data-role="header"><h1>%(pagetitle)s</h1></div><div data-role="content">'
 htmlfooter = '</div></div></body></html>'
@@ -152,12 +152,13 @@ def printrecords(result):
 
     def shortRecordFormat(record):
         uri = record['dc:identifier'][0]
-        uri = u"/bib?" + urllib.urlencode({"query": result["query"].encode('ascii', 'xmlcharrefreplace'), "startRecord": record["recno"], "singleRecord": True}).replace("&", "&amp;")
+        uri = u"/bib?" + urllib.urlencode({"query": result["query"].encode("utf-8"), "startRecord": record["recno"], "singleRecord": True}).replace("&", "&amp;")
         title = ["text", record.get('dc:title', ['Uden titel'])[0], ["small", " (" + ", ".join(record.get('dc:date', [''])) + ") "]]
         subtitle = u" &amp; ".join(record.get('dc:creator', ['N.N.']))
         return [uri, title, subtitle]
 
-    menu = ["menu", ["javascript:history.back(-1)", "Tilbage"]]
+    menu = ["menu"]
+    #menu = ["menu", ["javascript:history.back(-1)", "Tilbage"]]
     if endRecord < hits:
         menu.append(["/bib?" + urllib.urlencode({"query": result["query"].encode("utf-8"), "startRecord": endRecord + 1}).replace("&", "&amp;"), "N&#230;ste"])
     menu.append(["/bib", "Ny s&#248;gning"])
@@ -172,7 +173,7 @@ def sort(x):
 def printrecord(result):
     acc = cons("text", [["p", ["small", key], " ", ", ".join(result["records"][0][key])] for key in sort(result["records"][0].keys()) if not key is "recno"]);
     menu = ["menu"]
-    menu.append(["javascript:history.back(-1)", "Tilbage"])
+    #menu.append(["javascript:history.back(-1)", "Tilbage"])
     menu.append(["javascript:alert('Not implemented yet')", "Bestil"])
     menu.append(["/bib", "Ny s&#248;gning"])
     return text(acc, menu)
@@ -224,7 +225,7 @@ def main():
             for word in params.get(param).split():
                 search.append(u"%s = (%s)" % (param, unicode(word, "utf-8")))
     search = u" and ".join(search)
-    search = search or params.get("query", "")
+    search = search or unicode(params.get("query", ""), "utf-8")
 
     if len(search) is 0:
         printbody(searchform)

@@ -2,6 +2,12 @@ import sys
 undefined = None
 true = True
 false = False
+def keys(obj):
+    return obj.keys()
+
+def contains(str, c):
+    return c in str
+
 def getch():
     c = sys.stdin.read(1)
     if len(c) == 0:

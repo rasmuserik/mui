@@ -3,6 +3,7 @@
 // in case any app module requires this module.
 exports.urls = [
     ['/', './actions'],
+    ['/bib', './actions']
 ];
 
 // Middleware stack as an array of middleware factories. These will be

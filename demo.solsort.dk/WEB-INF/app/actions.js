@@ -1,7 +1,9 @@
-var {Response} = require('ringo/webapp/response');
+foo = require('ringo/httpclient');
 
 exports.index = function (req) {
-    return Response.skin(module.resolve('skins/index.html'), {
-        title: "demo.solsort.dk ... now with ringo"
-    });
+    return {
+        status: 200,
+        headers: {"Content-Type": "text/html"},
+        body: ["<html><head><title></title></head><body>", uneval(req), uneval(foo) ,"</body></html>"]
+    };
 };

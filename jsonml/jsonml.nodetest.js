@@ -5,7 +5,8 @@
             console.log("error loading file");
             return;
         }
-        console.log(data.toString("utf-8"));
-        console.log(JSON.stringify(jsonml.parseXML(data.toString("utf-8"))));
+        //console.log(data.toString("utf-8"));
+        //console.log((jsonml.parseXML(data.toString("utf-8"))));
+        console.log(jsonml.toXml(jsonml.parseXML(data.toString("utf-8"))[1]));
     });
 

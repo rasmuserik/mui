@@ -1,7 +1,7 @@
 require.paths.unshift('.')
 http = require('http');
 jsonml = require('jsonml');
-_ = require('underscore');
+_ = require('underscore')._;
 
 // ui -> html mapper
 function ui2html(ui) {
@@ -71,15 +71,67 @@ function node_xhtml_ui(req, res) {
     };
 }
 
+// Notes
+/*
+   infinite-list:
+
+
+xhtml:
+
+    x = env(req...pagename="search", ($X=)params)
+    app.main(env{pagename="search"}):
+        env.show({..., callback="search-callback"}):
+            (same env with query passed to search-callback, but should be immutable for app.main)
+            app.main(env{pagename="search-callback", first=0, count=10}):
+                env.entries({first=0, count=10, total=16, content=[...]});
+-> browser ->
+    x = env(req...pagename="search", params=$X++{MOUI_CALLBACK_FIRST=10...}(pga. links));
+    app.main(env{pagename="search"}):
+        env.show({..., callback="search-callback"}):
+            app.main(env{pagename="search-callback", first=10, count=10}):
+                env.entries({first=10, count=6, total=16, content=[...]});
+
+
+ajax:
+    x = env(req...pagename="search")
+    app.main(env{pagename="search"}):
+        env.show({..., callback="search-callback"}):
+            app.main(env{pagename="search-callback", first=0, count=10}):
+                env.entries({first=0, count=10, total=16, content=[...]});
+-> scroll fire env-event ->
+            app.main(env{pagename="search-callback", first=10, count=10}):
+                env.entries({first=10, count=6, total=16, content=[...]});
+    
+
+
+*/
+
 // application
 var app = {}
+
+var webservice = "http://localhost:1234/";
+
 var handles = {
     "search": function(env) {
-        var page = {};
-        page.next = "default";
-        page.content = [
-            ["button", "not implemented yet"]];
-        env.show(page);
+        env.show({
+            title: "Søgeresultater",
+            callback: "search-callback",
+            next: "show-entry"
+        });
+    },
+    "search-callback": function(env) {
+        remoteCall(webservice + "search", 
+            {first: env.first, count: env.count, query: env.params.query}, 
+            function(result) {
+
+        var entryno = env.first - 1;
+        var content = _.map(result.entries, function(entry) {
+            ++entryno;
+
+            return ["entry", {id: JSON.stringify([env.params.query, entryno])}, ["em", entry.author, ": "], entry.title]
+        });
+        env.entries({first: env.first, count: env.count, total: result.total, content: content});
+        });
     },
     "default": function(env) {
         var page = {};
@@ -104,7 +156,7 @@ app.main = function(env) {
 http.createServer(function (req, res) {
     var params, t;
     res.writeHead(200, {'Content-Type': 'text/html'});;
-    env = node_xhtml_ui(req, res);
+    env = node_xhtml_ui(req, res, app.main);
     console.log(env);
     app.main(env);
 }).listen(8080, "127.0.0.1");

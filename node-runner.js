@@ -32,7 +32,25 @@ function ui2html(ui) {
 // node xhtml ui
 function node_xhtml_ui(req, res) {
 
+    var pagename, params;
+    params = pagename = req.url.split('?')
+    pagename = pagename[0].split('/');
+    pagename = pagename[pagename.length - 1];
+    if(params.length > 1) {
+        params.shift();
+        params = params.join('').split('&');
+        params = _.reduce(params, function(acc, elem) {
+            var t = elem.split("=");
+            acc[t[0]] = t[1];
+            return acc;
+        }, {});
+    } else {
+        params = {};
+    }
+
     return {
+        pagename: pagename,
+        params: params,
         show: function(page) {
             var title = page.title || "untitled";
             var menu = page.menu || {};
@@ -55,24 +73,38 @@ function node_xhtml_ui(req, res) {
 
 // application
 var app = {}
+var handles = {
+    "search": function(env) {
+        var page = {};
+        page.next = "default";
+        page.content = [
+            ["button", "not implemented yet"]];
+        env.show(page);
+    },
+    "default": function(env) {
+        var page = {};
+        page.title = "bibliotek.dk";
+        page.next = "search";
+        page.content = [
+            ["input", {label: "Forfatter"}],
+            ["input", {label: "Titel"}],
+            ["input", {label: "Emne"}],
+            ["input", {label: "Fritekst"}],
+            ["button", "Søg"]];
+        env.show(page);
+    }
+}
+
 app.main = function(env) {
-    var page = {};
-    page.title = "bibliotek.dk";
-    page.next = "search";
-    page.content = [
-        ["input", {label: "Forfatter"}],
-        ["input", {label: "Titel"}],
-        ["input", {label: "Emne"}],
-        ["input", {label: "Fritekst"}],
-        ["button", "Søg"]];
-    env.show(page);
+    (handles[env.pagename] || handles["default"])(env);
 }
 
 // node-runner
 
 http.createServer(function (req, res) {
-   res.writeHead(200, {'Content-Type': 'text/html'});
-
-   env = node_xhtml_ui(req, res);
-   app.main(env);
+    var params, t;
+    res.writeHead(200, {'Content-Type': 'text/html'});;
+    env = node_xhtml_ui(req, res);
+    console.log(env);
+    app.main(env);
 }).listen(8080, "127.0.0.1");

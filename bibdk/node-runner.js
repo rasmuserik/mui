@@ -4,12 +4,33 @@ jsonml = require('jsonml');
 _ = require('underscore')._;
 
 // ui -> html mapper
+function uiChildren(ui) {
+    var pos;
+    var result = [];
+    if(_.isArray(ui[1]) || typeof ui[1] !== "object") {
+        pos = 1;
+    } else {
+        pos = 2;
+    }
+    while(pos < ui.length) {
+        if(_.isArray(ui[pos])) {
+            result.push(ui2html(ui[pos]));
+        } else {
+            result.push(ui[pos]);
+        }
+        ++pos;
+    }
+    return result;
+}
 function ui2html(ui) {
     var transformer = ({
-        button: function() {
+        em: function(ui) {
+            return ["em"].concat(uiChildren(ui));
+        },
+        button: function(ui) {
             return ["input", {type: "submit", name: "button", value: ui[1]}];
         },
-        input: function() {
+        input: function(ui) {
             var attr = ui[1];
             var label = attr.label;
             var name = attr.name || label;
@@ -19,6 +40,9 @@ function ui2html(ui) {
             }
             result.push(["input", {type: "text", inputmode: "latin predictOff", name: name, id: name}]);
             return result;
+        },
+        entry: function(ui) {
+            return ["div", ["a", {href: ui[1].handle + "?id=" + ui[1].id}].concat(uiChildren(ui))];
         }
     })[ui[0]];
     if(!transformer) {
@@ -50,13 +74,20 @@ function node_xhtml_ui(req, res, app) {
 
     return {
         pagename: pagename,
+
         params: params,
+
         remoteCall: function(url, params, callback) {
-            callback({ total: 3, entries: [
-                { author: "Jensen, A.", title: "Foo bar baz"},
-                { author: "Hansen, F. R.", title: "hoopla"},
-                { author: "N.N.", title: "xyzzy"}]});
+            var entries = [];
+            var total = 24;
+            for(var i = 0; i < params.count; ++i ) {
+                if(params.first+i < total) {
+                    entries.push({author: "N.N", title: "book " + (params.first+ i)});
+                }
+            }
+            callback({ total: total, entries: entries });
         },
+
         show: function(page) {
             var title = page.title || "untitled";
             var menu = page.menu || {};
@@ -70,20 +101,38 @@ function node_xhtml_ui(req, res, app) {
             if(page.callback) {
                 var form = ["form", {action: this.pagename, method: "GET"}];
                 _.each(params, function(value, key) {
-                        form.push(["input", {type: "hidden", name: key, value: value}]);
+                        if(key.slice(0,4) !== "MUI_") {
+                            form.push(["input", {type: "hidden", name: key, value: value}]);
+                        }
                 });
                 var pagename = this.pagename;
                 this.pagename = page.callback;
-                this.first = this.first || 0;
+                this.first = parseInt(this.params.MUI_CALLBACK_FIRST || "0", 10);
+                if(this.params.MUI_BUTTON === "next") {
+                    this.first += 10;
+                }
+                if(this.params.MUI_BUTTON === "previous") {
+                    this.first -= 10;
+                }
+                form.push(["input", {type: "hidden", name: "MUI_CALLBACK_FIRST", value: "" + this.first}]);
                 this.count = 10;
                 this.entries = function(entries) {
-                    form.push(["div", "" + (entries.first + 1), "-", "" + (entries.first+entries.count), " / ",  "" + entries.total]);
+                    var total = entries.total;
+                    var first = (entries.first + 1)
+                    var last = (entries.first+entries.content.length)
+
+                    form.push(["div", "" + first, "-", "" + last, " / ",  "" + entries.total]);
                     _.each(entries.content, function(entry) {
-                        form.push(entry);
+                        form.push(ui2html(entry));
                     });
+                    if(first >  1) {
+                        form.push(["input", {type: "submit", name: "MUI_BUTTON", value:"previous"}]);
+                    }
+                    if(last < total) {
+                        form.push(["input", {type: "submit", name: "MUI_BUTTON", value:"next"}]);
+                    }
                 };
                 app.main(this);
-
                 content.push(form);
             }
 

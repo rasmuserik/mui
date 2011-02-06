@@ -4,6 +4,8 @@ jsonml toObjectForm
 bibdk service proxy
 remoteCall
 jsonml unittesting
+form parameter escapes
+un-hard-code button labels and stuff
 unit testing
 jsonml validator
 validate ui

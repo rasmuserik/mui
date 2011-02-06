@@ -51,18 +51,34 @@ function node_xhtml_ui(req, res) {
     return {
         pagename: pagename,
         params: params,
+        remoteCall: function(url, params, callback) {
+            callback({ total: 3, entries: [
+                { author: "Jensen, A.", title: "Foo bar baz"},
+                { author: "Hansen, F. R.", title: "hoopla"},
+                { author: "N.N.", title: "xyzzy"}]});
+        },
         show: function(page) {
             var title = page.title || "untitled";
             var menu = page.menu || {};
             var next = page.next || ""
-            var content = page.content || [];
+            var content = [];
+            if(page.content) {
+                content.push(["form", {action: next, method: "GET"}].concat(_.map(page.content, ui2html)));
+            }
+            if(page.callback) {
+                var form = ["form", {action: pagename, method: "GET"}];
+                _.each(params, function(value, key) {
+                        form.push(["input", {type: "hidden", name: key, value: value}]);
+                });
+                content.push(form);
+            }
+
             var html = 
                 ["html", { xmlns: "http://www.w3.org/1999/xhtml", "xml:lang": "en"}, 
                   ["head", 
                     ["title", title],
                     ["style", {type: "text/css"}, 'body { margin: 1% 2% 1% 2%; font-family: sans-serif; line-height: 130%; }']],
-                  ["body", ["h1", title],
-                    ["form", {action: next, methor: "GET"}].concat(_.map(content, ui2html))]];
+                  ["body", ["h1", title].concat(content)]];
 
             res.end(
                     ['<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">',
@@ -116,32 +132,45 @@ var handles = {
         env.show({
             title: "Søgeresultater",
             callback: "search-callback",
-            next: "show-entry"
         });
     },
     "search-callback": function(env) {
-        remoteCall(webservice + "search", 
-            {first: env.first, count: env.count, query: env.params.query}, 
-            function(result) {
+        var query = env.params.query;
 
-        var entryno = env.first - 1;
-        var content = _.map(result.entries, function(entry) {
-            ++entryno;
+        env.remoteCall(webservice + "search", 
+            {first: env.first, count: env.count, query: query}, 
+            function(response) {
 
-            return ["entry", {id: JSON.stringify([env.params.query, entryno])}, ["em", entry.author, ": "], entry.title]
-        });
-        env.entries({first: env.first, count: env.count, total: result.total, content: content});
-        });
+        var content;
+        var result = {};
+        result.next = "show-entry";
+        result.first = env.first;
+        result.count = response.entries.length;
+        result.total = response.total;
+        result.content = content = [];
+        for(var i = 0; i < response.entries.length; ++i) {
+            var entry = response.entries[i];
+            var entryno = env.first + i;
+            content.push(["entry", 
+                {id: JSON.stringify([query, entryno])}, 
+                ["em", entry.author, ": "], 
+                entry.title]);
+        }
+
+        env.entries(result);
+
+        }); 
     },
     "default": function(env) {
         var page = {};
         page.title = "bibliotek.dk";
         page.next = "search";
         page.content = [
-            ["input", {label: "Forfatter"}],
+            /*["input", {label: "Forfatter"}],
             ["input", {label: "Titel"}],
             ["input", {label: "Emne"}],
-            ["input", {label: "Fritekst"}],
+            ["input", {label: "Fritekst"}],*/
+            ["input", {name: "query"}],
             ["button", "Søg"]];
         env.show(page);
     }
@@ -157,6 +186,5 @@ http.createServer(function (req, res) {
     var params, t;
     res.writeHead(200, {'Content-Type': 'text/html'});;
     env = node_xhtml_ui(req, res, app.main);
-    console.log(env);
     app.main(env);
 }).listen(8080, "127.0.0.1");

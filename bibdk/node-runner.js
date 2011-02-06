@@ -30,7 +30,7 @@ function ui2html(ui) {
 
 
 // node xhtml ui
-function node_xhtml_ui(req, res) {
+function node_xhtml_ui(req, res, app) {
 
     var pagename, params;
     params = pagename = req.url.split('?')
@@ -62,14 +62,28 @@ function node_xhtml_ui(req, res) {
             var menu = page.menu || {};
             var next = page.next || ""
             var content = [];
+
             if(page.content) {
                 content.push(["form", {action: next, method: "GET"}].concat(_.map(page.content, ui2html)));
             }
+
             if(page.callback) {
-                var form = ["form", {action: pagename, method: "GET"}];
+                var form = ["form", {action: this.pagename, method: "GET"}];
                 _.each(params, function(value, key) {
                         form.push(["input", {type: "hidden", name: key, value: value}]);
                 });
+                var pagename = this.pagename;
+                this.pagename = page.callback;
+                this.first = this.first || 0;
+                this.count = 10;
+                this.entries = function(entries) {
+                    form.push(["div", "" + (entries.first + 1), "-", "" + (entries.first+entries.count), " / ",  "" + entries.total]);
+                    _.each(entries.content, function(entry) {
+                        form.push(entry);
+                    });
+                };
+                app.main(this);
+
                 content.push(form);
             }
 
@@ -78,7 +92,7 @@ function node_xhtml_ui(req, res) {
                   ["head", 
                     ["title", title],
                     ["style", {type: "text/css"}, 'body { margin: 1% 2% 1% 2%; font-family: sans-serif; line-height: 130%; }']],
-                  ["body", ["h1", title].concat(content)]];
+                  ["body", ["h1", title]].concat(content)];
 
             res.end(
                     ['<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">',
@@ -143,7 +157,6 @@ var handles = {
 
         var content;
         var result = {};
-        result.next = "show-entry";
         result.first = env.first;
         result.count = response.entries.length;
         result.total = response.total;
@@ -152,7 +165,7 @@ var handles = {
             var entry = response.entries[i];
             var entryno = env.first + i;
             content.push(["entry", 
-                {id: JSON.stringify([query, entryno])}, 
+                {id: JSON.stringify([query, entryno]), handle: "show-entry"}, 
                 ["em", entry.author, ": "], 
                 entry.title]);
         }
@@ -185,6 +198,6 @@ app.main = function(env) {
 http.createServer(function (req, res) {
     var params, t;
     res.writeHead(200, {'Content-Type': 'text/html'});;
-    env = node_xhtml_ui(req, res, app.main);
+    env = node_xhtml_ui(req, res, app);
     app.main(env);
 }).listen(8080, "127.0.0.1");

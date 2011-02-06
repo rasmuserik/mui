@@ -1,6 +1,3 @@
-xhtml infinite list support
-jsdoc
-jsonml toObjectForm
 bibdk service proxy
 remoteCall
 jsonml unittesting

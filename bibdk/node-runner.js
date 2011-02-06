@@ -4,6 +4,9 @@ jsonml = require('jsonml');
 _ = require('underscore')._;
 app = require('app');
 
+// # Utility functions
+
+// Async retrieve an url
 function urlFetch(url, callback) {
     var result = [];
     if(url.slice(0,7) !== "http://") {
@@ -28,6 +31,29 @@ function urlFetch(url, callback) {
     });
 }
 
+
+// Fixed uri unescape. JavaScripts unescape, decodeURI, ... are buggy.
+// This one should work. Used to decode parameters passed through the url.
+// 
+// FLAW: may also decode xml numeric entities - these seems to be
+// autoencode by browsers, ie. with chinese symbols etc.
+function unescapeFixed(uri) {
+    uri = uri.replace(/((\+)|%([0-9a-fA-F][0-9a-fA-F]))/g, 
+            function(_1,_2,plus,hexcode) { 
+        if(plus) {
+            return " ";
+        } else {
+            return String.fromCharCode(parseInt(hexcode, 16));
+        }
+    })
+    uri = uri.replace(/&#([0-9][0-9][0-9]*);/g, function(_, num) { 
+            return String.fromCharCode(parseInt(num, 10)); 
+    });
+    return uri;
+}
+
+// Fixed uri escape. JavaScripts escape, encodeURI, ... are buggy.
+// This one should work. Used for
 function escapeFixed(uri) {
     console.log(uri);
     uri = uri.replace(/[^a-zA-Z0-9-_~.]/g, function(c) {
@@ -41,19 +67,13 @@ function escapeFixed(uri) {
     return uri;
 };
 
-function unescapeFixed(uri) {
-    uri = uri.replace(/((\+)|%([0-9a-fA-F][0-9a-fA-F]))/g, function(_1,_2,plus,hexcode) { 
-        if(plus) {
-            return " ";
-        } else {
-            return String.fromCharCode(parseInt(hexcode, 16));
-        }
-    })
-    uri = uri.replace(/&#([0-9][0-9][0-9]*);/g, function(_, num) { return String.fromCharCode(parseInt(num, 10)); });
-    return uri;
-}
+// # UI builder, make html from the gui-xml
+//
+// TODO: make sure all use of html is encapsulated here.
 
 // ui -> html mapper
+// 
+// TODO: use jsonml util function here instead possibly get rid of this function
 function uiChildren(ui) {
     var pos;
     var result = [];
@@ -72,39 +92,49 @@ function uiChildren(ui) {
     }
     return result;
 }
+
+// internal function that lets a ui/html tag
+// pass through, preserving the class,
+// and transforming the child nodes
 function uipassthrough(ui) {
     var result = [ui[0]];
     if(ui[1] && ui[1]['class']) {
         result.push({'class': ui[1]['class']});
     };
-    jsonml.childPushMap(ui, result, ui2html);
+    jsonml.pushMappedChild(ui, ui2html, result);
     return result;
 }
-function ui2html(ui) {
-    var transformer = ({
-        div: uipassthrough,
-        span: uipassthrough,
-        strong: uipassthrough,
-        em: uipassthrough,
-        button: function(ui) {
-            return ["input", {type: "submit", name: "button", value: ui[1]}];
-        },
-        input: function(ui) {
-            var attr = ui[1];
-            var label = attr.label;
-            var name = attr.name || label;
-            var result = ["div"];
-            if(label) {
-                result.push(["div", ["label", {for: name}, label + ": "]]);
-            }
-            result.push(["input", {type: "text", inputmode: "latin predictOff", name: name, id: name}]);
-            return result;
-        },
-        entry: function(ui) {
-            console.log(ui[1]);
-            return ["div", ["a", {href: escapeFixed(ui[1].next) + "?id=" + escapeFixed(ui[1].id)}].concat(uiChildren(ui))];
+
+// internal table of functions that maps from ui elements to html
+var ui_table = {
+    div: uipassthrough,
+    span: uipassthrough,
+    strong: uipassthrough,
+    em: uipassthrough,
+    button: function(ui) {
+        return ["input", {type: "submit", name: "button", value: ui[1]}];
+    },
+    input: function(ui) {
+        var attr = ui[1];
+        var label = attr.label;
+        var name = attr.name || label;
+        var result = ["div"];
+        if(label) {
+            result.push(["div", ["label", {for: name}, label + ": "]]);
         }
-    })[ui[0]];
+        result.push(["input", {type: "text", inputmode: "latin predictOff", 
+                name: name, id: name}]);
+        return result;
+    },
+    entry: function(ui) {
+        console.log(ui[1]);
+        return ["div", ["a", {href: escapeFixed(ui[1].next) + "?id=" + escapeFixed(ui[1].id)}].concat(uiChildren(ui))];
+    }
+};
+
+// translate a ui jsonml to html-jsonml
+function ui2html(ui) {
+    var transformer = ui_table[ui[0]];
     if(!transformer) {
         console.log("Unknown UI element: " + ui[0]);
         return ui;
@@ -112,10 +142,13 @@ function ui2html(ui) {
     return transformer(ui);
 }
 
+// # XHTML cgi user interface server
+//
+// TODO: extract node specific parts, such that this
+// also runs on ringo etc.
 
-// node xhtml ui
+// handle a request
 function node_xhtml_ui(req, res, app) {
-
     var pagename, params;
     params = pagename = req.url.split('?')
     pagename = pagename[0].split('/');
@@ -132,13 +165,14 @@ function node_xhtml_ui(req, res, app) {
         params = {};
     }
 
-    return {
+    // TODO: extract static parts of this and put it outside of function.
+    var env = {
         pagename: pagename,
 
         params: params,
 
         remoteCall: function(url, params, callback) {
-            urlFetch("http://opensearch.addi.dk/1.0/?action=search&query=gormenghast&source=bibliotekdk&start=1&stepValue=10", function(data) { 
+            urlFetch("http://opensearch.addi.dk/1.0/?action=search&query=" + escapeFixed(params.query) + "&source=bibliotekdk&start=" + params.first + "&stepValue=" + params.count, function(data) { 
                     (JSON.stringify(jsonml.toObject(jsonml.fromXml(data)[0]), undefined, undefined));
                     (jsonml.toObject(jsonml.fromXml(data)[0]));
                 });
@@ -212,6 +246,7 @@ function node_xhtml_ui(req, res, app) {
                     jsonml.toXml(html)].join(""));
         }
     };
+    app.main(env);
 }
 
 // Notes
@@ -254,6 +289,5 @@ ajax:
 http.createServer(function (req, res) {
     var params, t;
     res.writeHead(200, {'Content-Type': 'text/html'});;
-    env = node_xhtml_ui(req, res, app);
-    app.main(env);
+    node_xhtml_ui(req, res, app);
 }).listen(8080, "127.0.0.1");

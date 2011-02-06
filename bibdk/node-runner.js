@@ -2,6 +2,56 @@ require.paths.unshift('.')
 http = require('http');
 jsonml = require('jsonml');
 _ = require('underscore')._;
+app = require('app');
+
+function urlFetch(url, callback) {
+    var result = [];
+    if(url.slice(0,7) !== "http://") {
+        throw "not http!";
+    }
+    url = url.slice(7);
+    var i = url.indexOf("/");
+    if(i === -1) {
+        host = url;
+        path = "/";
+    } else {
+        host = url.slice(0, i);
+        path = url.slice(i);
+    }
+    var client = http.createClient(80, host);
+    var request = client.request('GET', path, {'host': host});
+    request.end();
+
+    request.on('response', function (response) {
+        response.on('data', function(chunk) { result.push(chunk); });
+        response.on('end', function() { callback(result.join("")) });
+    });
+}
+
+function escapeFixed(uri) {
+    console.log(uri);
+    uri = uri.replace(/[^a-zA-Z0-9-_~.]/g, function(c) {
+        c = c.charCodeAt(0);
+        if(c > 255) {
+            return escapeFixed("&#" + c + ";");
+        } else {
+            return "%" + c.toString(16);
+        }
+    });
+    return uri;
+};
+
+function unescapeFixed(uri) {
+    uri = uri.replace(/((\+)|%([0-9a-fA-F][0-9a-fA-F]))/g, function(_1,_2,plus,hexcode) { 
+        if(plus) {
+            return " ";
+        } else {
+            return String.fromCharCode(parseInt(hexcode, 16));
+        }
+    })
+    uri = uri.replace(/&#([0-9][0-9][0-9]*);/g, function(_, num) { return String.fromCharCode(parseInt(num, 10)); });
+    return uri;
+}
 
 // ui -> html mapper
 function uiChildren(ui) {
@@ -22,11 +72,20 @@ function uiChildren(ui) {
     }
     return result;
 }
+function uipassthrough(ui) {
+    var result = [ui[0]];
+    if(ui[1] && ui[1]['class']) {
+        result.push({'class': ui[1]['class']});
+    };
+    jsonml.childPushMap(ui, result, ui2html);
+    return result;
+}
 function ui2html(ui) {
     var transformer = ({
-        em: function(ui) {
-            return ["em"].concat(uiChildren(ui));
-        },
+        div: uipassthrough,
+        span: uipassthrough,
+        strong: uipassthrough,
+        em: uipassthrough,
         button: function(ui) {
             return ["input", {type: "submit", name: "button", value: ui[1]}];
         },
@@ -42,7 +101,8 @@ function ui2html(ui) {
             return result;
         },
         entry: function(ui) {
-            return ["div", ["a", {href: ui[1].handle + "?id=" + ui[1].id}].concat(uiChildren(ui))];
+            console.log(ui[1]);
+            return ["div", ["a", {href: escapeFixed(ui[1].next) + "?id=" + escapeFixed(ui[1].id)}].concat(uiChildren(ui))];
         }
     })[ui[0]];
     if(!transformer) {
@@ -65,7 +125,7 @@ function node_xhtml_ui(req, res, app) {
         params = params.join('').split('&');
         params = _.reduce(params, function(acc, elem) {
             var t = elem.split("=");
-            acc[t[0]] = t[1];
+            acc[unescapeFixed(t[0])] = unescapeFixed(t[1]);
             return acc;
         }, {});
     } else {
@@ -78,6 +138,10 @@ function node_xhtml_ui(req, res, app) {
         params: params,
 
         remoteCall: function(url, params, callback) {
+            urlFetch("http://opensearch.addi.dk/1.0/?action=search&query=gormenghast&source=bibliotekdk&start=1&stepValue=10", function(data) { 
+                    (JSON.stringify(jsonml.toObject(jsonml.fromXml(data)[0]), undefined, undefined));
+                    (jsonml.toObject(jsonml.fromXml(data)[0]));
+                });
             var entries = [];
             var total = 24;
             for(var i = 0; i < params.count; ++i ) {
@@ -118,8 +182,8 @@ function node_xhtml_ui(req, res, app) {
                 this.count = 10;
                 this.entries = function(entries) {
                     var total = entries.total;
-                    var first = (entries.first + 1)
-                    var last = (entries.first+entries.content.length)
+                    var first = (this.first + 1)
+                    var last = (this.first+entries.content.length)
 
                     form.push(["div", "" + first, "-", "" + last, " / ",  "" + entries.total]);
                     _.each(entries.content, function(entry) {
@@ -184,63 +248,6 @@ ajax:
 
 
 */
-
-// application
-var app = {}
-
-var webservice = "http://localhost:1234/";
-
-var handles = {
-    "search": function(env) {
-        env.show({
-            title: "Søgeresultater",
-            callback: "search-callback",
-        });
-    },
-    "search-callback": function(env) {
-        var query = env.params.query;
-
-        env.remoteCall(webservice + "search", 
-            {first: env.first, count: env.count, query: query}, 
-            function(response) {
-
-        var content;
-        var result = {};
-        result.first = env.first;
-        result.count = response.entries.length;
-        result.total = response.total;
-        result.content = content = [];
-        for(var i = 0; i < response.entries.length; ++i) {
-            var entry = response.entries[i];
-            var entryno = env.first + i;
-            content.push(["entry", 
-                {id: JSON.stringify([query, entryno]), handle: "show-entry"}, 
-                ["em", entry.author, ": "], 
-                entry.title]);
-        }
-
-        env.entries(result);
-
-        }); 
-    },
-    "default": function(env) {
-        var page = {};
-        page.title = "bibliotek.dk";
-        page.next = "search";
-        page.content = [
-            /*["input", {label: "Forfatter"}],
-            ["input", {label: "Titel"}],
-            ["input", {label: "Emne"}],
-            ["input", {label: "Fritekst"}],*/
-            ["input", {name: "query"}],
-            ["button", "Søg"]];
-        env.show(page);
-    }
-}
-
-app.main = function(env) {
-    (handles[env.pagename] || handles["default"])(env);
-}
 
 // node-runner
 

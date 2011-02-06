@@ -65,11 +65,12 @@ function toXmlAcc(jsonml, acc) {
         }
     } else {
         JsonML_Error("Error: expected array or string, but got: " + jsonml);
+        console.log(jsonml);
     }
 }
 function childFold(jsonml, acc, fn) {
     var first = jsonml[1];
-    if(typeof(first) === "string" || isArray(first)) {
+    if(typeof(first) !== "object" || isArray(first)) {
         acc = fn(first, acc);
     }
     for(var pos = 2; pos < jsonml.length; ++pos) {
@@ -84,6 +85,49 @@ exports.childPushMap = function(jsonml, acc, fn) {
         acc.push(fn(elem));
         return acc;
     });
+}
+
+exports.toObject = function(jsonml) {
+    function toObjectInner(jsonml) {
+        var result = {};
+        var attr = jsonml[1];
+        var pos;
+        if(typeof(attr) === "object" && !isArray(attr)) {
+            for(var key in attr) {
+                result["@" + key] = attr[key];
+            }
+            pos = 2;
+        } else {
+            pos = 1;
+            if(jsonml.length === 2 && !isArray(attr)) {
+                return attr;
+            }
+        }
+        function addprop(obj, key, val) {
+            if(obj[key]) {
+                if(isArray(obj[key])) {
+                    obj[key].push(val);
+                } else {
+                    obj[key] = [obj[key], val];
+                }
+            } else {
+                obj[key] = val;
+            }
+        }
+        while(pos < jsonml.length) {
+            var current = jsonml[pos];
+            if(isArray(current)) {
+                addprop(result, current[0], toObjectInner(current));
+            } else {
+                addprop(result, "$text", current);
+            }
+            ++pos;
+        }
+        return result;
+    };
+    var result = {};
+    result[jsonml[0]] = toObjectInner(jsonml);
+    return result; 
 }
 
 exports.toXml = function(jsonml) {

@@ -1,9 +1,0 @@
-indexes:
-
-- kind: WordNet
-  properties:
-  - name: word
-    direction: asc
-  - name: word
-    direction: desc
-

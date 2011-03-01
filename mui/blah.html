@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux/x86 (vers 25 March 2009), see www.w3.org" />
+
+  <title>html test</title>
+</script>
+  <script type="text/javascript">
+//<![CDATA[
+
+  function genWord() {
+      var i, length, s;
+      length = 2+0|(Math.random() * 8);
+      s = "";
+      for(i=0;i<length;++i) {
+          s += String.fromCharCode(97+(0|(Math.random()*25)));
+      }
+      return s;
+  }
+
+  function nextText() {
+    var length, i, s;
+    length = 0|(Math.random() * 200);
+    s = "";
+    for(i=0;i<length;++i) {
+        s += genWord() + " ";
+    }
+    return s;
+  }
+
+  function height(dom) {
+    return document.defaultView.getComputedStyle(dom, "").getPropertyValue("height");
+  }
+  function gId(id) {
+    return document.getElementById(id);
+  }
+
+  function slidein() {
+    var current = gId("current");
+    var prev = gId("prev");
+    var next = gId("next");
+    prev.removeAttribute("id");
+    current.setAttribute("id", "prev");
+    next.setAttribute("id", "current");
+    current.style.top = "-" + height(next);
+    prev.style.display = "none"
+  }
+
+  function main() {
+    next = document.createElement("div");
+    next.setAttribute("id", "next");
+    next.appendChild(document.createTextNode(nextText()));
+    gId("container").insertBefore(next, gId("current"));
+    var current = gId("current");
+    current.style.top = "-" + height(next);
+    setTimeout("slidein()", 0);
+    scroll(0);
+  }
+
+  function init() {
+    //gId("current").style.top = "-" + height(gId("prev"));
+    //jconsole.log("prev-top: " + xui("prev").getStyle("top"));
+    //console.log("height...: " + document.defaultView.getComputedStyle(document.getElementById("prev"), "").getPropertyValue("height"));
+    //xui("next").setStyle("top", "-" + xui("current").getStyle("height"));
+  }
+
+  //]]>
+  </script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #container { 
+        left:0px;
+        background-color: #ccc; 
+        width: 200px;
+        left: 100px;
+        //overflow: hidden; 
+    }
+    #prev { 
+        position: relative;
+        left: -200px;
+        width: 200px;
+        //background-color: #ff0; 
+        -webkit-transition: left 1s ease-in-out;
+        -moz-transition: left 1s ease-in-out;
+        -o-transition: left 1s ease-in-out;
+        transition: left 1s ease-in-out;
+    }
+    #current { 
+        position: relative;
+        left: 0px;
+        width: 200px;
+        //background-color: #f00; 
+        -webkit-transition: left 1s ease-in-out;
+        -moz-transition: left 1s ease-in-out;
+        -o-transition: left 1s ease-in-out;
+        transition: left 1s ease-in-out;
+    }
+    #next { 
+        position: relative;
+        left: 200px;
+        width: 200px;
+        //background-color: #0f0; 
+        -webkit-transition: left 1s ease-in-out;
+        -moz-transition: left 1s ease-in-out;
+        -o-transition: left 1s ease-in-out;
+        transition: left 1s ease-in-out;
+    }
+  </style>
+</head>
+
+<body onload="init()" onclick="main()">
+  <div style="width: 200px; overflow: hidden">
+  <div id="container">
+    <div id="current">
+    ...
+    </div>
+    <div id="prev">
+    </div>
+  </div>
+  </div>
+</body>
+</html>

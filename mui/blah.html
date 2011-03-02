@@ -23,7 +23,7 @@
 
   function nextText() {
     var length, i, s;
-    length = 0|(Math.random() * 200);
+    length = 5+0|(Math.random() * 50);
     s = "";
     for(i=0;i<length;++i) {
         s += genWord() + " ";
@@ -39,9 +39,11 @@
   }
 
   function slidein() {
+    window.scroll(0,0);
     var current = gId("current");
     var prev = gId("prev");
     var next = gId("next");
+    gId("container").style.height = height(next);
     prev.removeAttribute("id");
     current.setAttribute("id", "prev");
     next.setAttribute("id", "current");
@@ -57,7 +59,6 @@
     var current = gId("current");
     current.style.top = "-" + height(next);
     setTimeout("slidein()", 0);
-    scroll(0);
   }
 
   function init() {
@@ -71,55 +72,69 @@
   </script>
   <style>
     body { margin: 0; padding: 0; }
+    .bar {
+        background: -webkit-gradient(linear, left top, left bottom, from(#ccf), to(#aac));
+        background: -moz-linear-gradient(top,  #cdf,  #79c);
+        border-style: groove;
+        border-color: #eee;
+        border-width: 0px 0px 2px 0px;
+        padding: 4px;
+        height: 32px;
+    }
     #container { 
-        left:0px;
+        position: relative;
+        left: 100px;
         background-color: #ccc; 
         width: 200px;
-        left: 100px;
-        //overflow: hidden; 
+        overflow: hidden; 
+        -webkit-transition: height 0.5s ease-in-out;
+        -moz-transition: height 0.5s ease-in-out;
+        -o-transition: height 0.5s ease-in-out;
+        transition: height 0.5s ease-in-out;
     }
     #prev { 
         position: relative;
         left: -200px;
         width: 200px;
         //background-color: #ff0; 
-        -webkit-transition: left 1s ease-in-out;
-        -moz-transition: left 1s ease-in-out;
-        -o-transition: left 1s ease-in-out;
-        transition: left 1s ease-in-out;
+        -webkit-transition: left 0.5s ease-in-out;
+        -moz-transition: left 0.5s ease-in-out;
+        -o-transition: left 0.5s ease-in-out;
+        transition: left 0.5s ease-in-out;
     }
     #current { 
         position: relative;
         left: 0px;
         width: 200px;
         //background-color: #f00; 
-        -webkit-transition: left 1s ease-in-out;
-        -moz-transition: left 1s ease-in-out;
-        -o-transition: left 1s ease-in-out;
-        transition: left 1s ease-in-out;
+        -webkit-transition: left 0.5s ease-in-out;
+        -moz-transition: left 0.5s ease-in-out;
+        -o-transition: left 0.5s ease-in-out;
+        transition: left 0.5s ease-in-out;
     }
     #next { 
         position: relative;
         left: 200px;
         width: 200px;
         //background-color: #0f0; 
-        -webkit-transition: left 1s ease-in-out;
-        -moz-transition: left 1s ease-in-out;
-        -o-transition: left 1s ease-in-out;
-        transition: left 1s ease-in-out;
+        -webkit-transition: left 0.5s ease-in-out;
+        -moz-transition: left 0.5s ease-in-out;
+        -o-transition: left 0.5s ease-in-out;
+        transition: left 0.5s ease-in-out;
     }
   </style>
 </head>
 
 <body onload="init()" onclick="main()">
-  <div style="width: 200px; overflow: hidden">
   <div id="container">
     <div id="current">
+    <div class="bar">
+       bar
+    </div>
     ...
     </div>
     <div id="prev">
     </div>
-  </div>
   </div>
 </body>
 </html>

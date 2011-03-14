@@ -5,11 +5,27 @@ hardcoded pixel sizes are to be replaced with javascript-calculated styles
 body { 
     margin: 0; 
     padding: 0; 
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAABCAIAAACdaSOZAAAAAXNSR0IArs4c6QAAABZJREFUCNdjPHrmCgMC/GNjY2NgYAAAN00Dd2Fg5+4AAAAASUVORK5CYII=");
     font-family: Helvetica, sans-serif;
     font-size: 16px;
 }
 
-.topbar {
+.header {
+    background: -webkit-gradient(linear, left top, left bottom, from(#b0bccc), to(#6d84a3));
+    background: -moz-linear-gradient(top,  #b0bccc,  #6d84a3);
+    border-style: outset;
+    border-color: #fff;
+    border-width: 1px 0px 1px 0px;
+    text-align: center;
+    padding: 10px;
+    font-size: 22px;
+    height: 22px;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: rgba(0,0,0,0.5) -0px -1px 2px;
+}
+
+.footer {
     background: -webkit-gradient(linear, left top, left bottom, from(#b0bccc), to(#6d84a3));
     background: -moz-linear-gradient(top,  #b0bccc,  #6d84a3);
     border-style: outset;
@@ -36,16 +52,10 @@ body {
 
 #container { 
     position: relative;
-    background-color: #747474; 
-    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAcAAAABCAIAAACdaSOZAAAAAXNSR0IArs4c6QAAABZJREFUCNdjPHrmCgMC/GNjY2NgYAAAN00Dd2Fg5+4AAAAASUVORK5CYII=");
     width: 100%;
     overflow: hidden; 
     margin: 0; 
     padding: 0; 
-    -webkit-transition: height 0.5s ease-in-out;
-    -moz-transition: height 0.5s ease-in-out;
-    -o-transition: height 0.5s ease-in-out;
-    transition: height 0.5s ease-in-out;
 }
 
 #prev { 

@@ -4,11 +4,56 @@ jsonml = require("jsonml");
 
 // # Mobile user interface - html5 version
 exports.showPage = function(page) {
+    if(page[0] !== "page") {
+        console.log("WARNING: not passing a page will soon be obsoleted");
+        page.unshift();
+        showHTML(page);
+        return;
+    } 
     showHTML(pageTransform(page));
 };
 
+var dispatch = function() { throw "Dispatch function not defined. Remember to call mui.setDispatch. Before showing ui-elements that may call back"; };
+
+exports.setDispatch = function(dispatchFunction) {
+    dispatch = dispatchFunction;
+}
+
 function pageTransform(page) {
-    return page;
+
+    var handlers = {
+        inputarea: function(html, node) {
+        },
+        choice: function(html, node) {
+        },
+        div: function(html, node) {
+            var result = ["div", {"class": "contentbox"}];
+            jsonml.childReduce(node, nodeHandler, result);
+            html.push(result);
+        },
+        button: function(html, node) {
+        }
+    }
+
+    function nodeHandler(html, node) {
+        if(typeof(node) === "string") {
+            html.push(node);
+        } else {
+            var handle = handlers[node[0]]; 
+            if(!handle) {
+                throw "mui received a page containing an unknown tagtype: " + node[0];
+            }
+            handle(html, node);
+            return html;
+        }
+    }
+
+    var html = [];
+    var title = jsonml.getAttr(page, "title") || "untitled";
+    html.push(["div", {"class":"header"}, title]);
+    jsonml.childReduce(page, nodeHandler, html);
+    html.push(["div", {"class":"footer"}, " "]);
+    return html;
 }
 
 function height(dom) {

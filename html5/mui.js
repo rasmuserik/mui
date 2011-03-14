@@ -5,10 +5,7 @@ jsonml = require("jsonml");
 // # Mobile user interface - html5 version
 exports.showPage = function(page) {
     if(page[0] !== "page") {
-        console.log("WARNING: not passing a page will soon be obsoleted");
-        page.unshift();
-        showHTML(page);
-        return;
+        throw("Parameter to showPage must be a jsonml 'page'");
     } 
     showHTML(pageTransform(page));
 };

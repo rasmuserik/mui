@@ -1,0 +1,4 @@
+database.*
+*.pyc
+jquery-mobile
+site.py

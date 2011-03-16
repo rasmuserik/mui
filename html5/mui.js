@@ -22,6 +22,20 @@ function pageTransform(page) {
         inputarea: function(html, node) {
         },
         choice: function(html, node) {
+            if(!jsonml.getAttr(node, "name")) {
+                throw "choice widgets must have a name attribute";
+            }
+            var result = ["choice", {"name": jsonml.getAttr(node, "name")}];
+            jsonml.childReduce(node, nodeHandler, result);
+            html.push(result);
+        },
+        option: function(html, node) {
+            if(!jsonml.getAttr(node, "value")) {
+                throw "option widgets must have a value attribute";
+            }
+            var result = ["option", {"name": jsonml.getAttr(node, "value")}];
+            jsonml.childReduce(node, nodeHandler, result);
+            html.push(result);
         },
         text: function(html, node) {
             var result = ["div", {"class": "contentbox"}];

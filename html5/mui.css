@@ -65,22 +65,12 @@ body {
     border-radius: 8px;
 }
 
-select {
-    font-size: 22px;
-    height:22px;
-    line-height: 22px;
+.label {
+    margin-bottom: 3px;
 }
-option {
-    height:22px;
-    line-height: 22px;
+.option {
+    margin-left: 10px;
 }
-.labeldiv {
-    float: left;
-}
-.choicediv {
-    text-align: right;
-}
-
 .contentend {
     height: 10px;
     margin: 0;

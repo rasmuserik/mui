@@ -32,26 +32,29 @@ function pageTransform(page) {
 
             var labelid = uniqId();
             if(jsonml.getAttr(node, "label")) {
-                result.push(["div", {"class": "labeldiv"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
+                result.push(["div", {"class": "label"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
             }
 
-            if(!jsonml.getAttr(node, "name")) {
+            var name = jsonml.getAttr(node, "name");
+            if(!name) {
                 throw "choice widgets must have a name attribute";
             }
 
-            var choice = ["select", {"name": jsonml.getAttr(node, "name"), "id": labelid}];
-            jsonml.childReduce(node, nodeHandler, choice);
-            result.push(["div", {"class": "choicediv"}, choice]);
+            jsonml.childReduce(node, function(html, node) {
+                console.log("option node", node, html);
+                if(node[0] !== "option") {
+                    throw "only option nodes are allows as children to choices";
+                }
+                if(!jsonml.getAttr(node, "value")) {
+                    throw "option widgets must have a value attribute";
+                }
+                var result = ["input", {"type": "radio", "name": name, "value": jsonml.getAttr(node, "value")}];
+                jsonml.childReduce(node, nodeHandler, result);
+                html.push(["div", {"class": "option"}, result]);
+                return html;
+            }, result);
             html.push(result);
             console.log("result", result);
-        },
-        option: function(html, node) {
-            if(!jsonml.getAttr(node, "value")) {
-                throw "option widgets must have a value attribute";
-            }
-            var result = ["option", {"name": jsonml.getAttr(node, "value")}];
-            jsonml.childReduce(node, nodeHandler, result);
-            html.push(result);
         },
         text: function(html, node) {
             var result = ["div", {"class": "contentbox"}];
@@ -87,10 +90,8 @@ function pageTransform(page) {
 
     var html = [];
     var title = jsonml.getAttr(page, "title") || "untitled";
-    html.push(["div", {"class":"header"}, title]);
     jsonml.childReduce(page, nodeHandler, html);
-    html.push(["div", {"class":"contentend"}, " "]);
-    return html;
+    return [["div", {"class":"header"}, title], ["form", html], ["div", {"class":"contentend"}, " "]];
 }
 
 function height(dom) {

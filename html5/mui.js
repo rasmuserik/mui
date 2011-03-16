@@ -14,7 +14,7 @@ var dispatch = function() { throw "Dispatch function not defined. Remember to ca
 
 exports.setDispatch = function(dispatchFunction) {
     dispatch = dispatchFunction;
-}
+};
 
 function pageTransform(page) {
 
@@ -36,7 +36,7 @@ function pageTransform(page) {
             var result = ["span", attr, "foobar"];
             html.push(result);
         }
-    }
+    };
 
     function nodeHandler(html, node) {
         if(typeof(node) === "string") {

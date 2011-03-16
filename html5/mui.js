@@ -46,8 +46,10 @@ function pageTransform(page) {
             if(!jsonml.getAttr(node, "id")) {
                 throw "buttons must have an id attribute";
             }
-            var attr = {"type": "submit", "value": "sometext", "class": "button", onclick: "window.__mui_dispatch__('" + jsonml.getAttr(node, "id") + "');"};
-            var result = ["span", attr, "foobar"];
+            var attr = {"type": "submit", "value": "TODO", "class": "button", onclick: "window.__mui_dispatch__('" + jsonml.getAttr(node, "id") + /* TODO */ "');"};
+            var result = ["span", attr];
+            var result = ["div", {"class": "button"}];
+            jsonml.childReduce(node, nodeHandler, result);
             html.push(result);
         }
     };

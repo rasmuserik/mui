@@ -15,6 +15,12 @@ var dispatch = function() { throw "Dispatch function not defined. Remember to ca
 exports.setDispatch = function(dispatchFunction) {
     dispatch = dispatchFunction;
 };
+uniqId = (function() {
+    var id = 0;
+    return function() {
+        return "__mui_id_" + ++id;
+    }
+})();
 
 function pageTransform(page) {
 
@@ -22,12 +28,22 @@ function pageTransform(page) {
         inputarea: function(html, node) {
         },
         choice: function(html, node) {
+            var result = ["div", {"class": "contentbox"}];
+
+            var labelid = uniqId();
+            if(jsonml.getAttr(node, "label")) {
+                result.push(["div", {"class": "labeldiv"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
+            }
+
             if(!jsonml.getAttr(node, "name")) {
                 throw "choice widgets must have a name attribute";
             }
-            var result = ["choice", {"name": jsonml.getAttr(node, "name")}];
-            jsonml.childReduce(node, nodeHandler, result);
+
+            var choice = ["select", {"name": jsonml.getAttr(node, "name"), "id": labelid}];
+            jsonml.childReduce(node, nodeHandler, choice);
+            result.push(["div", {"class": "choicediv"}, choice]);
             html.push(result);
+            console.log("result", result);
         },
         option: function(html, node) {
             if(!jsonml.getAttr(node, "value")) {
@@ -55,6 +71,7 @@ function pageTransform(page) {
     };
 
     function nodeHandler(html, node) {
+        console.log(node);
         if(typeof(node) === "string") {
             html.push(node);
         } else {
@@ -63,6 +80,7 @@ function pageTransform(page) {
                 throw "mui received a page containing an unknown tagtype: " + node[0];
             }
             handle(html, node);
+            console.log("html: ", html);
             return html;
         }
     }

@@ -65,6 +65,22 @@ body {
     border-radius: 8px;
 }
 
+select {
+    font-size: 22px;
+    height:22px;
+    line-height: 22px;
+}
+option {
+    height:22px;
+    line-height: 22px;
+}
+.labeldiv {
+    float: left;
+}
+.choicediv {
+    text-align: right;
+}
+
 .contentend {
     height: 10px;
     margin: 0;

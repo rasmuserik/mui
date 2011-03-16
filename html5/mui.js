@@ -26,6 +26,15 @@ function pageTransform(page) {
 
     var handlers = {
         inputarea: function(html, node) {
+            var result = ["div", {"class": "contentbox"}];
+
+            var labelid = uniqId();
+            if(jsonml.getAttr(node, "label")) {
+                result.push(["div", {"class": "label"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
+            }
+
+            result.push(["textarea", {"id": labelid}, ""]);
+            html.push(result);
         },
         choice: function(html, node) {
             var result = ["div", {"class": "contentbox"}];
@@ -41,7 +50,6 @@ function pageTransform(page) {
             }
 
             jsonml.childReduce(node, function(html, node) {
-                console.log("option node", node, html);
                 if(node[0] !== "option") {
                     throw "only option nodes are allows as children to choices";
                 }
@@ -54,7 +62,6 @@ function pageTransform(page) {
                 return html;
             }, result);
             html.push(result);
-            console.log("result", result);
         },
         text: function(html, node) {
             var result = ["div", {"class": "contentbox"}];
@@ -65,16 +72,15 @@ function pageTransform(page) {
             if(!jsonml.getAttr(node, "id")) {
                 throw "buttons must have an id attribute";
             }
-            var attr = {"type": "submit", "value": "TODO", "class": "button", onclick: "window.__mui_dispatch__('" + jsonml.getAttr(node, "id") + /* TODO */ "');"};
+            var attr = {"type": "submit", "value": "TODO", "class": "button", onclick: "handleClick()" + jsonml.getAttr(node, "id") + /* TODO */ "');"};
             var result = ["span", attr];
-            var result = ["div", {"class": "button"}];
+            var result = ["div", {"class": "button", "onClick": "handleClick()"}];
             jsonml.childReduce(node, nodeHandler, result);
             html.push(result);
         }
     };
 
     function nodeHandler(html, node) {
-        console.log(node);
         if(typeof(node) === "string") {
             html.push(node);
         } else {
@@ -83,15 +89,14 @@ function pageTransform(page) {
                 throw "mui received a page containing an unknown tagtype: " + node[0];
             }
             handle(html, node);
-            console.log("html: ", html);
-            return html;
         }
+        return html;
     }
 
-    var html = [];
+    var html = ["form"];
     var title = jsonml.getAttr(page, "title") || "untitled";
     jsonml.childReduce(page, nodeHandler, html);
-    return [["div", {"class":"header"}, title], ["form", html], ["div", {"class":"contentend"}, " "]];
+    return [["div", {"class":"header"}, title], html, ["div", {"class":"contentend"}, " "]];
 }
 
 function height(dom) {
@@ -109,7 +114,6 @@ function domRemove(node) {
 function showHTML(html) {
     next = document.createElement("div");
     next.setAttribute("id", "next");
-    next.setAttribute("onClick", "handleClick()");
     next.innerHTML = html.map(jsonml.toXml).join('');
     var current = gId("current");
     gId("container").insertBefore(next, current);

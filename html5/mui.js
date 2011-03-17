@@ -1,9 +1,8 @@
-define(function(require, exports, module) {
+mui = {};
 
-jsonml = require("jsonml");
-
+(function(){
 // # Mobile user interface - html5 version
-exports.showPage = function(page) {
+mui.showPage = function(page) {
     if(page[0] !== "page") {
         throw("Parameter to showPage must be a jsonml 'page'");
     } 
@@ -12,7 +11,7 @@ exports.showPage = function(page) {
 
 var dispatch = function() { throw "Dispatch function not defined. Remember to call mui.setDispatch. Before showing ui-elements that may call back"; };
 
-exports.setDispatch = function(dispatchFunction) {
+mui.setDispatch = function(dispatchFunction) {
     dispatch = dispatchFunction;
 };
 uniqId = (function() {
@@ -133,4 +132,4 @@ function slidein() {
 
     gId("container").style.height = Math.max(parseInt(height(next), 10), window.innerHeight) + "px";
 }
-});
+})();

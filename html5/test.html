@@ -3,9 +3,17 @@
 <head> 
 	<title>Mobile User Interface Test</title> 
 	<link rel="stylesheet" href="mui.css" />
-    <script data-main="test" src="require.js"></script>
+    <script>exports = {};</script>
+    <script src="jsonml.js"></script>
+    <script>jsonml = exports;</script>
+    <script src="mui.js"></script>
+    <script>
+    function main() {
+        mui.showPage(["page", ["text", "hello world"]]);
+    }
+    </script>
 </head> 
-<body>
+<body onload="main()">
 <div id="container">
     <div id="current"></div>
     <div id="prev"></div>

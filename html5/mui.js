@@ -5,9 +5,10 @@ document.write('<script src="jsonml.js"></script>');
 document.write('<link rel="stylesheet" href="mui.css"></script>');
 jsonml = exports;
 
-mui = {};
+__mui__ = {};
+
 (function(){
-    
+    var mui = __mui__;
     
     // # Mobile user interface - html5 version
     mui.showPage = function(page) {
@@ -79,9 +80,8 @@ mui = {};
                 if(!jsonml.getAttr(node, "id")) {
                     throw "buttons must have an id attribute";
                 }
-                var attr = {"type": "submit", "value": "TODO", "class": "button", onclick: "handleClick()" + jsonml.getAttr(node, "id") + /* TODO */ "');"};
-                var result = ["span", attr];
-                var result = ["div", {"class": "button", "onClick": "handleClick()"}];
+                var attr = {"class": "button", onclick: "__mui__.__handleEvent('button','" + jsonml.getAttr(node, "id") + "');"};
+                var result = ["div", attr];
                 jsonml.childReduce(node, nodeHandler, result);
                 html.push(result);
             }
@@ -142,9 +142,20 @@ mui = {};
     }
 
     document.write('<div id="container"><div id="current"></div><div id="prev"></div></div>');
+    mui.__handleEvent = function(type, id) {
+        if(type==="button" && typeof id === "string") {
+            mui.event = id;
+            muiCallback(mui);
+        } else {
+            throw "invalid mui event: " + type;
+        }
+    };
     function main() {
-        muiCallback(mui, {"event": "start"});
+        mui.event = "start";
+        muiCallback(mui);
     }
+
+    // TODO: this should be called when we know everything is loaded... need to find out how this is
     setTimeout(main, 400);
     
 })();

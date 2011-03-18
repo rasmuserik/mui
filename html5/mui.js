@@ -67,7 +67,6 @@ __mui__ = {};
                     if(node[0] !== "option") {
                         throw "only option nodes are allows as children to choices";
                     }
-                    console.log("value", jsonml.getAttr(node, "value"));
                     if(!jsonml.getAttr(node, "value")) {
                         throw "option widgets must have a value attribute";
                     }
@@ -155,7 +154,6 @@ __mui__ = {};
             if(tag === "TEXTAREA") {
                 acc[name] = node.value;
             } else if(tag === "INPUT" && node.getAttribute("type") === "radio") {
-                console.log(node);
                 if(node.checked) {
                     acc[name] = node.value;
                 }
@@ -173,9 +171,7 @@ __mui__ = {};
         if(type==="button" && typeof id === "string") {
             mui.event = id;
             mui.form = formExtract(gId("current"), {});
-            console.log(mui.form);
             muiCallback(mui);
-            console.log("HERE");
         } else {
             throw "invalid mui event: " + type;
         }

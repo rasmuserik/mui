@@ -29,9 +29,10 @@ __mui__ = {};
             return "__mui_id_" + ++id;
         }
     })();
+
     
     function pageTransform(page) {
-    
+
         var handlers = {
             inputarea: function(html, node) {
                 var result = ["div", {"class": "contentbox"}];
@@ -40,8 +41,13 @@ __mui__ = {};
                 if(jsonml.getAttr(node, "label")) {
                     result.push(["div", {"class": "label"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
                 }
+
+                var name = jsonml.getAttr(node, "name");
+                if(!name) {
+                    throw "inputarea widgets must have a name attribute";
+                }
     
-                result.push(["textarea", {"id": labelid}, ""]);
+                result.push(["textarea", {"id": labelid, "name": name}, ""]);
                 html.push(result);
             },
             choice: function(html, node) {
@@ -142,9 +148,27 @@ __mui__ = {};
     }
 
     document.write('<div id="container"><div id="current"></div><div id="prev"></div></div>');
+
+    function formExtract(node, acc) {
+        var name = node.getAttribute && node.getAttribute("name");
+        if(name) {
+            var tag = node.tagName;
+            if(tag === "TEXTAREA") {
+                acc[name] = node.value;
+            } else {
+                throw "unexpected form-like element: " + tag;
+            }
+        }
+        for(var i=0;i<node.childNodes.length;++i) {
+            formExtract(node.childNodes[i], acc);
+        }
+        return acc;
+    }
+    
     mui.__handleEvent = function(type, id) {
         if(type==="button" && typeof id === "string") {
             mui.event = id;
+            mui.form = formExtract(gId("current"), {});
             muiCallback(mui);
         } else {
             throw "invalid mui event: " + type;

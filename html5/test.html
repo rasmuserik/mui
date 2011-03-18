@@ -4,8 +4,15 @@
 	<title>Mobile User Interface Test</title> 
     <script>
     function muiCallback(mui, ctx) {
-        mui.showPage(["page", ["text", "hello world"], ["inputarea", {"name": "foo"}], ["button", {"id":"blah"}, "press me"]], ctx);
-        console.log(mui);
+        mui.showPage(["page", 
+            ["text", "hello world"], 
+            ["inputarea", {"name": "blah"}], 
+            ["choice", {"name": "foo", "label": "ffkkfk"},
+                ["option", {"value": "1"}, "a"],
+                ["option", {"value": "2"}, "b"],
+            ], 
+            ["button", {"id":"blah"}, "press me"]
+        ], ctx);
     }
     </script>
 	<link rel="stylesheet" href="mui.css" />

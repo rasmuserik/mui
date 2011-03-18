@@ -67,10 +67,11 @@ __mui__ = {};
                     if(node[0] !== "option") {
                         throw "only option nodes are allows as children to choices";
                     }
+                    console.log("value", jsonml.getAttr(node, "value"));
                     if(!jsonml.getAttr(node, "value")) {
                         throw "option widgets must have a value attribute";
                     }
-                    var result = ["input", {"type": "radio", "name": name, "value": jsonml.getAttr(node, "value")}];
+                    var result = ["input", {"type": "radio", "value": jsonml.getAttr(node, "value"), "name": name}];
                     jsonml.childReduce(node, nodeHandler, result);
                     html.push(["div", {"class": "option"}, result]);
                     return html;
@@ -147,14 +148,17 @@ __mui__ = {};
         gId("container").style.height = Math.max(parseInt(height(next), 10), window.innerHeight) + "px";
     }
 
-    document.write('<div id="container"><div id="current"></div><div id="prev"></div></div>');
-
     function formExtract(node, acc) {
         var name = node.getAttribute && node.getAttribute("name");
         if(name) {
             var tag = node.tagName;
             if(tag === "TEXTAREA") {
                 acc[name] = node.value;
+            } else if(tag === "INPUT" && node.getAttribute("type") === "radio") {
+                console.log(node);
+                if(node.checked) {
+                    acc[name] = node.value;
+                }
             } else {
                 throw "unexpected form-like element: " + tag;
             }
@@ -169,7 +173,9 @@ __mui__ = {};
         if(type==="button" && typeof id === "string") {
             mui.event = id;
             mui.form = formExtract(gId("current"), {});
+            console.log(mui.form);
             muiCallback(mui);
+            console.log("HERE");
         } else {
             throw "invalid mui event: " + type;
         }
@@ -181,5 +187,7 @@ __mui__ = {};
 
     // TODO: this should be called when we know everything is loaded... need to find out how this is
     setTimeout(main, 400);
+    document.write('<div id="container"><div id="current"></div><div id="prev"></div></div>');
+
     
 })();

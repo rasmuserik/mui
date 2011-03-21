@@ -20,6 +20,10 @@ __mui__ = {};
     var mui = __mui__;
     var global = this;
 
+    mui.loading = function() {
+        gId("loading").style.top = "50px";
+    };
+
     mui.callJsonpWebservice = function(url, callbackParameterName, args, callback, timeout) {
         // clone args, as we want to add a jsonp-callback-name-property
         // without altering the original parameter
@@ -63,6 +67,7 @@ __mui__ = {};
     
     // # Mobile user interface - html5 version
     mui.showPage = function(page) {
+        gId("loading").style.top = "-50px";
         if(page[0] !== "page") {
             throw("Parameter to showPage must be a jsonml 'page'");
         } 
@@ -113,7 +118,7 @@ __mui__ = {};
                 if(!name) {
                     throw "choice widgets must have a name attribute";
                 }
-    
+                var select = ["select", {"name": jsonml.getAttr(node, "name")}];
                 jsonml.childReduce(node, function(html, node) {
                     if(node[0] !== "option") {
                         throw "only option nodes are allows as children to choices";
@@ -121,11 +126,10 @@ __mui__ = {};
                     if(!jsonml.getAttr(node, "value")) {
                         throw "option widgets must have a value attribute";
                     }
-                    var result = ["input", {"type": "radio", "value": jsonml.getAttr(node, "value"), "name": name}];
-                    jsonml.childReduce(node, nodeHandler, result);
-                    html.push(["div", {"class": "option"}, result]);
+                    select.push(["option", {"value": jsonml.getAttr(node, "value")}, node[2]]);
                     return html;
                 }, result);
+                result.push(select);
                 html.push(result);
             },
             text: function(html, node) {
@@ -204,10 +208,8 @@ __mui__ = {};
             var tag = node.tagName;
             if(tag === "TEXTAREA") {
                 acc[name] = node.value;
-            } else if(tag === "INPUT" && node.getAttribute("type") === "radio") {
-                if(node.checked) {
-                    acc[name] = node.value;
-                }
+            } else if(tag === "SELECT") {
+                acc[name] = node.value;
             } else {
                 throw "unexpected form-like element: " + tag;
             }
@@ -234,9 +236,7 @@ __mui__ = {};
         muiCallback(muiObject);
     }
 
-    // TODO: this should be called when we know everything is loaded... need to find out how this is
-    setTimeout(main, 400);
-    document.write('<div id="container"><div id="current"></div><div id="prev"></div></div>');
+    document.write('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
 
-    
+    window.onload=main;
 })();

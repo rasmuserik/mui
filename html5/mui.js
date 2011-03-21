@@ -20,7 +20,7 @@ __mui__ = {};
     var mui = __mui__;
     var global = this;
 
-    mui.jsonp = function(url, callbackParameterName, args, callback) {
+    mui.callJsonpWebservice = function(url, callbackParameterName, args, callback, timeout) {
         // clone args, as we want to add a jsonp-callback-name-property
         // without altering the original parameter
         args = Object.create(args); 
@@ -32,8 +32,34 @@ __mui__ = {};
             callback(data);
         }
         args[callbackParameterName] = callbackName;
-        //document.write(jsonml.toXml(["script" {"src": url + "?" + argsToUrl(args) + "?" + callbackName
+        args.cacheBust = ""+Math.random();
+
+        var fullUrl = url + "?" + argsUrlEncode(args);
+        var scriptTag = document.createElement("script");
+        scriptTag.setAttribute("src", fullUrl);
+        document.body.appendChild(scriptTag);
     }
+    function argsUrlEncode(args) {
+        var result = [];
+        for(name in args) {
+            result.push(escapeFixed(name) + "=" + escapeFixed(args[name]));
+        }
+        return result.join("&");
+    }
+
+    // Fixed uri escape. JavaScripts escape, encodeURI, ... are buggy.
+    function escapeFixed(uri) {
+        uri = uri.replace(/[^a-zA-Z0-9-_~.]/g, function(c) {
+            c = c.charCodeAt(0);
+            if(c > 255) {
+                return escapeFixed("&#" + c + ";");
+            } else {
+                return "%" + c.toString(16);
+            }
+        });
+        return uri;
+    };
+
     
     // # Mobile user interface - html5 version
     mui.showPage = function(page) {

@@ -208,7 +208,7 @@ __mui__ = {};
     }
     
     function domRemove(node) {
-        node.parentNode.removeChild(prev);
+        node.parentNode.removeChild(node);
     }
     
     function showHTML(html) {

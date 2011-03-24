@@ -1,9 +1,7 @@
 require("xmodule").def("muiApp",function(){
 
-
-document.write('<link rel="stylesheet" href="mui/muiApp.css"></script>');
-
 jsonml = require("jsonml");
+
 
 if (!Object.create) {
     Object.create = function(o) {
@@ -61,7 +59,7 @@ if (!Object.create) {
         var fullUrl = url + "?" + argsUrlEncode(args);
         var scriptTag = document.createElement("script");
         scriptTag.setAttribute("src", fullUrl);
-        document.body.appendChild(scriptTag);
+        document.head.appendChild(scriptTag);
     }
     function argsUrlEncode(args) {
         var result = [];
@@ -289,6 +287,12 @@ if (!Object.create) {
     mui.form = {};
 
     function muiMain() {
+        var scriptTag = document.createElement("link");
+        scriptTag.setAttribute("rel", "stylesheet");
+        scriptTag.setAttribute("href", "mui/muiApp.css");
+        document.head.appendChild(scriptTag);
+
+        document.body.innerHTML = ('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
         var muiObject = Object.create(mui);
         try {
             main(muiObject);
@@ -297,9 +301,6 @@ if (!Object.create) {
         }
     }
 
-    
-    // FIXME
-    setTimeout(muiMain, 500);
+    window.onload=muiMain
 
-    document.write('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
 });

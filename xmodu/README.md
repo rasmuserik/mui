@@ -7,7 +7,7 @@ in the browser, in LightScript, and also with the CommonJS module system.
 
 Modules are defined like this:
 
-    require("xmodu").xmodu("$MODULE_NAME", function() {
+    require("xmodu").module("$MODULE_NAME", function() {
         ... require("...") ...
         ... exports.... = ...
     });

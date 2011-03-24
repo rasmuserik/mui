@@ -14,13 +14,18 @@
         var workaround = {};
         var moduleFn = {};
         var loadStack = [];
+        var path = "."
+
+        function setPath(newPath) {
+            path = newPath;
+        }
 
         // Asynchronous fetch 
         function fetch(name) {
             var scriptTag = document.createElement("script");
 
             // TODO: handling of path
-            scriptTag.src = name + ".js" 
+            scriptTag.src = path + "/" + name + ".js" 
 
             // Currently no IE 6/7 support - could be implemented
             // with addional onreadystatechange...
@@ -81,12 +86,15 @@
             load(name);
         }
 
-        var modules = { xmodule: { def: def} };
+        var modules = { xmodule: { 
+            def: def,
+            setPath: setPath } };
 
     } else {
-        exports.xmodule = function(name, fn) {
+        exports.def = function(name, fn) {
             fn();
-        }
+        };
+        exports.setPath = function() { };
     }
 })();
 

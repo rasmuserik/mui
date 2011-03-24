@@ -289,7 +289,6 @@ if (!Object.create) {
     mui.form = {};
 
     function muiMain() {
-        console.log("HERE");
         var muiObject = Object.create(mui);
         try {
             main(muiObject);

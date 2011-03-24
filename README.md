@@ -60,6 +60,7 @@ MUI also includes the following modules:
     - [es5-shim.js](https://github.com/kriskowal/es5-shim/)
     - [underscore.js](http://documentcloud.github.com/underscore/)
     - [json2.js](https://github.com/douglascrockford/JSON-js)
+    - [phonegap.0.9.4.js](http://www.phonegap.com/)
 - Unit testing
     - [Jasmine 1.0.2](http://pivotal.github.com/jasmine/)
 

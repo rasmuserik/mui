@@ -92,11 +92,6 @@ if (!Object.create) {
         showHTML(pageTransform(page));
     };
     
-    var main = function() { throw "main function not defined. Remember to call mui.setMain" };
-    
-    exports.setMain = mui.setMain = function(fn) {
-        main = fn;
-    };
     uniqId = (function() {
         var id = 0;
         return function() {
@@ -286,13 +281,21 @@ if (!Object.create) {
     
     mui.form = {};
 
-    function muiMain() {
+    var initialised = false;
+    function muiInit() {
         var scriptTag = document.createElement("link");
         scriptTag.setAttribute("rel", "stylesheet");
         scriptTag.setAttribute("href", "mui/muiApp.css");
         document.head.appendChild(scriptTag);
 
         document.body.innerHTML = ('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
+        initialised = true;
+        if(main) {
+            muiMain();
+        }
+    }
+
+    function muiMain() {
         var muiObject = Object.create(mui);
         try {
             main(muiObject);
@@ -301,6 +304,15 @@ if (!Object.create) {
         }
     }
 
-    window.onload=muiMain
+    var main;
+
+    exports.setMain = mui.setMain = function(fn) {
+        main = fn;
+        if(initialised) {
+            muiMain();
+        }
+    };
+
+    window.onload=muiInit;
 
 });

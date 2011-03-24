@@ -7,10 +7,14 @@
             if(modules[name]) {
                 return modules[name];
             } 
+            if(failedModules[name]) {
+                throw "Loading failed: " + name;
+            }
             throw {missingModule: name};
         }
 
         // function to make certain requires behav
+        var failedModules = {};
         var workaround = {};
         var moduleFn = {};
         var loadStack = [];
@@ -62,13 +66,13 @@
                 } catch(e) {
                     delete global.exports;
 
-                    if(!e.missingModule) {
-                        throw e;
+                    if(e.missingModule) {
+                        fetch(e.missingModule);
+                        loadStack.push(name);
+                        return;
                     }
 
-                    fetch(e.missingModule);
-                    loadStack.push(name);
-                    return;
+                    throw e;
                 }
 
                 modules[name] = global.exports;
@@ -78,7 +82,8 @@
             if(workaround[name]) {
                 workaround[name](name, modules);
             }
-            throw "Unable to load: " + name
+
+            failedModules[name] = true; 
         }
 
         var def = function(name, fn) {

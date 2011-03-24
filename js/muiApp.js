@@ -1,10 +1,9 @@
-mui = {};
+require("xmodule").def("muiApp",function(){
 
 
-exports = {};
-document.write('<script src="mui/jsonml.js"></script>');
-document.write('<link rel="stylesheet" href="mui/mui.css"></script>');
-jsonml = exports;
+document.write('<link rel="stylesheet" href="mui/muiApp.css"></script>');
+
+jsonml = require("jsonml");
 
 if (!Object.create) {
     Object.create = function(o) {
@@ -14,12 +13,15 @@ if (!Object.create) {
     };
 }
 
-__mui__ = {};
 
 (function(){
-    var mui = __mui__;
     var global = this;
-
+    global.__mui__ = {};
+    var mui = global.__mui__;
+    var features = {
+        placeholder: true,
+        telInput: true
+    };
 
     function callbackError(e) {
                 mui.showPage(["page", {title: "Error"}, 
@@ -93,10 +95,11 @@ __mui__ = {};
         showHTML(pageTransform(page));
     };
     
-    var dispatch = function() { throw "Dispatch function not defined. Remember to call mui.setDispatch. Before showing ui-elements that may call back"; };
+    var main = function() { throw "main function not defined. Remember to call mui.setMain" };
     
-    mui.setDispatch = function(dispatchFunction) {
-        dispatch = dispatchFunction;
+    mui.setMain = function(fn) {
+        console.log("setting main");
+        main = fn;
     };
     uniqId = (function() {
         var id = 0;
@@ -124,16 +127,29 @@ __mui__ = {};
                 }
 
                 var labelid = uniqId();
-                if(jsonml.getAttr(node, "label")) {
+                if(features.placeholder === true) {
+                } else {
+                  if(jsonml.getAttr(node, "label")) {
                     result.push(["div", {"class": "label"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
+                  }
                 }
 
+                var tagAttr = {"class": type, "id": labelid, "name": name};
+                if(features.placeholder) {
+                    tagAttr.placeholder = jsonml.getAttr(node, "label");
+                }
                 if(type === "textbox") {
-                    result.push(["textarea", {"class": type, "id": labelid, "name": name}, ""]);
+                    result.push(["textarea", tagAttr, ""]);                
                 } else if(type === "email" || type === "text") {
-                    result.push(["input", {"class": type, "type": type, "id": labelid, "name": name}]);
+                    tagAttr.type = type;
+                    result.push(["input", tagAttr]);
                 } else if(type === "tel") {
-                    result.push(["input", {"class": type, "type": "number", "id": labelid, "name": name}]);
+                    if(features.telInput) {
+                        tagAttr.type = type;
+                    } else {
+                        tagATtr.type = "number";
+                    }
+                    result.push(["input", tagAttr]);
                 } else {
                     throw "unknown input type: " + type;
                 }
@@ -245,7 +261,7 @@ __mui__ = {};
             if(tag === "TEXTAREA" 
             || tag === "SELECT"
             || (tag === "INPUT" && 
-                    (type === "text" || type === "email" || type === "number"))) {
+                    (type === "text" || type === "email" || type === "number" || type === "tel"))) {
                 acc[name] = node.value;
             } else {
                 throw "unexpected form-like element: " + tag;
@@ -287,3 +303,4 @@ __mui__ = {};
 
     window.onload=muiMain;
 })();
+});

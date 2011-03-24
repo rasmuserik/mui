@@ -13,11 +13,10 @@ if (!Object.create) {
     };
 }
 
-
-(function(){
-    var global = this;
+    var global = (function () { return this })();
     global.__mui__ = {};
     var mui = global.__mui__;
+
     var features = {
         placeholder: true,
         telInput: true
@@ -31,12 +30,12 @@ if (!Object.create) {
                 throw e;
     }
 
-    mui.loading = function() {
+    exports.loading = mui.loading = function() {
         window.scroll(0,0);
         gId("loading").style.top = "50px";
     };
 
-    mui.callJsonpWebservice = function(url, callbackParameterName, args, callback) {
+    exports.loading = mui.callJsonpWebservice = function(url, callbackParameterName, args, callback) {
         // clone args, as we want to add a jsonp-callback-name-property
         // without altering the original parameter
         args = Object.create(args); 
@@ -87,7 +86,7 @@ if (!Object.create) {
 
     
     // # Mobile user interface - html5 version
-    mui.showPage = function(page) {
+    exports.showPage = mui.showPage = function(page) {
         gId("loading").style.top = "-50px";
         if(page[0] !== "page") {
             throw("Parameter to showPage must be a jsonml 'page'");
@@ -97,8 +96,7 @@ if (!Object.create) {
     
     var main = function() { throw "main function not defined. Remember to call mui.setMain" };
     
-    mui.setMain = function(fn) {
-        console.log("setting main");
+    exports.setMain = mui.setMain = function(fn) {
         main = fn;
     };
     uniqId = (function() {
@@ -291,6 +289,7 @@ if (!Object.create) {
     mui.form = {};
 
     function muiMain() {
+        console.log("HERE");
         var muiObject = Object.create(mui);
         try {
             main(muiObject);
@@ -299,8 +298,8 @@ if (!Object.create) {
         }
     }
 
-    document.write('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
-
+    
     window.onload=muiMain;
-})();
+    setTimeout(muiMain, 500);
+    document.write('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
 });

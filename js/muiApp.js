@@ -299,7 +299,8 @@ if (!Object.create) {
     }
 
     
-    window.onload=muiMain;
+    // FIXME
     setTimeout(muiMain, 500);
+
     document.write('<div id="container"><div id="current"></div><div id="prev"></div><div id="loading">loading...</div></div>');
 });

@@ -11,12 +11,12 @@
                 return new C;
             };
         }
+
         if(typeof(console) === "undefined") {
             alert("Console not available");
             console = {};
             console.log = function() {};
         }
-        console.log("loading xmodule");
 
         global.require = function(name) {
             if(modules[name]) {
@@ -31,11 +31,19 @@
 
         // function to make certain requires behav
         var failedModules = {};
-        var workaround = {};
+        var workaround = {
+            phonegap: {
+                url: "mui/external/phonegap.0.9.4.js",
+                fn: function() {
+                    exports = PhoneGap;
+                }
+            }
+        };
         var moduleFn = {};
         var loadStack = [];
-        var path = "mui/"
+        var defaultPath = "mui/"
         var fetchReqs = {};
+        require.paths = [defaultPath];
 
         // Asynchronous fetch 
         function fetch(name) {
@@ -46,12 +54,26 @@
 
             var scriptTag = document.createElement("script");
 
+            if(require.paths.length !== 1) {
+                var err = "require.paths with length other than one is not supported";
+                alert(err);
+                throw(err);
+            }
+
             // TODO: handling of path
-            scriptTag.src = path + name + ".js?" + Math.random();
+            var url = require.paths[0] + name + ".js";
+            if(workaround[name] && workaround[name].url) {
+                url = workaround[name].url;
+            }
+            scriptTag.src = url + "?" + Math.random();
 
             // Currently no IE 6/7 support - could be implemented
             // with addional onreadystatechange...
             function callback() {
+                if(workaround[name]) {
+                    moduleFn[name] = moduleFn[name] || workaround[name].fn;;
+                }
+
                 load(name);
             }
 
@@ -98,10 +120,6 @@
                 }
                 return;
             }
-            if(workaround[name]) {
-                workaround[name](name, modules);
-            }
-
             failedModules[name] = true; 
         }
 

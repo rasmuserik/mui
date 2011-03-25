@@ -3,15 +3,6 @@
     if(typeof require === "undefined") {
         var global = this;
 
-
-        if(!Object.create) {
-            Object.create = function(o) {
-                var C = function () {};
-                C.prototype = o;
-                return new C;
-            };
-        }
-
         if(typeof(console) === "undefined") {
             alert("Console not available");
             console = {};
@@ -36,6 +27,21 @@
                 url: "mui/external/phonegap.0.9.4.js",
                 fn: function() {
                     exports = PhoneGap;
+                },
+            },
+            "es5-shim": {
+                url: "mui/external/es5-shim.js",
+                fn: function() { }
+            },
+            json2: {
+                url: "mui/external/json2.js",
+                fn: function() { }
+            },
+            underscore: {
+                url: "mui/external/underscore.js",
+                fn: function() {
+                    exports = _;
+                    _._ = _;
                 }
             }
         };
@@ -91,6 +97,17 @@
                 return;
             }
 
+            // ensure sane environment
+            if(typeof Object.create !== "function") {
+                fetch("es5-shim");
+                setTimeout(function() { load(name); }, 20);
+            }
+            if(typeof JSON === "undefined") {
+                fetch("json2");
+                setTimeout(function() { load(name); }, 20);
+            }
+
+            // load module
             if(moduleFn[name]) {
                 /* TODO: assert exports is undefined */
                 global.exports = {};

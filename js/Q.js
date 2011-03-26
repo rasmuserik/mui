@@ -1,5 +1,16 @@
 require("xmodule").def("Q",function(){
 
+var randint = exports.randint = function(a, b) {
+    if(b===undefined) {
+        b = a; a = 0;
+    }
+    return a + 0|(Math.random()*(b-a));
+}
+
+exports.pick = function(a) {
+    return a[randint(a.length)];
+}
+
 // Fixed uri escape. JavaScripts escape, encodeURI, ... are buggy.
 // These should work.
 exports.unescapeUri = function(uri) {

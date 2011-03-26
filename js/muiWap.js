@@ -1,11 +1,21 @@
 require("xmodule").def("muiWap",function(){
 
-http = require('http');
-jsonml = require('jsonml');
-_ = require('underscore')._;
+var http = require('http');
+var jsonml = require('jsonml');
+var _ = require('underscore')._;
+var Q = require('Q');
 
 var mainFn = function(mui) {
     mui.showPage(["page", {title: "error"}, ["text", "mui.setMain(...) has not been called"]]);
+}
+
+function randId() {
+    var result = "";
+    var cs = "1234567890_-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for(var i=20; i; --i) {
+        result += Q.pick(cs);
+    }
+    return result;
 }
 
 exports.setMain = function(fn) {
@@ -13,7 +23,6 @@ exports.setMain = function(fn) {
 }
 
 var mui = {
-    session: {},
     form: {},
     loading: function() {
     },
@@ -36,9 +45,43 @@ var mui = {
 clients = {};
 
 http.createServer(function (req, res) {
-    var muiObject = Object.create(mui);
+
+    var muiObject, sid, fn;
+    var params = req.url.split('?')
+    if(params.length > 1) {
+        params.shift();
+        params = params.join('').split('&');
+        params = _.reduce(params, function(acc, elem) {
+            var t = elem.split("=");
+            acc[Q.unescapeUri(t[0])] = Q.unescapeUri(t[1]);
+            return acc;
+        }, {});
+    } else {
+        params = {};
+    }
+
+    if(params._ && clients[params._]) {
+        muiObject = clients[params._];
+        sid = params._;
+    } else {
+        muiObject = Object.create(mui);
+        sid = muiObject.__session_id__ = randId();
+        muiObject.session = {};
+        muiObject.fns = {};
+        // mem leak, sessions are never deleted
+        clients[sid] = muiObject;
+    }
     muiObject.httpResult = res;
-    mainFn(muiObject);
+    muiObject.httpRequest = req;
+    muiObject.button = params._B;
+    muiObject.form = params;
+
+    fn = muiObject.fns[Q.unescapeUri(params._B || "")] || mainFn;
+    muiObject.fns = {};
+    
+    delete params._;
+    delete params._B;
+    fn(muiObject);
 }).listen(8080, "127.0.0.1");
 
 
@@ -125,8 +168,10 @@ http.createServer(function (req, res) {
                     throw "buttons must have an fn attribute, containing a function to call";
                 }
 
-                var fnid = uniqId();
-                var attr = {"class": "button", type: "submit", value: node.slice(2).join("")};
+                var text = node.slice(2).join("");
+                mui.fns[text] = jsonml.getAttr(node, "fn");
+
+                var attr = {"class": "button", type: "submit", "name": "_B", value: text};
                 var result = ["input", attr];
                 html.push(result);
             }
@@ -145,7 +190,7 @@ http.createServer(function (req, res) {
             return html;
         }
     
-        var html = ["form", ["input", {type: "hidden", name: "_", value: "SESSION_ID_VALUE"}]];
+        var html = ["form", ["input", {type: "hidden", name: "_", value: mui.__session_id__}]];
         var title = jsonml.getAttr(page, "title") || "untitled";
         jsonml.childReduce(page, nodeHandler, html);
         return [["h1", title], html];

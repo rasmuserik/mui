@@ -34,27 +34,28 @@ Mui Objects are only available to callbacks, and contains the following properti
 - `mui.form` contains results of form elements that the user interacted with on the previous page, if applicable.
 
 Mui Pages are passed to `showPage`, and are user interface descriptions written in [JsonML array form](http://en.wikipedia.org/wiki/JsonML) with the addition that JavaScript-functions may also be values some of the places. Mui Pages has the following elements:
+
 - `page` is the tag type of the root elements, with the following attributes:
     - `title` is shown on the top of the page, optional
 - `section` groups other elements
 - `text` is displayed text
-- `input` enables the user to input a value. It has the following attributes
-    - `label` 
+- `input` enables the user to input a value. It has the following attributes:
+    - `label` optional label shown with the input element
     - `type` indicates the kind of input, - it is mandatory and must be one of the following:
         - `text` a line of text
         - `textbox` some lines of text
         - `tel`ephone number
         - `email` address
-- `select`
-- `option`
-- `button`
-
-
-The actual user interface abstraction, which allows the same code to target different platforms
-
-- Smartphones/HTML5 `muiApp.*`
-- TODO: WAP/HTML-MP `muiWap.*`
-- TODO: ../j2me
+    - `name` is used to reference the result in `mui.form`, mandatory
+    - TODO: `validateFn` a JavaScript function that will be called with the content of the input, and should return truthy if the input is valid
+    - TODO: `validateHint` will be shown when the user enters an invalid value in the input
+- `choice` a collection of options, between which the user must select. Only `option` nodes are allowed as child elements. It has the following attributes:
+    - `label` optional label shown with the choice group
+    - `name` is used to reference the result in `mui.form`, mandatory
+- `option` an option the user can choose.  Must be child elements of select. It has the following attributes:
+    - `value` the value this choice will return to the program in the `mui.form`.
+- `button` is a clickable button with the following attributes:
+    - `fn` the Mui Callback function to invoke when the button is pressed.
 
 
 ## Module loader `xmodule.js`

@@ -33,8 +33,21 @@ Mui Objects are only available to callbacks, and contains the following properti
 - `mui.showPage(muiPage)` displays a page that the user can interact with.
 - `mui.form` contains results of form elements that the user interacted with on the previous page, if applicable.
 
-
-
+Mui Pages are passed to `showPage`, and are user interface descriptions written in [JsonML array form](http://en.wikipedia.org/wiki/JsonML) with the addition that JavaScript-functions may also be values some of the places. Mui Pages has the following elements:
+- `page` is the tag type of the root elements, with the following attributes:
+    - `title` is shown on the top of the page, optional
+- `section` groups other elements
+- `text` is displayed text
+- `input` enables the user to input a value. It has the following attributes
+    - `label` 
+    - `type` indicates the kind of input, - it is mandatory and must be one of the following:
+        - `text` a line of text
+        - `textbox` some lines of text
+        - `tel`ephone number
+        - `email` address
+- `select`
+- `option`
+- `button`
 
 
 The actual user interface abstraction, which allows the same code to target different platforms

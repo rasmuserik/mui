@@ -7,15 +7,42 @@ Applications are written in a subset of JavaScript in order to be able to run on
 
 # Modules
 
-## Mobile User Interface `mui.js`
+## Mobile User Interface -  `mui.js`
 
-TODO: more docs here...
+
+The start of the program is defined using the `setMain` function which takes a Mui Callback as a parameter. For example:
+
+    require('mui').setMain(main);
+
+    function main(mui) {
+        mui.showPage(["page", ["text", "Hello world"]]);
+    }
+
+Mui Callbacks are the functions that are passed to Mui, and which will be called, when new content are needed to be shown to the user, for example when the program starts and when the user submits a form. 
+A Mui Callback is an unary function, taking a Mui Object as a parameter. 
+When a callback is called, it must call a method on the Mui Object which shows new content (currently only mui.showPage(...)).
+
+Mui Objects are only available to callbacks, and contains the following properties:
+
+- `mui.session` is an initially empty object where the application can store data, which will be available in futher callbacks in the same session.
+- `mui.storage.getItem(key)` retrieve a value for a given key in a persistent storage linked to the current device.
+- `mui.storage.setItem(key, value)` sets an item in the storage. The value should be JSON-serialisable.
+- `mui.storage.removeItem(key)` deletes an item in the storage.
+- `mui.loading()` indicates loading activity to the user.
+- `mui.callJsonpWebservice(url, callbackParameterName, args, callback)` calls a web service. `url` is the url of the web service, `callbackParameterName` is the parameter to the service which names the [padding function](http://en.wikipedia.org/wiki/JSONP), `args` is an object of arguments which are to be passed to the url, and `callback` is an unary JavaScript function which will be called with result of the web service, or `undefined` if the service fails or times out.
+- `mui.showPage(muiPage)` displays a page that the user can interact with.
+- `mui.form` contains results of form elements that the user interacted with on the previous page, if applicable.
+
+
+
+
 
 The actual user interface abstraction, which allows the same code to target different platforms
 
 - Smartphones/HTML5 `muiApp.*`
 - TODO: WAP/HTML-MP `muiWap.*`
 - TODO: ../j2me
+
 
 ## Module loader `xmodule.js`
 
@@ -30,7 +57,7 @@ Modules are defined like this:
     });
 
 
-Loading xmodu adds the following objects to the global scope, if none of them are defined:
+Loading xmodule adds the following objects to the global scope, if none of them are defined:
 
 - `require("$YOUR_MODULE_NAME")` used for loading a module
 - `exports` - before loading a module, this will be created as an empty object. Properties set on this object will be available when the module is `require`d.

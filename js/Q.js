@@ -28,14 +28,13 @@ exports.unescapeUri = function(uri) {
     return uri;
 }
 
-exports.escapeUri = function(uri) {
-    console.log(uri);
+exports.escapeUri = function escapeUri(uri) {
     uri = uri.replace(/[^a-zA-Z0-9-_~.]/g, function(c) {
         c = c.charCodeAt(0);
         if(c > 255) {
-            return escapeFixed("&#" + c + ";");
+            return escapeUri("&#" + c + ";");
         } else {
-            return "%" + c.toString(16);
+            return "%" + (c<16?"0":"") + c.toString(16);
         }
     });
     return uri;

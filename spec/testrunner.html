@@ -10,11 +10,14 @@
     </script>
 
 <script src="jsonml.spec.js"></script>
+<script src="Q.spec.js"></script>
 
-</head><body><script>
-  setTimeout(function() {
+</head><body onload="setTimeout(runTests, 500)"><script>
+
+function runTests() {
     jasmine.getEnv().addReporter(new jasmine.TrivialReporter());
     jasmine.getEnv().execute();
-  }, 300);
+};
+
 </script></body></html>
 

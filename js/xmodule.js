@@ -18,7 +18,10 @@
             }
             throw {missingModule: name};
         }
-        require.paths = [defaultPath];
+
+        var defaultPath = "mui/"
+	require.paths = [defaultPath];
+	console.log(require.paths);
 
         // function to make certain requires behav
         var failedModules = {};
@@ -47,7 +50,6 @@
         };
         var moduleFn = {};
         var loadStack = [];
-        var defaultPath = "mui/"
         var fetchReqs = {};
 
         // Asynchronous fetch 
@@ -58,6 +60,7 @@
             fetchReqs[name] = true;
 
             var scriptTag = document.createElement("script");
+            console.log(require.paths);
 
             if(require.paths.length !== 1) {
                 var err = "require.paths with length other than one is not supported";

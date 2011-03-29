@@ -13,13 +13,14 @@ describe("jsonml test", function() {
     jsonml = require("jsonml");
   });
 
+  it("output xml", function() {
+    expect(jsonml.toXml(html_j)).toEqual(html_x);
+  });
+
   it("parse xml", function() {
     expect(jsonml.fromXml(html_x)).toEqual(html_j);
   });
 
-  it("output xml", function() {
-    expect(jsonml.toXml(html_j)).toEqual(html_x);
-  });
 });
 
 });

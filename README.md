@@ -7,7 +7,7 @@ Applications are written in a subset of JavaScript in order to be able to run on
 
 # Modules
 
-## Mobile User Interface -  `mui.js`
+## Mobile User Interface -  `mui*.js`
 
 
 The start of the program is defined using the `setMain` function which takes a Mui Callback as a parameter. For example:
@@ -92,6 +92,13 @@ This module implements the following functions:
 - `jsonml.toObject(jsonml_array)` converts jsonml in array form to an easier subscriptable object
 - `jsonml.childReduce(jsonml_array, callback_function(accumulator, child_element), initial_value)` applies the callback function to each child element of the jsonml array
 - `jsonml.getAttr(jsonml_array, attributename)` retrieves the value of a given attribute of the jsonml array or undefined if the attribute is not defined
+
+## Various utility functions `Q.js`
+
+- `Q.escapeUri(str)` uri-escape that works (the one in the EcmaScript Standard has issues with non-latin1 characters)
+- `Q.unescapeUri(str)` uri-escape that works (the one in the EcmaScript Standard has issues with non-latin1 characters)
+- `Q.pick(array)` returns a random element from an array
+- `Q.randint(n)` returns a random non-negative integer less than n
 
 ## External modules
 

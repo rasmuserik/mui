@@ -1,10 +1,7 @@
 require("xmodule").def("Q",function(){
 
-var randint = exports.randint = function(a, b) {
-    if(b===undefined) {
-        b = a; a = 0;
-    }
-    return a + 0|(Math.random()*(b-a));
+var randint = exports.randint = function(n) {
+    return 0 | (Math.random()*n)
 }
 
 exports.pick = function(a) {

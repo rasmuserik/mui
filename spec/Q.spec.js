@@ -10,11 +10,11 @@ describe("Q", function() {
   beforeEach(function() {
   });
 
-  it("escape uri", function() {
+  it("escapes uri", function() {
     expect(Q.escapeUri(unenc)).toEqual(enc);
   });
 
-  it("unescape uri", function() {
+  it("unescapes uri", function() {
     expect(Q.unescapeUri(enc)).toEqual(unenc);
     expect(Q.unescapeUri(enc2)).toEqual(unenc);
   });

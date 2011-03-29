@@ -66,7 +66,7 @@ examples/guitest/guitest.jar: examples/guitest/* $(DEPS)
 	mv examples/out.jar examples/guitest/guitest.jar
 
 guitest: examples/guitest/guitest.jar
-	../../WTK2.5.2/bin/emulator -cp examples/guitest/guitest.jar Midlet
+    java -jar external_dependencies/microemulator.jar examples/guitest/guitest.jar
 
 ex: examples/moby/moby.jar
 

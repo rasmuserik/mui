@@ -1,5 +1,0 @@
-- evt. c to be array rather than single object
-- get implementation in sync with specification
-- test
-- demo-apps
-- benchmarks

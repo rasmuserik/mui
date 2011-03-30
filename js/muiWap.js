@@ -217,6 +217,6 @@ require("xmodule").def("muiWap",function(){
 	delete params._;
 	delete params._B;
 	fn(muiObject);
-    }).listen(8080, "127.0.0.1");
+    }).listen(8080);
     console.log("Listening on 127.0.0.1:8080");
 });

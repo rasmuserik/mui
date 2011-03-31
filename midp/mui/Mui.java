@@ -2,6 +2,7 @@ import com.solsort.lightscript.*;
 import java.io.*;
 
 public class Mui implements Function {
+    static int dummy = 0;
 
     Object closure;
     int fn;

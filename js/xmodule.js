@@ -1,9 +1,35 @@
 (function() {
+    if(typeof(require) === "undefined" && typeof(load) !== "undefined" ) {
+        console.log("in xmodule");
+        // LightScript
+        var modules = {};
+        function def(name, fn) {
+            fn();
+        }
 
-    if(typeof require === "undefined") {
-	if(typeof global === "undefined") {
-	    global = this;
-	}
+        modules.xmodule = { "def": def };
+
+        var l = load;
+        require = function(name) {
+            console.log("require: ", name);
+            if(!modules[name]) {
+                var prev = exports;
+                exports = {};
+                l(name);
+                modules[name] = exports;
+                exports = prev;
+            }
+            console.log(modules[name]);
+            return modules[name];
+        }
+        load = undefined;
+
+    } else if(typeof(require) === "undefined") {
+        // Browser
+
+        if(typeof(global) === "undefined") {
+            global = this;
+        }
 
         if(typeof(console) === "undefined") {
             alert("Console not available");
@@ -22,7 +48,7 @@
         }
 
         var defaultPath = "mui/"
-	require.paths = [defaultPath];
+        require.paths = [defaultPath];
 
         // function to make certain requires behav
         var failedModules = {};
@@ -33,13 +59,13 @@
                     exports = PhoneGap;
                 }
             },
-	    jasmine: {
-		url: "external/jasmine",
-	    },
-	    "jasmine-html": {
-		url: "external/jasmine-html",
-		fn: function() { }
-	    },
+            jasmine: {
+                url: "external/jasmine",
+            },
+            "jasmine-html": {
+                url: "external/jasmine-html",
+                fn: function() { }
+            },
             "es5-shim": {
                 url: "external/es5-shim",
                 fn: function() { }
@@ -109,11 +135,11 @@
             }
 
             // ensure sane environment
-            if(typeof Object.create !== "function") {
+            if(typeof(Object.create) !== "function") {
                 fetch("es5-shim");
                 setTimeout(function() { load(name); }, 20);
             }
-            if(typeof JSON === "undefined") {
+            if(typeof(JSON) === "undefined") {
                 fetch("json2");
                 setTimeout(function() { load(name); }, 20);
             }
@@ -159,10 +185,10 @@
         var modules = { xmodule: { def: def } };
 
     } else {
+        // Node
         exports.def = function(name, fn) {
             fn();
         };
         exports.setPath = function() { };
     }
 })();
-

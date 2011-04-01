@@ -1,18 +1,5 @@
-newform("Hello world");
-var t = textfield("textbox", 5000, 0);
-textfield("email", 40, 1);
-textfield("tel", 20, 3);
-var c = choice("choice...");
-addchoice(c, "a");
-addchoice(c, "b");
-addchoice(c, "c");
-addbutton("foo", function() { console.log("foo", textvalue(t)); });
-addbutton("bar", function() { console.log("bar", choiceno(c)); });
-stringitem("helo");
-
 require("xmodule").def("main",function(){
 require("mui");
-setTicker("loading...");
 
 function main(mui) {
   mui.showPage(["page", {title: "Sp\xf8rg biblioteket"},

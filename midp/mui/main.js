@@ -4,7 +4,6 @@ require("mui");
 function main(mui) {
   mui.showPage(["page", {title: "Sp\xf8rg biblioteket"},
       ["section",
-        ["text", "sporge..."],
         ["input", {type: "textbox", name: "question", label: "Mit sp\xf8rgsm\xe5l"}],
         ["choice", {name: "deadline"},
           ["option", {value: "choose"}, "V\xe6lg tidsfrist..."],

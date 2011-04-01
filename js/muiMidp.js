@@ -27,7 +27,8 @@ require("xmodule").def("muiMidp", function() {
         }
         return acc;
     }
-    var formelem;
+    var inputelem;
+    var choiceelem;
     function showSubPage(acc, p) {
         if(Array.isArray(p)) {
             var type = p[0];
@@ -41,11 +42,25 @@ require("xmodule").def("muiMidp", function() {
                     tel: { type: 3, len: 20}
                     };
                 type = types[p[1].type];
-                formelem[p[1].name] = textfield(p[1].label || "", type.len, type.type);
+                inputelem[p[1].name] = textfield(p[1].label || "", type.len, type.type);
             } else if(type == "text") {
                 stringitem(p[1]);
             } else if(type == "button") {
-                addbutton(p[2], p[1].fn);
+                addbutton(p[2], 
+                    function() {
+                        p[1].fn(Object.create(mui));
+                    });
+            } else if(type == "choice") {
+                var c = choice(p[1].label || "");
+                var a = [];
+                choiceelem[p[1].name] = a;
+                childReduce(p, function(_, elem) {
+                    console.log("HERE", elem, a, c);
+                    addchoice(c, elem[2]);
+                    console.log("HERE2", elem, a, c);
+                    a.push(elem[1].value);
+                    console.log("HERE3", elem, a, c);
+                });
             } else {
                 console.log("Unexpected page element:", type);
             }
@@ -55,7 +70,8 @@ require("xmodule").def("muiMidp", function() {
     }
 
     mui.showPage = function(page) {
-        formelem = {};
+        inputelem = {};
+        choiceelem = {};
         newForm(page[1].title || "untitled");
         childReduce(page, showSubPage);
     }
@@ -79,7 +95,7 @@ require("xmodule").def("muiMidp", function() {
     mui.loading();
     exports.setMain = function(muiCallback) {
         console.log("setMain: ", muiCallback);
-        muiCallback(mui);
+        muiCallback(Object.create(mui));
     }
     console.log("G");
 });

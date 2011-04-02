@@ -4,12 +4,32 @@ import java.util.Stack;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.io.InputStream;
+import java.util.Random;
 
+final class Timeout implements Runnable {
+    LightScript ls;
+    Function fn;
+    int delay;
+    public Timeout(LightScript ls, Function fn, int delay) {
+        this.ls = ls;
+        this.fn = fn;
+        this.delay = delay;
+        (new Thread(this)).start();
+    }
+    public void run() {
+        try {
+            Thread.sleep(delay);
+            ls.call(fn);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
 
 public final class Util implements Function {
     //<editor-fold desc="constants">
 
-    static final int ENUMERATION_ITERATOR = 22;
+    static Random random = new Random();
 
     /** new Object[0]. Defined as property for caching. */
     public static final Object emptyTuple[] = new Object[0];
@@ -195,6 +215,12 @@ public final class Util implements Function {
         }
         case 3: { // default add
             LightScript ls = (LightScript) closure;
+            Object a = args[argpos];
+            Object b = args[argpos+1];
+            if((a instanceof FixedPoint || a instanceof Integer)
+            && (b instanceof FixedPoint || b instanceof Integer)) {
+                return FixedPoint.fpAdd(FixedPoint.toFp(a), FixedPoint.toFp(b));
+            }
             return ls.toString(args[argpos]) + ls.toString(args[argpos + 1]);
         }
         case 4: { // stack push
@@ -257,7 +283,7 @@ public final class Util implements Function {
         case 12: { // lightscript global setter
             LightScript ls = (LightScript) closure;
             ls.set(args[argpos + 1], args[argpos + 2]);
-            return ls;
+            return args[argpos + 2];
         }
         case 13: { // String.toInt
             return Integer.valueOf((String) args[argpos]);
@@ -317,10 +343,11 @@ public final class Util implements Function {
             }
             return sb.toString();
         }
+        /*
         case 21: { // hashtable __iter__
-            return new Util(ENUMERATION_ITERATOR, ((Hashtable) args[argpos]).keys());
+            return new Util(22, ((Hashtable) args[argpos]).keys());
         }
-        case ENUMERATION_ITERATOR: { // iterator, should have an enumeration as closure
+        case 22: { // iterator, should have an enumeration as closure
             Enumeration e = (Enumeration) closure;
             Object o;
             do {
@@ -332,6 +359,33 @@ public final class Util implements Function {
                 // skip the "__proto__" property
             } while ("__proto__".equals(o));
             return o;
+        }
+        */
+        case 21: { // hashtable __iter__
+            Stack result = new Stack();
+            Object next = args[argpos];
+            while(next != null && next instanceof Hashtable) {
+                Hashtable h = (Hashtable)next;
+                Enumeration e = h.keys();
+                next = null;
+                while(e.hasMoreElements()) {
+                    Object o = e.nextElement();
+                    if("__proto__".equals(o)) {
+                        next = h.get(o);
+                    } else {
+                        result.push(o);
+                    }
+                }
+            }
+            return new Util(22, result);
+        }
+        case 22: {
+            Stack s = (Stack)closure;
+            if(s.empty()) {
+                return LightScript.UNDEFINED;
+            } else {
+                return s.pop();
+            }
         }
         case 23: { // parseint
             int base;
@@ -425,6 +479,7 @@ public final class Util implements Function {
             return new Integer(((String) args[argpos]).charAt(ls.toInt(args[argpos + 1])));
         }
         case 32: { // string __getter__
+            System.out.println("string __getter__ " + String.valueOf(args[argpos+1]) + argcount + String.valueOf(args[argpos]));
             if (args[argpos + 1] instanceof Integer) {
                 String s = (String) args[argpos];
                 int pos = ((Integer) args[argpos + 1]).intValue();
@@ -586,6 +641,26 @@ public final class Util implements Function {
             }
             return result;
         }
+        case 48: { // division /
+            return FixedPoint.fpDiv(FixedPoint.toFp(args[argpos]), FixedPoint.toFp(args[argpos+1]));
+        }
+        case 49: { // subtraction -
+            return FixedPoint.fpSub(FixedPoint.toFp(args[argpos]), FixedPoint.toFp(args[argpos+1]));
+        }
+        case 50: { // multiplication "*"
+            return FixedPoint.fpMul(FixedPoint.toFp(args[argpos]), FixedPoint.toFp(args[argpos+1]));
+        }
+        case 51: { // FixedPoint.toInt
+            return new Integer(FixedPoint.toInt(args[argpos]));
+        }
+        case 52: { // Math.random
+            return new FixedPoint(0xffffffffL & random.nextInt());
+        }
+        case 53: { // Number.toString
+            LightScript ls = (LightScript) closure;
+            new Timeout(ls, (Function) args[argpos+1], ls.toInt(args[argpos+2]));
+            return LightScript.UNDEFINED;
+        }
 
         }
         return LightScript.UNDEFINED;
@@ -667,8 +742,23 @@ public final class Util implements Function {
         ls.setMethod(numberClass, "toInt", new Util(24));
         ls.setMethod(numberClass, "toString", new Util(47, ls));
 
+        Class fpClass = (new FixedPoint(1)).getClass();
+        ls.setMethod(numberClass, "/", new Util(48));
+        ls.setMethod(fpClass, "/", new Util(48));
+        ls.setMethod(numberClass, "-", new Util(49));
+        ls.setMethod(fpClass, "-", new Util(49));
+        ls.setMethod(numberClass, "*", new Util(50));
+        ls.setMethod(fpClass, "*", new Util(50));
+        ls.setMethod(fpClass, "toInt", new Util(51));
+
         Class stdlibClass = (new Util(0)).getClass();
         ls.setMethod(stdlibClass, "__getter__", new Util(26, ls));
+
+        Hashtable math = new Hashtable();
+        ls.set("Math", math);
+        math.put("random", new Util(52));
+
+        ls.set("setTimeout", new Util(53, ls));
 
         ls.set("t", new Util(43, ls));
         ls.eval("console={};console.log=t;t=undefined");

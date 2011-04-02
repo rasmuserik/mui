@@ -2,9 +2,6 @@ require("xmodule").def("Q",function(){
 
     var randint = exports.randint = function(n) {
         console.log("randint!");
-        console.log(Math);
-        console.log(Math.random);
-        console.log(Math.random());
         return 0 | (Math.random()*n)
     };
 
@@ -19,7 +16,45 @@ require("xmodule").def("Q",function(){
         lightscript: typeof(LightScript) !== "undefined"
     };
 
+    var urichars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_~.";
+    var escapeUri = exports.escapeUri = function (uri) {
+        console.log("excapeUri");
+        console.log("uri", uri);
+        var result = [];
+        for(var i=0;i<uri.length;++i) {
+            console.log("X", uri, c);
+            var c = uri[i];
+            console.log("Y");
+            if(urichars.indexOf(c) >= 0) {
+                result.push(c);
+            } else {
+                c = c.charCodeAt(0);
+                if(c > 255) {
+                    result.push(escapeUri("&#" + c + ";"));
+                } else {
+                    result.push( "%" + (c<16?"0":"") + c.toString(16));
+                }
+            }
+        }
+        return result.join();
+    };
+
+    var encodeUrlParameters = exports.encodeUrlParameters = function (args) {
+        console.log("encodeUrlParameters", args);
+        var result = [];
+        var name;
+        for(name in args) {
+            console.log("enc", name, "" + args[name]);
+            result.push(escapeUri(name) + "=" + escapeUri("" + args[name]));
+        }
+        console.log("encodeUrlParameters result", result.join("&"));
+        return result.join("&");
+    }
+
+
     var executeRemote = exports.executeRemote = function(url) {
+        console.log("executeRemote");
+        console.log("features:", features);
         if(features.nodejs) {
             urlFetchNodejs(url, function(txt) {
                 Function(txt)();
@@ -60,16 +95,14 @@ require("xmodule").def("Q",function(){
 
     var id = 0;
     function uniqId() {
-        console.log("uniq");
+        console.log("uniqId");
         var letters = 'qwertyuiopasdfghjklzxcvbnmQWERTYIUOPASDFGHJKLZXCVBNM_$'
-        console.log("uniq: pick, exports.pick ", pick, exports.pick);
         var result = pick(letters);
         for(var i = 0; i < 10; ++i) {
-            console.log("B");
             result += pick(letters+"1234567890");
         }
-        console.log("C");
         result += ++id;
+        console.log(result);
         return result;
     }
     
@@ -79,11 +112,9 @@ require("xmodule").def("Q",function(){
         // without altering the original parameter
         args = Object.create(args); 
 
-        console.log("A");
 
         // temporary global callback function, that deletes itself after used
         var callbackName = "_Q_" + uniqId();
-        console.log("B");
         var callbackFn = global[callbackName] = function(data) {
             if(global.hasOwnProperty(callbackName)) {
                 delete global[callbackName];
@@ -96,19 +127,15 @@ require("xmodule").def("Q",function(){
         }
         // if we haven't got an answer after one minute, assume that an error has occured, 
         // and call the callback, without any arguments.
+        console.log("setTimeout", callbackFn);
         setTimeout(callbackFn, 60000);
+        console.log("setTimeout done");
 
         args[callbackParameterName] = callbackName;
 
+        console.log("A");
         executeRemote(url + "?" + encodeUrlParameters(args));
-    }
-
-    var encodeUrlParameters = exports.encodeUrlParameters = function (args) {
-        var result = [];
-        for(name in args) {
-            result.push(escapeUri(name) + "=" + escapeUri("" + args[name]));
-        }
-        return result.join("&");
+        console.log("B");
     }
 
 
@@ -128,24 +155,5 @@ require("xmodule").def("Q",function(){
         });
         return uri;
     }
-
-    var urichars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_~.";
-    var escapeUri = exports.escapeUri = function (uri) {
-        var result = [];
-        for(var i=0;i<uri.length;++i) {
-            var c = uri[c];
-            if(urichars.indexOf(c) >= 0) {
-                result.push(c);
-            } else {
-                c = c.charCodeAt(0);
-                if(c > 255) {
-                    result.push(escapeUri("&#" + c + ";"));
-                } else {
-                    result.push( "%" + (c<16?"0":"") + c.toString(16));
-                }
-            }
-        }
-        return result.join();
-    };
 
 });

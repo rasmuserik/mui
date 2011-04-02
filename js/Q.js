@@ -1,5 +1,18 @@
 require("xmodule").def("Q",function(){
 
+    var randint = exports.randint = function(n) {
+        console.log("randint!");
+        console.log(Math);
+        console.log(Math.random);
+        console.log(Math.random());
+        return 0 | (Math.random()*n)
+    };
+
+    var pick = exports.pick = function(a) {
+        console.log("pick");
+        return a[randint(a.length)];
+    };
+
     var features = exports.features = {
         browser: typeof(navigator) !== "undefined",
         nodejs: typeof(process) !== "undefined" && process.versions.node !== undefined,
@@ -47,22 +60,30 @@ require("xmodule").def("Q",function(){
 
     var id = 0;
     function uniqId() {
+        console.log("uniq");
         var letters = 'qwertyuiopasdfghjklzxcvbnmQWERTYIUOPASDFGHJKLZXCVBNM_$'
+        console.log("uniq: pick, exports.pick ", pick, exports.pick);
         var result = pick(letters);
         for(var i = 0; i < 10; ++i) {
+            console.log("B");
             result += pick(letters+"1234567890");
         }
+        console.log("C");
         result += ++id;
         return result;
     }
     
     exports.callJsonpWebservice = function(url, callbackParameterName, args, callback) {
+        console.log("JsonpWebservice");
         // clone args, as we want to add a jsonp-callback-name-property
         // without altering the original parameter
         args = Object.create(args); 
 
+        console.log("A");
+
         // temporary global callback function, that deletes itself after used
         var callbackName = "_Q_" + uniqId();
+        console.log("B");
         var callbackFn = global[callbackName] = function(data) {
             if(global.hasOwnProperty(callbackName)) {
                 delete global[callbackName];
@@ -91,14 +112,6 @@ require("xmodule").def("Q",function(){
     }
 
 
-    var randint = exports.randint = function(n) {
-        return 0 | (Math.random()*n)
-    };
-
-    var pick = exports.pick = function(a) {
-        return a[randint(a.length)];
-    };
-
     // Fixed uri escape. JavaScripts escape, encodeURI, ... are buggy.
     // These should work.
     exports.unescapeUri = function(uri) {
@@ -116,16 +129,23 @@ require("xmodule").def("Q",function(){
         return uri;
     }
 
+    var urichars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_~.";
     var escapeUri = exports.escapeUri = function (uri) {
-        uri = uri.replace(RegExp("[^a-zA-Z0-9-_~.]", "g"), function(c) {
-            c = c.charCodeAt(0);
-            if(c > 255) {
-                return escapeUri("&#" + c + ";");
+        var result = [];
+        for(var i=0;i<uri.length;++i) {
+            var c = uri[c];
+            if(urichars.indexOf(c) >= 0) {
+                result.push(c);
             } else {
-                return "%" + (c<16?"0":"") + c.toString(16);
+                c = c.charCodeAt(0);
+                if(c > 255) {
+                    result.push(escapeUri("&#" + c + ";"));
+                } else {
+                    result.push( "%" + (c<16?"0":"") + c.toString(16));
+                }
             }
-        });
-        return uri;
+        }
+        return result.join();
     };
 
 });

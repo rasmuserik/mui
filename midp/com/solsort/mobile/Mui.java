@@ -1,3 +1,4 @@
+package com.solsort.mobile;
 import com.solsort.lightscript.*;
 import java.io.*;
 import java.util.*;
@@ -10,8 +11,9 @@ public class Mui implements Function, CommandListener {
     int fn;
     static Form form;
     static LightScript ls;
-    static Midlet mid;
+    static MIDlet mid;
     static Hashtable commands;
+    static HTTPClient httpclient;
     public void commandAction(Command c, Displayable d) {
         try {
             ls.call((Function) commands.get(c));
@@ -19,6 +21,7 @@ public class Mui implements Function, CommandListener {
             e.printStackTrace();
         }
     }
+
     public Object apply(Object[] args, int argpos, int argcount) throws LightScriptException {
         switch (fn) {
         case 3: { // newform(title)
@@ -55,21 +58,20 @@ public class Mui implements Function, CommandListener {
             form.addCommand(c);
             return ls.UNDEFINED;
         }
-        case 9: { // httpeval(url, callback)
+        case 9: { // httpget(url, callback)
+            httpclient.openUrl(ls.toString(args[argpos+1]), (Function)args[argpos+2]);
             return ls.UNDEFINED;
         }
         case 10: { // stringitem(text)
             form.append(ls.toString(args[argpos+1]));
             return ls.UNDEFINED;
         }
-        case 11: { // localStoreGet(key)
-            return ls.UNDEFINED;
+        case 11: { // localStorage.getItem
+            return ((MidpStorage) args[argpos]).get(ls.toString(args[argpos + 1]));
         }
-        case 12: { // localStoreSet(key, value)
-            return ls.UNDEFINED;
-        }
-        case 13: { // localStoreRemove(key)
-            return ls.UNDEFINED;
+        case 12: { // localStorage.setItem
+            ((MidpStorage) args[argpos]).set(ls.toString(args[argpos + 1]), ls.toString(args[argpos + 2]));
+            return args[argpos];
         }
         case 14: { // setTicker(text)
             form.setTicker(new Ticker(ls.toString(args[argpos+1])));
@@ -83,7 +85,8 @@ public class Mui implements Function, CommandListener {
         this.fn = fn;
     }
 
-    public static void register(LightScript lightscript, Midlet midlet) throws LightScriptException {
+    public static void register(LightScript lightscript, MIDlet midlet, String recordStoreName) throws LightScriptException {
+        httpclient = new HTTPClient();
         ls = lightscript;
         mid = midlet;
         ls.set("newform", new Mui(3)); // newform(title)
@@ -92,7 +95,7 @@ public class Mui implements Function, CommandListener {
         ls.set("choice", new Mui(6)); // choice(label, [choices...]) -> choiceset
         ls.set("choiceno", new Mui(7)); // choiceno(choiceset) -> int
         ls.set("addbutton", new Mui(8)); // addbutton(text, callback)
-        ls.set("httpeval", new Mui(9)); // httpeval(url, callback)
+        ls.set("httpget", new Mui(9)); // httpeval(url, callback)
         ls.set("stringitem", new Mui(10)); // stringitem(text)
         ls.set("localStoreGet", new Mui(11)); // localStoreGet(key)
         ls.set("localStoreSet", new Mui(12)); // localStoreSet(key, value)
@@ -100,6 +103,12 @@ public class Mui implements Function, CommandListener {
         ls.set("setTicker", new Mui(14)); // setTicker(text)
         ls.set("addchoice", new Mui(15)); // setTicker(text)
 
+        MidpStorage storage = MidpStorage.openStorage(recordStoreName);
+        ls.set("localStorage", storage);
+        Class storageClass = storage.getClass();
+        ls.setMethod(storageClass, "getItem", new Mui(11));
+        ls.setMethod(storageClass, "__setter__", new Mui(12));
+        ls.setMethod(storageClass, "setItem", new Mui(12));
 
 /*
     

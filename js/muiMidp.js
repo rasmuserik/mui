@@ -5,10 +5,12 @@ require("xmodule").def("muiMidp", function() {
     mui.loading = function() {
         tickerFn("loading...");
     }
+
     var newForm = newform;
     newform = undefined;
     newForm("Mui App");
     mui.loading();
+    mui.callJsonpWebservice = require("Q").callJsonpWebservice; 
 
     function childReduce(arr, fn, acc) {
         if(!Array.isArray(arr)) {
@@ -43,11 +45,19 @@ require("xmodule").def("muiMidp", function() {
             } else if(type == "button") {
                 addbutton(p[2], 
                     function() {
-                        p[1].fn(Object.create(mui));
+                        mui.form = {};
+                        for(name in inputelem) {
+                            mui.form[name] = textvalue(inputelem[name]);
+                        }
+                        for(name in choiceelem) {
+                            mui.form[name] = choiceelem[name][1+choiceno(choiceelem[name][0])];
+                        }
+                        console.log("mui.form", mui.form);
+                        p[1].fn(mui);
                     });
             } else if(type == "choice") {
                 var c = choice(p[1].label || "");
-                var a = [];
+                var a = [c];
                 choiceelem[p[1].name] = a;
                 childReduce(p, function(_, elem) {
                     addchoice(c, elem[2]);
@@ -83,7 +93,9 @@ require("xmodule").def("muiMidp", function() {
     */
 
     mui.loading();
+    mui.session = {};
+    mui.storage = localStorage;
     exports.setMain = function(muiCallback) {
-        muiCallback(Object.create(mui));
+        muiCallback(mui);
     }
 });

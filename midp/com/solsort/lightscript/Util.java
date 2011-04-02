@@ -226,7 +226,7 @@ public final class Util implements Function {
         case 9: { // hashtable setter
             Hashtable h = (Hashtable) args[argpos];
             h.put(args[argpos + 1], args[argpos + 2]);
-            return h;
+            return args[argpos + 2];
         }
         case 10: { // stack setter
             Stack s = (Stack) args[argpos];
@@ -506,11 +506,10 @@ public final class Util implements Function {
         }
         case 40: { // String.toBool
             LightScript ls = (LightScript) closure;
-            return "".equals(args[argpos])?ls.FALSE:ls.TRUE;
+            return "".equals(args[argpos])?LightScript.FALSE:LightScript.TRUE;
         }
         case 41: { // Object.toBool
-            LightScript ls = (LightScript) closure;
-            return ls.TRUE;
+            return LightScript.TRUE;
         }
         case 42: { // Array.isArray(..)
             LightScript ls = (LightScript) closure;
@@ -534,6 +533,58 @@ public final class Util implements Function {
             }
             ls.eval(is);
             return ls.UNDEFINED;
+        }
+        case 45: { // Eval
+            LightScript ls = (LightScript) closure;
+            Object o = args[argpos+1];
+            if(o instanceof InputStream) {
+                System.out.println("Eval InputStream");
+                o = ls.eval((InputStream)o);
+            } else {
+                System.out.println("Eval String");
+                o = ls.eval(ls.toString(o));
+            }
+            return o;
+        }
+        case 46: { // String.indexOf
+            LightScript ls = (LightScript) closure;
+            return new Integer(ls.toString(args[argpos]).indexOf(
+                            ls.toString(args[argpos+1]), 
+                            argcount > 1 ? ls.toInt(args[argpos+2]) : 0));
+        }
+        case 47: { // Number.toString
+
+            System.out.println("Number.toString");
+            LightScript ls = (LightScript) closure;
+            int base = 10;
+            if(argcount > 0) {
+                base = ls.toInt(args[argpos+1]);
+            }
+            int n = ls.toInt(args[argpos]);
+
+            if(n==0) {
+                return "0";
+            }
+
+            String result = "";
+            boolean sign = n<0;
+            if(sign) {
+                n = -n;
+            }
+            while(n>0) {
+                int c = n % base;
+                if(c < 10) {
+                    c += '0';
+                } else {
+                    c += 'a'-10;
+                }
+                result = result + (char) c;
+                n /= base;
+            }
+            if(sign) {
+                result = "-" + result;
+            }
+            return result;
         }
 
         }
@@ -560,8 +611,10 @@ public final class Util implements Function {
         ls.setMethod(globalClass, "__getter__", new Util(11, ls_getter_args));
         ls.setMethod(globalClass, "__setter__", new Util(12, ls));
 
+        // prototype for everything
         ls.setMethod(null, "+", new Util(3, ls));
         ls.setMethod(null, "toString", new Util(16));
+        ls.setMethod(null, "toBool", new Util(41, ls));
 
         ls.set("print", new Util(15, ls));
         ls.set("parseint", new Util(23, ls));
@@ -574,7 +627,7 @@ public final class Util implements Function {
         ls.setMethod(objectClass, "__setter__", new Util(9, ls.getMethod(objectClass, "__setter__")));
         ls.setMethod(objectClass, "hasOwnProperty", new Util(19));
         ls.setMethod(objectClass, "__iter__", new Util(21));
-        ls.setMethod(objectClass, "toBool", new Util(41, ls));
+
 
         Hashtable array = new Hashtable();
         ls.set("Array", new Util(6, array));
@@ -601,6 +654,7 @@ public final class Util implements Function {
         ls.setMethod(stringClass, "charCodeAt", new Util(31, ls));
         ls.setMethod(stringClass, "concat", new Util(33, ls));
         ls.setMethod(stringClass, "toBool", new Util(40, ls));
+        ls.setMethod(stringClass, "indexOf", new Util(46, ls));
         string.put("fromCharCode", new Util(34, ls));
 
         Hashtable tuple = new Hashtable();
@@ -611,6 +665,7 @@ public final class Util implements Function {
 
         Class numberClass = integerOne.getClass();
         ls.setMethod(numberClass, "toInt", new Util(24));
+        ls.setMethod(numberClass, "toString", new Util(47, ls));
 
         Class stdlibClass = (new Util(0)).getClass();
         ls.setMethod(stdlibClass, "__getter__", new Util(26, ls));
@@ -618,6 +673,7 @@ public final class Util implements Function {
         ls.set("t", new Util(43, ls));
         ls.eval("console={};console.log=t;t=undefined");
         ls.set("load", new Util(44, ls));
+        ls.set("eval", new Util(45, ls));
         ls.set("typeof", new Util(18));
         ls.eval("load('xmodule')");
         ls.eval("LightScript=true");

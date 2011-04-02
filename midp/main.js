@@ -1,3 +1,20 @@
+/*
+a = {};
+console.log("HERE!!!");
+console.log(a.a=1);
+
+console.log(255);
+console.log((255).toString(16));
+
+foo = function(x) {
+    console.log("foo", x);
+};
+httpget("http://opensearch.addi.dk/1.0/?action=search&query=mui&source=bibliotekdk&outputType=json&callback=foo", function(data) {
+//    console.log("data", data);
+//    console.log("eval(data)", eval(data));
+    eval(data);
+});
+*/
 require("xmodule").def("main",function(){
 require("mui");
 
@@ -35,6 +52,7 @@ function ask(mui) {
   if (mui.form.deadline !== "-1") {
     deadline = " indenfor de n\xe6ste " + mui.form.deadline + " timer";
   }
+  var deadline = "";
   var answer = "";
   if (mui.form.answer === "email" && mui.form.email !== "") {
     answer = " p\xe5 " + mui.form.email; 

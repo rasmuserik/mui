@@ -1,17 +1,13 @@
 require("xmodule").def("muiMidp", function() {
-    console.log("A");
     var mui = {};
     var tickerFn = setTicker;
-    console.log("B");
     setTicker = undefined;
     mui.loading = function() {
         tickerFn("loading...");
     }
-    console.log("C");
     var newForm = newform;
     newform = undefined;
     newForm("Mui App");
-    console.log("D");
     mui.loading();
 
     function childReduce(arr, fn, acc) {
@@ -34,7 +30,6 @@ require("xmodule").def("muiMidp", function() {
             var type = p[0];
             if(type == "section") {
                 childReduce(p, showSubPage);
-                console.log(type);
             } else if(type == "input") {
                 types = {
                     textbox: { type: 0, len: 5000},
@@ -55,11 +50,8 @@ require("xmodule").def("muiMidp", function() {
                 var a = [];
                 choiceelem[p[1].name] = a;
                 childReduce(p, function(_, elem) {
-                    console.log("HERE", elem, a, c);
                     addchoice(c, elem[2]);
-                    console.log("HERE2", elem, a, c);
                     a.push(elem[1].value);
-                    console.log("HERE3", elem, a, c);
                 });
             } else {
                 console.log("Unexpected page element:", type);
@@ -76,7 +68,6 @@ require("xmodule").def("muiMidp", function() {
         childReduce(page, showSubPage);
     }
 
-    console.log("E");
 /*
     newform("Hello world");
     var t = textfield("textbox", 5000, 0);
@@ -91,11 +82,8 @@ require("xmodule").def("muiMidp", function() {
     stringitem("helo");
     */
 
-    console.log("F");
     mui.loading();
     exports.setMain = function(muiCallback) {
-        console.log("setMain: ", muiCallback);
         muiCallback(Object.create(mui));
     }
-    console.log("G");
 });

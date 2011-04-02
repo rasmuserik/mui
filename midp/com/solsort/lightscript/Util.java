@@ -3,6 +3,8 @@ package com.solsort.lightscript;
 import java.util.Stack;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.io.InputStream;
+
 
 public final class Util implements Function {
     //<editor-fold desc="constants">
@@ -280,7 +282,7 @@ public final class Util implements Function {
             if (arg1 instanceof Hashtable) {
                 return "object";
             } else if (arg1 instanceof Stack) {
-                return "array";
+                return "object";
             } else if (arg1 instanceof Integer) {
                 return "number";
             } else if (arg1 == LightScript.UNDEFINED) {
@@ -514,6 +516,26 @@ public final class Util implements Function {
             LightScript ls = (LightScript) closure;
             return args[argpos+1] instanceof Stack ? ls.TRUE : ls.FALSE;
         }
+        case 43: { // console.log
+            LightScript ls = (LightScript) closure;
+            String s = "";
+            for(int i = 1; i < argcount+1; ++i) {
+                s+= (i>1?" ":"") + ls.toString(args[argpos+i]);
+            }
+            System.out.println(s);
+            return ls.UNDEFINED;
+        }
+        case 44: { // load
+            LightScript ls = (LightScript) closure;
+            String name = "/js/" + args[argpos+1] + ".js";
+            InputStream is = ls.getClass().getResourceAsStream(name);
+            if(is==null) {
+                throw new LightScriptException("Error, could not load " + name);
+            }
+            ls.eval(is);
+            return ls.UNDEFINED;
+        }
+
         }
         return LightScript.UNDEFINED;
     }
@@ -530,7 +552,7 @@ public final class Util implements Function {
     }
 
      */
-    static void register(LightScript ls) {
+    static void register(LightScript ls) throws LightScriptException {
 
         ls.set("global", ls);
         Class globalClass = ls.getClass();
@@ -592,6 +614,13 @@ public final class Util implements Function {
 
         Class stdlibClass = (new Util(0)).getClass();
         ls.setMethod(stdlibClass, "__getter__", new Util(26, ls));
+
+        ls.set("t", new Util(43, ls));
+        ls.eval("console={};console.log=t;t=undefined");
+        ls.set("load", new Util(44, ls));
+        ls.set("typeof", new Util(18));
+        ls.eval("load('xmodule')");
+        ls.eval("LightScript=true");
     }
 }
 

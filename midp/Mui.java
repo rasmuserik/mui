@@ -21,35 +21,6 @@ public class Mui implements Function, CommandListener {
     }
     public Object apply(Object[] args, int argpos, int argcount) throws LightScriptException {
         switch (fn) {
-        case 0: { // console.log
-            String s = "";
-            for(int i = 1; i < argcount+1; ++i) {
-                s+= (i>1?" ":"") + ls.toString(args[argpos+i]);
-            }
-            System.out.println(s);
-            return ls.UNDEFINED;
-        }
-        case 1: { // load
-            String name = "/js/" + args[argpos+1] + ".js";
-            InputStream is = ls.getClass().getResourceAsStream(name);
-            if(is==null) {
-                throw new LightScriptException("Error, could not load " + name);
-            }
-            ls.eval(is);
-            return ls.UNDEFINED;
-        }
-        case 2: { // typeof
-            Object o = args[argpos+1];
-            if(o == ls.UNDEFINED) {
-                return "undefined";
-            } else if(o instanceof String) {
-                return "string";
-            } else if(o instanceof Integer) {
-                return "number";
-            } else {
-                return "object";
-            }
-        }
         case 3: { // newform(title)
             form = new Form(ls.toString(args[argpos+1]));
             commands = new Hashtable();
@@ -115,12 +86,6 @@ public class Mui implements Function, CommandListener {
     public static void register(LightScript lightscript, Midlet midlet) throws LightScriptException {
         ls = lightscript;
         mid = midlet;
-        ls.set("t", new Mui(0));
-        ls.eval("console={};console.log=t");
-        ls.set("load", new Mui(1));
-        ls.set("typeof", new Mui(2));
-        ls.eval("load('xmodule')");
-        ls.eval("LightScript=true");
         ls.set("newform", new Mui(3)); // newform(title)
         ls.set("textfield", new Mui(4)); // textfield(label, length, type) -> textbox
         ls.set("textvalue", new Mui(5)); // textvalue(textbox) -> txt

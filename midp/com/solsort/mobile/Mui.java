@@ -13,7 +13,6 @@ public class Mui implements Function, CommandListener {
     static LightScript ls;
     static MIDlet mid;
     static Hashtable commands;
-    static HTTPClient httpclient;
     public void commandAction(Command c, Displayable d) {
         try {
             ls.call((Function) commands.get(c));
@@ -59,7 +58,7 @@ public class Mui implements Function, CommandListener {
             return ls.UNDEFINED;
         }
         case 9: { // httpget(url, callback)
-            httpclient.openUrl(ls.toString(args[argpos+1]), (Function)args[argpos+2]);
+            new HTTPClient(ls.toString(args[argpos+1]), (Function)args[argpos+2], new Hashtable());
             return ls.UNDEFINED;
         }
         case 10: { // stringitem(text)
@@ -86,7 +85,6 @@ public class Mui implements Function, CommandListener {
     }
 
     public static void register(LightScript lightscript, MIDlet midlet, String recordStoreName) throws LightScriptException {
-        httpclient = new HTTPClient();
         ls = lightscript;
         mid = midlet;
         ls.set("newform", new Mui(3)); // newform(title)

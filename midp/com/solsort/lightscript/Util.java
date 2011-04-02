@@ -479,7 +479,6 @@ public final class Util implements Function {
             return new Integer(((String) args[argpos]).charAt(ls.toInt(args[argpos + 1])));
         }
         case 32: { // string __getter__
-            System.out.println("string __getter__ " + String.valueOf(args[argpos+1]) + argcount + String.valueOf(args[argpos]));
             if (args[argpos + 1] instanceof Integer) {
                 String s = (String) args[argpos];
                 int pos = ((Integer) args[argpos + 1]).intValue();
@@ -609,13 +608,13 @@ public final class Util implements Function {
         }
         case 47: { // Number.toString
 
-            System.out.println("Number.toString");
             LightScript ls = (LightScript) closure;
             int base = 10;
             if(argcount > 0) {
                 base = ls.toInt(args[argpos+1]);
             }
             int n = ls.toInt(args[argpos]);
+            System.out.println("Number.toString " + n);
 
             if(n==0) {
                 return "0";
@@ -633,12 +632,13 @@ public final class Util implements Function {
                 } else {
                     c += 'a'-10;
                 }
-                result = result + (char) c;
+                result = (char) c + result;
                 n /= base;
             }
             if(sign) {
                 result = "-" + result;
             }
+            System.out.println(result);
             return result;
         }
         case 48: { // division /

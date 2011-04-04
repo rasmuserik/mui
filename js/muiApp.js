@@ -83,13 +83,15 @@ require("xmodule").def("muiApp",function(){
                 }
 
                 var tagAttr = {"class": type, "id": labelid, "name": name};
+                var value =  jsonml.getAttr(node, "value") || "";
                 if(features.placeholder) {
                     tagAttr.placeholder = jsonml.getAttr(node, "label");
                 }
                 if(type === "textbox") {
-                    result.push(["textarea", tagAttr, ""]);                
+                    result.push(["textarea", tagAttr, value]);                
                 } else if(type === "email" || type === "text") {
                     tagAttr.type = type;
+                    tagAttr.value = value;
                     result.push(["input", tagAttr]);
                 } else if(type === "tel") {
                     if(features.telInput) {
@@ -97,6 +99,7 @@ require("xmodule").def("muiApp",function(){
                     } else {
                         tagATtr.type = "number";
                     }
+                    tagAttr.value = value;
                     result.push(["input", tagAttr]);
                 } else {
                     throw "unknown input type: " + type;
@@ -110,20 +113,27 @@ require("xmodule").def("muiApp",function(){
                 if(jsonml.getAttr(node, "label")) {
                     result.push(["div", {"class": "label"}, ["label", {"for": labelid}, jsonml.getAttr(node, "label"), ":"]]);
                 }
+                var defaultValue =  jsonml.getAttr(node, "value") || "";
     
                 var name = jsonml.getAttr(node, "name");
                 if(!name) {
                     throw "choice widgets must have a name attribute";
                 }
+
                 var select = ["select", {"name": jsonml.getAttr(node, "name")}];
                 jsonml.childReduce(node, function(html, node) {
                     if(node[0] !== "option") {
                         throw "only option nodes are allows as children to choices";
                     }
-                    if(!jsonml.getAttr(node, "value")) {
+                    var value =  jsonml.getAttr(node, "value");
+                    if(!value) {
                         throw "option widgets must have a value attribute";
                     }
-                    select.push(["option", {"value": jsonml.getAttr(node, "value")}, node[2]]);
+                    var attrs = { value : value };
+                    if(value === defaultValue) {
+                        attrs.selected = "true";
+                    }
+                    select.push(["option", attrs, node[2]]);
                     return html;
                 }, result);
                 result.push(select);
@@ -272,6 +282,8 @@ require("xmodule").def("muiApp",function(){
                 alert(e);
                 throw e;
             }
+        } else {
+            mui.storage = localStorage;
         }
 
         document.getElementsByTagName("head")[0].appendChild(scriptTag);

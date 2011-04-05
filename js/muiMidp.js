@@ -29,8 +29,6 @@ require("xmodule").def("muiMidp", function() {
         }
         return acc;
     }
-    var inputelem;
-    var choiceelem;
     function showSubPage(acc, p) {
         if(Array.isArray(p)) {
             var type = p[0];

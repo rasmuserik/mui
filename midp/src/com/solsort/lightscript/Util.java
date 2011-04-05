@@ -769,8 +769,8 @@ public final class Util implements Function {
         ls.set("load", new Util(44, ls));
         ls.set("eval", new Util(45, ls));
         ls.set("typeof", new Util(18));
-        ls.eval("load('xmodule')");
         ls.eval("LightScript=true");
+        ls.eval("load('xmodule')");
     }
 }
 

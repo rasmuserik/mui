@@ -5,7 +5,8 @@ require("xmodule").def("muiPage",function(){
     uniqId = (function() {
         var id = 0;
         return function() {
-            return "__mui_id_" + id++;
+            ++id;
+            return "__mui_id_" + id;
         }
     })();
 
@@ -25,8 +26,8 @@ require("xmodule").def("muiPage",function(){
                         email: {type: 1, len: 20},
                         tel: { type: 3, len: 20}
                         };
-                    type = types[p[1].type];
-                    inputelem[p[1].name] = textfield(p[1].label || "", type.len, type.type);
+                    type = types[node[1].type];
+                    inputelem[node[1].name] = textfield(node[1].label || "", type.len, type.type);
                     return;
                 }
 
@@ -143,9 +144,10 @@ require("xmodule").def("muiPage",function(){
                 }
 
                 if(config.midp) {
-                    addbutton(p[2],
+                    addbutton(node[2],
                         function() {
                             var form = {};
+                            var name;
                             for(name in inputelem) {
                                 form[name] = textvalue(inputelem[name]);
                             }
@@ -155,7 +157,7 @@ require("xmodule").def("muiPage",function(){
                             mui.formValue = function(name) {
                                 return form[name];
                             };
-                            p[1].fn(mui);
+                            node[1].fn(mui);
                         });
                     return;
                 }

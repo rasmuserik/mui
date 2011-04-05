@@ -1,5 +1,5 @@
-console.log([1,2,3,4].join("?"));
 /*
+console.log([1,2,3,4].join("?"));
 o = {a:2, b:3};
 o2 = Object.create(o);
 o2.c = 4;
@@ -67,7 +67,6 @@ function main(mui) {
 
 function ask(mui) {     
   mui.loading();
-  console.log("asking, form: ", mui.form);
   var deadline = "";
   if (mui.form.deadline !== "-1") {
     deadline = " indenfor de n\xe6ste " + mui.form.deadline + " timer";

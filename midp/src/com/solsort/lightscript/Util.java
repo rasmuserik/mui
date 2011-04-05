@@ -251,6 +251,7 @@ public final class Util implements Function {
         }
         case 9: { // hashtable setter
             Hashtable h = (Hashtable) args[argpos];
+            //System.out.println(args[argpos] + ".put(" + args[argpos+1] + ", " + args[argpos+2] + ")");
             h.put(args[argpos + 1], args[argpos + 2]);
             return args[argpos + 2];
         }

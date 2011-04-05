@@ -121,7 +121,7 @@ require("xmodule").def("muiApp",function(){
     __mui__.__callbacks = callbacks;
     __mui__.__call_fn = function(fnid) {
         var callback = callbacks[fnid];
-        callbacks = {};
+        __mui__.__callbacks = callbacks = {};
 
         var muiObject = Object.create(mui);
         muiObject.formValue = (function () {

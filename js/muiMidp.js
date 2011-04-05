@@ -1,4 +1,5 @@
 require("xmodule").def("muiMidp", function() {
+
     var mui = {};
     var tickerFn = setTicker;
     setTicker = undefined;
@@ -10,6 +11,9 @@ require("xmodule").def("muiMidp", function() {
     newform = undefined;
     newForm("Mui App");
     mui.loading();
+
+    var pageTransform = require("muiPage").transformFactory({midp:true});
+
     mui.callJsonpWebservice = require("Q").callJsonpWebservice; 
 
     function childReduce(arr, fn, acc) {
@@ -83,7 +87,8 @@ require("xmodule").def("muiMidp", function() {
         inputelem = {};
         choiceelem = {};
         newForm(page[1].title || "untitled");
-        childReduce(page, showSubPage);
+        pageTransform(page, mui);
+        //childReduce(page, showSubPage);
     }
 
     mui.session = {};

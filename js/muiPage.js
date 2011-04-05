@@ -19,6 +19,17 @@ require("xmodule").def("muiPage",function(){
             },
 
             input: function(html, node) {
+                if(config.midp) {
+                    types = {
+                        textbox: { type: 0, len: 5000},
+                        email: {type: 1, len: 20},
+                        tel: { type: 3, len: 20}
+                        };
+                    type = types[p[1].type];
+                    inputelem[p[1].name] = textfield(p[1].label || "", type.len, type.type);
+                    return;
+                }
+
                 var result = ["div", {"class": "input"}];
                 var type = jsonml.getAttr(node, "type");
                 if(!type) {
@@ -71,8 +82,17 @@ require("xmodule").def("muiPage",function(){
             },
 
             choice: function(html, node) {
+                if(config.midp) {
+                    var choiceVal = [choice(node[1].label || "")];
+                    choiceelem[node[1].name] = choiceVal;
+                    for(var i = 2; i < node.length; ++i) {
+                        addchoice(choiceVal[0], node[i][2]);
+                        choiceVal.push(node[i][1].value);
+                    };
+                    return;
+                }
+
                 var result = ["div", {"class": "input"}];
-    
 
                 var defaultValue =  jsonml.getAttr(node, "value") || "";
                 var tagAttr = {"name": jsonml.getAttr(node, "name")};
@@ -104,6 +124,14 @@ require("xmodule").def("muiPage",function(){
             },
 
             text: function(html, node) {
+                if(config.midp) {
+                    var text = "";
+                    for(var i = 1; i < node.length; ++i) {
+                        text += node[i];
+                    }
+                    stringitem(text);
+                    return;
+                }
                 var result = ["div", {"class": "text"}];
                 jsonml.childReduce(node, nodeHandler, result);
                 html.push(result);
@@ -112,6 +140,24 @@ require("xmodule").def("muiPage",function(){
             button: function(html, node) {
                 if(!jsonml.getAttr(node, "fn")) {
                     throw "buttons must have an fn attribute, containing a function to call";
+                }
+
+                if(config.midp) {
+                    addbutton(p[2],
+                        function() {
+                            var form = {};
+                            for(name in inputelem) {
+                                form[name] = textvalue(inputelem[name]);
+                            }
+                            for(name in choiceelem) {
+                                form[name] = choiceelem[name][1+choiceno(choiceelem[name][0])];
+                            }
+                            mui.formValue = function(name) {
+                                return form[name];
+                            };
+                            p[1].fn(mui);
+                        });
+                    return;
                 }
 
                 if(config.html5) {
@@ -145,6 +191,10 @@ require("xmodule").def("muiPage",function(){
             return html;
         }
     
+        if(config.midp) {
+            jsonml.childReduce(page, nodeHandler, []);
+            return;
+        }
         if(config.html5) {
             var html = ["form"];
             var title = jsonml.getAttr(page, "title") || "untitled";
@@ -158,5 +208,6 @@ require("xmodule").def("muiPage",function(){
             jsonml.childReduce(page, nodeHandler, html);
             return [["h1", title], html];
         }
+
     }; };
 });

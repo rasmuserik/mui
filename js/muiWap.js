@@ -4,8 +4,8 @@ require("xmodule").def("muiWap",function(){
     // doesn't work with international symbols...
     // Do some monkeypatching, if you are using gets... 
     //
-    //decodeURIComponent = Q.unescapeUri
-    //encodeURIComponent = Q.escapeUri
+    decodeURIComponent = Q.unescapeUri
+    encodeURIComponent = Q.escapeUri
 
     var http = require('http');
     var jsonml = require('jsonml');

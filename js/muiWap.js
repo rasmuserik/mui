@@ -100,6 +100,9 @@ require("xmodule").def("muiWap",function(){
         console.log(params, muiObject.fns);
 
     });
-    app.listen(3000);
-    console.log("wap server on port 3000");
+    try {
+        app.listen(80);
+    } catch(e) {
+        app.listen(8080);
+    }
 });

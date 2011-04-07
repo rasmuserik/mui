@@ -1,16 +1,16 @@
 require("xmodule").def("muiWap",function(){
 
+    var http = require('http');
+    var jsonml = require('jsonml');
+    var _ = require('underscore')._;
+    var Q = require('Q');
+
     // Express has bug that means that get-requests
     // doesn't work with international symbols...
     // Do some monkeypatching, if you are using gets... 
     //
     decodeURIComponent = Q.unescapeUri
     encodeURIComponent = Q.escapeUri
-
-    var http = require('http');
-    var jsonml = require('jsonml');
-    var _ = require('underscore')._;
-    var Q = require('Q');
 
     var mainFn = function(mui) {
         mui.showPage(["page", {title: "error"}, ["text", "mui.setMain(...) has not been called"]]);

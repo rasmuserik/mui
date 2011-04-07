@@ -1,5 +1,12 @@
 require("xmodule").def("muiWap",function(){
 
+    // Express has bug that means that get-requests
+    // doesn't work with international symbols...
+    // Do some monkeypatching, if you are using gets... 
+    //
+    //decodeURIComponent = Q.unescapeUri
+    //encodeURIComponent = Q.escapeUri
+
     var http = require('http');
     var jsonml = require('jsonml');
     var _ = require('underscore')._;
@@ -51,20 +58,20 @@ require("xmodule").def("muiWap",function(){
 
     clients = {};
 
-    http.createServer(function (req, res) {
+    var express = require("express");
+    var app = express.createServer();
+
+    app.configure(function(){
+        //app.use(express.methodOverride());
+        app.use(express.bodyParser());
+        //app.use(app.router);
+    });
+
+    app.all('/', function(req, res){
         var muiObject, sid, fn;
-        var params = req.url.split('?')
-        if(params.length > 1) {
-            params.shift();
-            params = params.join('').split('&');
-            params = _.reduce(params, function(acc, elem) {
-                var t = elem.split("=");
-                acc[Q.unescapeUri(t[0])] = Q.unescapeUri(t[1]);
-                return acc;
-            }, {});
-        } else {
-            params = {};
-        }
+    
+        params = req.body || req.query;
+        console.log(params);
 
         if(params._ && clients[params._]) {
             muiObject = clients[params._];
@@ -81,13 +88,18 @@ require("xmodule").def("muiWap",function(){
         muiObject.httpRequest = req;
         muiObject.button = params._B;
         muiObject.formValue = function(name) { return params[name]; };
+        muiObject.storage = {};
+        muiObject.storage.getItem = function() { return 42; };
 
-        fn = muiObject.fns[Q.unescapeUri(params._B || "")] || mainFn;
+        fn = muiObject.fns[Q.unescapeUri(muiObject.button || "")] || mainFn;
         muiObject.fns = {};
         
         delete params._;
         delete params._B;
         fn(muiObject);
-    }).listen(8080);
-    console.log("Listening on port 8080");
+        console.log(params, muiObject.fns);
+
+    });
+    app.listen(3000);
+    console.log("wap server on port 3000");
 });

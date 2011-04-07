@@ -64,6 +64,7 @@ require("xmodule").def("muiWap",function(){
     app.configure(function(){
         //app.use(express.methodOverride());
         app.use(express.bodyParser());
+        app.use(express.cookieParser());
         //app.use(app.router);
     });
 
@@ -71,16 +72,20 @@ require("xmodule").def("muiWap",function(){
         var muiObject, sid, fn;
     
         params = req.body || req.query;
-        console.log(params);
-
-        if(params._ && clients[params._]) {
-            muiObject = clients[params._];
+        console.log(req.cookies);
+        if(req.cookies && req.cookies._) {
+            sid = req.cookies._;
+        } else if(params._ && clients[params._]) {
             sid = params._;
-        } else {
+        } 
+        muiObject = clients[sid];
+        if(!muiObject) {
             muiObject = Object.create(mui);
-            sid = muiObject.__session_id__ = randId();
+            muiObject.__session_id__ = sid = sid || randId();
             muiObject.session = {};
+            res.cookie('_', sid, {maxAge: 5*365*24*60*60*1000});
             muiObject.fns = {};
+
             // mem leak, sessions are never deleted
             clients[sid] = muiObject;
         }

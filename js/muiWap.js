@@ -45,7 +45,11 @@ require("xmodule").def("muiWap",function(){
     ],
                          ["body"].concat(pageTransform(page, this))];
             // TODO: xml/xhtml or text/html or wap depending on client
-            this.httpResult.writeHead(200, {'Content-Type': 'application/xhtml+xml; charset=UTF-8'});;
+            this.httpResult.writeHead(200, {
+                'Content-Type': 'text/html; charset=UTF-8',
+                'Expires': (new Date(Date.now()).toUTCString())
+            });;
+
             this.httpResult.end(
                 ['<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">',
                  jsonml.toXml(html)].join(""));

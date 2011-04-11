@@ -28,5 +28,28 @@ require("xmodule").def("ssjs",function(){
         });
     }
 
+    var app;
+    exports.webserve = function(path, fn) {
+        var express = require("express");
+        if(!app) {
+            app = express.createServer();
+            app.configure(function(){
+                //app.use(express.methodOverride());
+                app.use(express.bodyParser());
+                app.use(express.cookieParser());
+                //app.use(app.router);
+            });
+
+            try {
+                app.listen(80);
+            } catch(e) {
+                app.listen(8080);
+            }
+        }
+        app.all(path, function(req, res) {
+            fn(req, res);
+        });
+    }
+
 
 });

@@ -1,5 +1,6 @@
 require("xmodule").def("muiWap",function(){
 
+    var ssjs = require('ssjs');
     var http = require('http');
     var jsonml = require('jsonml');
     var _ = require('underscore')._;
@@ -58,17 +59,7 @@ require("xmodule").def("muiWap",function(){
 
     clients = {};
 
-    var express = require("express");
-    var app = express.createServer();
-
-    app.configure(function(){
-        //app.use(express.methodOverride());
-        app.use(express.bodyParser());
-        app.use(express.cookieParser());
-        //app.use(app.router);
-    });
-
-    app.all('/', function(req, res){
+    ssjs.webserve('/', function(req, res){
         var muiObject, sid, fn;
     
         params = req.body || req.query;
@@ -105,9 +96,4 @@ require("xmodule").def("muiWap",function(){
         console.log(params, muiObject.fns);
 
     });
-    try {
-        app.listen(80);
-    } catch(e) {
-        app.listen(8080);
-    }
 });

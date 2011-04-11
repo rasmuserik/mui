@@ -151,7 +151,7 @@ require("xmodule").def("muiPage",function(){
                     if(defaultValue) {
                         select.push(["option", {value: ""}, label]);
                     } else {
-                        select.push(["option", {value: "", selected: "true"}, label]);
+                        select.push(["option", {value: "", selected: "selected"}, label]);
                     }
                 }
 
@@ -166,7 +166,7 @@ require("xmodule").def("muiPage",function(){
                     }
                     var attrs = { value : value };
                     if(value === defaultValue) {
-                        attrs.selected = "true";
+                        attrs.selected = "selected";
                     }
                     select.push(["option", attrs, node[2]]);
                     return result;

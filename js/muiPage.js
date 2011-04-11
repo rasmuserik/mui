@@ -106,7 +106,7 @@ require("xmodule").def("muiPage",function(){
                         } else if(type === "tel") {
                             tagAttr.style = "-wap-input-format:'*N'";
                             tagAttr.type = "text";
-                            tagAttr.inputmode = "digits";
+                            tagAttr.inputmode = "latin digits";
                         }
                     }
                     result.push(["input", tagAttr]);

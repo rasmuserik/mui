@@ -41,9 +41,11 @@ require("xmodule").def("muiWap",function(){
                          ["head", ["title", title], ["style", {type: "text/css"}, 
     'body { margin: 1% 2% 1% 2%; font-family: sans-serif; line-height: 130%; }',
     '.hint { color: #f00; }',
-    ]],
+    ],
+    ],
                          ["body"].concat(pageTransform(page, this))];
-            this.httpResult.writeHead(200, {'Content-Type': 'text/html'});;
+            // TODO: xml/xhtml or text/html or wap depending on client
+            this.httpResult.writeHead(200, {'Content-Type': 'text/html; charset=UTF-8'});;
             this.httpResult.end(
                 ['<!DOCTYPE html PUBLIC "-//OMA//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">',
                  jsonml.toXml(html)].join(""));

@@ -1,9 +1,7 @@
 require("xmodule").def("muiWap",function(){
 
     var ssjs = require('ssjs');
-    var http = require('http');
     var jsonml = require('jsonml');
-    var _ = require('underscore')._;
     var Q = require('Q');
 
     // Express has bug that means that get-requests
@@ -37,11 +35,6 @@ require("xmodule").def("muiWap",function(){
         callJsonpWebservice: function(url, callbackParameterName, args, callback) {
         Q.callJsonpWebservice(url, callbackParameterName, args, callback);
         },
-        // TODO
-        storage: {
-            getItem: function() { },
-            setItem: function() { }
-        },
         showPage: function(page) {
             var title = jsonml.getAttr(page, "title");
             var html =  ["html", { xmlns: "http://www.w3.org/1999/xhtml", "xml:lang": "en"}, 
@@ -63,7 +56,6 @@ require("xmodule").def("muiWap",function(){
         var muiObject, sid, fn;
     
         params = req.body || req.query;
-        console.log(req.cookies);
         if(req.cookies && req.cookies._) {
             sid = req.cookies._;
         } else if(params._ && clients[params._]) {
@@ -77,15 +69,22 @@ require("xmodule").def("muiWap",function(){
             res.cookie('_', sid, {maxAge: 5*365*24*60*60*1000});
             muiObject.fns = {};
 
-            // mem leak, sessions are never deleted
+            // TODO: fix mem leak, sessions are never deleted
             clients[sid] = muiObject;
+
+            // TODO actually back store to disk or database
+            muiObject.storage = (function() {
+                var store = {};
+                return { 
+                    getItem: function(key) { return store[key]; },
+                    setItem: function(key, value) { store[key] = value; }
+                };
+            })();
         }
         muiObject.httpResult = res;
         muiObject.httpRequest = req;
         muiObject.button = params._B;
         muiObject.formValue = function(name) { return params[name]; };
-        muiObject.storage = {};
-        muiObject.storage.getItem = function() { return 42; };
 
         fn = muiObject.fns[Q.unescapeUri(muiObject.button || "")] || mainFn;
         muiObject.fns = {};
@@ -93,7 +92,5 @@ require("xmodule").def("muiWap",function(){
         delete params._;
         delete params._B;
         fn(muiObject);
-        console.log(params, muiObject.fns);
-
     });
 });

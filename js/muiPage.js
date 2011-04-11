@@ -92,9 +92,9 @@ require("xmodule").def("muiPage",function(){
                     result.push(["textarea", tagAttr, value]);                
 
                 } else { // normal input
+                    tagAttr.value = value;
                     if(config.html5) {
                         tagAttr.type = type;
-                        tagAttr.value = value;
                         if(type === "tel" && !config.telInput) {
                             tagAttr.type = "number";
                             

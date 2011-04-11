@@ -39,7 +39,9 @@ require("xmodule").def("muiWap",function(){
             var title = jsonml.getAttr(page, "title");
             var html =  ["html", { xmlns: "http://www.w3.org/1999/xhtml", "xml:lang": "en"}, 
                          ["head", ["title", title], ["style", {type: "text/css"}, 
-                                                     'body { margin: 1% 2% 1% 2%; font-family: sans-serif; line-height: 130%; }']],
+    'body { margin: 1% 2% 1% 2%; font-family: sans-serif; line-height: 130%; }',
+    '.hint { color: #f00; }',
+    ]],
                          ["body"].concat(pageTransform(page, this))];
             this.httpResult.writeHead(200, {'Content-Type': 'text/html'});;
             this.httpResult.end(

@@ -255,10 +255,10 @@ require("xmodule").def("muiPage",function(){
         }
     
         if(config.wap) {
-            var html = ["form", {method: "get", action: ""}, ["input", {type: "hidden", name: "_", value: mui.__session_id__}]];
+            var html = [ "div", ["input", {type: "hidden", name: "_", value: mui.__session_id__}]];
             var title = jsonml.getAttr(page, "title") || "untitled";
             jsonml.childReduce(page, nodeHandler, html);
-            return [["h1", title], ["div", html]];
+            return [["h1", title], ["form", {method: "get", action: ""}, html]];
         }
 
     }; };

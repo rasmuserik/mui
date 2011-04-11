@@ -14,7 +14,8 @@ require("xmodule").def("Q",function(){
         browser: typeof(navigator) !== "undefined",
         lightscript: typeof(LightScript) !== "undefined"
     };
-    if(!features.browser && !features.lightscript) {
+
+    if((!features.browser) && (!features.lightscript)) {
         features.ssjs = true;
         ssjs = require("ssjs");
     }

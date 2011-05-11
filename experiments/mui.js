@@ -388,7 +388,7 @@ var mui = (function(exports, $) {
             fn(mui);
         }
         function onScreen() {
-            if($("#more").offset().top < window.innerHeight+window.pageYOffset) {
+            if($("#more").offset() && $("#more").offset().top < window.innerHeight+window.pageYOffset) {
                 update();
             } 
         }

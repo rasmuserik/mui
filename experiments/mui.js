@@ -155,10 +155,16 @@ var mui = (function(exports, $) {
                     html.push(node);
                 } else {
                     var handle = handlers[node[0]]; 
-                    if(!handle) {
-                        throw "mui received a page containing an unknown tagtype: " + node[0];
+                    if(handle) {
+                        handle(html, node);
+                    } else {
+                        var tag = [node[0]];
+                        if(node[1] && node[1].constructor === Object) {
+                            tag.push(node[1]);
+                        }
+                        jsonml.childReduce(node, nodeHandler, tag);
+                        html.push(tag);
                     }
-                    handle(html, node);
                 }
                 return html;
             }

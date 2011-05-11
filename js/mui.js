@@ -1,8 +1,7 @@
-var mui = (function(exports, $) {
+var mui = (function(exports, $, global) {
 
     var mui = exports;
 
-    // OLD STUFF TO BE REFACTORED ////////////////////////////////
     exports.setHints = function setHints(page, hints) {
         if (Array.isArray(page)) {
             var attr = page[1];
@@ -24,6 +23,7 @@ var mui = (function(exports, $) {
         return page;
     }
 
+    // OLD STUFF TO BE REFACTORED ////////////////////////////////
     var morefn = undefined;
 
     function transformFactory(config) {
@@ -184,11 +184,18 @@ var mui = (function(exports, $) {
                         throw "buttons must have an fn attribute, containing a function to call";
                     }
 
-                    var fnid = uniqId();
-                    __mui__.__callbacks[fnid] = jsonml.getAttr(node, "fn");
+                    var fn = jsonml.getAttr(node, "fn");
                     var attr = {
                         "class": "button",
-                        onclick: "__mui__.__call_fn('" + fnid + "');"
+                        onclick: function() { 
+                            mui.formValue = (function() {
+                                var form = formExtract(gId("current"), {});
+                                return function(name) {
+                                    return form[name];
+                                }
+                            })();
+                            fn(mui) 
+                        }
                     };
                     var result = ["div", attr];
                     jsonml.childReduce(node, nodeHandler, result);
@@ -229,8 +236,6 @@ var mui = (function(exports, $) {
 
         };
     };
-
-    __mui__ = mui;
 
     // In a web environment, the session object is just a simple object.
     mui.session = {};
@@ -283,27 +288,6 @@ var mui = (function(exports, $) {
 
     mui.formValue = function() {};
 
-    var callbacks = {};
-    __mui__.__callbacks = callbacks;
-    __mui__.__call_fn = function(fnid) {
-        var callback = callbacks[fnid];
-        __mui__.__callbacks = callbacks = {};
-
-        mui.formValue = (function() {
-            var form = formExtract(gId("current"), {});
-            return function(name) {
-                return form[name];
-            }
-        })();
-        try {
-            callback(mui);
-        } catch (e) {
-            callbackError(e);
-        }
-    }
-
-
-
     // Valid characters in URIs
     var urichars = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_~.";
 
@@ -346,7 +330,6 @@ var mui = (function(exports, $) {
         document.getElementsByTagName("head")[0].appendChild(scriptTag);
     };
 
-    var global = this;
     // 
     exports.callJsonpWebservice = function(url, callbackParameterName, args, callback) {
         // clone args, as we want to add a jsonp-callback-name-property
@@ -383,11 +366,8 @@ var mui = (function(exports, $) {
     }
 
     var pageTransform = transformFactory({
-        html5: true,
         placeholder: true,
-        telinput: true
     });
-
 
     exports.storage = localStorage;
 
@@ -414,23 +394,21 @@ var mui = (function(exports, $) {
         $("#loading").css("top", "-50px");
     }
 
-    function toHTML(elem) {
-        if (Array.isArray(elem)) {
-            elem = jsonml.toXml(elem);
-        }
-        return elem;
-    }
-
     exports.showPage = function(elem) {
         $(document).unbind('scroll');
+        $("#current").before($("<div>").attr("id", "next"));
         if (elem[0] === "page") {
             elem = pageTransform(elem, this);
-            elem = elem.map(jsonml.toXml).join("")
+            //elem = elem.map(jsonml.toXml).join("")
+            elem = elem.forEach(function(node) {
+                $("#next").append(jsonml.toDOM(node));
+            });
         } else {
             elem = jsonml.toDOM(elem);
+            $("#next").append(elem);
         }
         notLoading();
-        $("#current").before($("<div>").attr("id", "next").append(elem)).css("top", -$("#next").height()).attr("id", "prev");
+        $("#current").css("top", -$("#next").height()).attr("id", "prev");
         $("#next").attr("id", "current");
         if ($("#morecontainer")) {
             mui.more(morefn);
@@ -469,4 +447,4 @@ var mui = (function(exports, $) {
     }
 
     return mui;
-})({}, $);
+})({}, $, this /*global*/);

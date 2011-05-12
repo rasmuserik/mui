@@ -1,5 +1,3 @@
-$("#current").append("HERE! in mui.js");
-
 var mui = (function(exports, $, global) {
     var mui = exports;
 
@@ -239,7 +237,6 @@ var mui = (function(exports, $, global) {
 
     exports.showPage = function(elem) {
         previousPage = elem;
-        console.log("showPage", JSON.stringify(elem));
         $(document).unbind('scroll');
         $("#current").before($("<div>").attr("id", "next"));
         elem = jsonml.toDOM(elem);

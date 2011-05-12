@@ -24,234 +24,12 @@ var mui = (function(exports, $, global) {
         return page;
     }
 
-    // OLD STUFF TO BE REFACTORED ////////////////////////////////
     var morefn = undefined;
-
-    function transformFactory(config) {
-        return function pageTransform(page, mui) {
-            mui.prevPage = function() {
-                return page;
-            };
-            var handlers = {
-
-                section: function(html, node) {
-                    attr = {
-                        "class": "contentbox"
-                    };
-                    if (node[1] && node[1].autocontent) {
-                        attr.id = "morecontainer";
-                        morefn = node[1].autocontent;
-                    }
-                    var result = ["div", attr];
-                    jsonml.childReduce(node, nodeHandler, result);
-                    html.push(result);
-                },
-
-                input: function(html, node) {
-                    var value = jsonml.getAttr(node, "value") || "";
-                    var type = jsonml.getAttr(node, "type");
-                    var label = jsonml.getAttr(node, "label") || "";
-                    var hint = jsonml.getAttr(node, "hint");
-
-                    var name = jsonml.getAttr(node, "name");
-                    if (!name) {
-                        throw "input widgets must have a name attribute";
-                    }
-
-                    var result = ["div",
-                    {
-                        "class": "input"
-                    }];
-                    if (!type) {
-                        throw "input widgets must have a type attribute";
-                    }
-
-                    var tagAttr = {
-                        "class": type,
-                        "name": name,
-                        "id": "MUI_FORM_" + name
-                    };
-
-                    if (label) {
-                        var labelid = uniqId();
-                        if (config.placeholder) {
-                            tagAttr.placeholder = label;
-                        } else {
-                            result.push(["div",
-                            {
-                                "class": "label"
-                            }, ["label",
-                            {
-                                "for": labelid
-                            },
-                            label, ":"]]);
-                        }
-                        tagAttr.id = labelid;
-                    }
-
-                    if (type === "textbox") {
-                        result.push(["textarea", tagAttr, value]);
-
-                    } else { // normal input
-                        tagAttr.value = value;
-                        tagAttr.type = type;
-                        if (type === "tel" && !config.telInput) {
-                            tagAttr.type = "number";
-
-                        }
-                        result.push(["input", tagAttr]);
-                    }
-                    if (hint) {
-                        result.push(["div",
-                        {
-                            "class": "hint"
-                        }, "*", hint]);
-                    }
-                    html.push(result);
-                },
-
-                choice: function(html, node) {
-                    var defaultValue = jsonml.getAttr(node, "value") || "";
-                    var label = jsonml.getAttr(node, "label") || "";
-                    var hint = jsonml.getAttr(node, "hint");
-
-                    var result = ["div",
-                    {
-                        "class": "input"
-                    }];
-
-                    var tagAttr = {
-                        "name": jsonml.getAttr(node, "name")
-                    };
-                    var select = ["select", tagAttr];
-
-                    var label = jsonml.getAttr(node, "label");
-                    if (label) {
-                        if (defaultValue) {
-                            select.push(["option",
-                            {
-                                value: ""
-                            },
-                            label]);
-                        } else {
-                            select.push(["option",
-                            {
-                                value: "",
-                                selected: "selected"
-                            },
-                            label]);
-                        }
-                    }
-
-
-                    jsonml.childReduce(node, function(result, node) {
-                        if (node[0] !== "option") {
-                            throw "only option nodes are allows as children to choices";
-                        }
-                        var value = jsonml.getAttr(node, "value");
-                        if (!value) {
-                            throw "option widgets must have a value attribute";
-                        }
-                        var attrs = {
-                            value: value
-                        };
-                        if (value === defaultValue) {
-                            attrs.selected = "selected";
-                        }
-                        select.push(["option", attrs, node[2]]);
-                        return result;
-                    }, result);
-                    result.push(select);
-                    if (hint) {
-                        result.push(["div",
-                        {
-                            "class": "hint"
-                        }, "*", hint]);
-                    }
-                    html.push(result);
-                },
-
-                text: function(html, node) {
-                    var result = ["div",
-                    {
-                        "class": "text"
-                    }];
-                    jsonml.childReduce(node, nodeHandler, result);
-                    html.push(result);
-                },
-
-                button: function(html, node) {
-                    if (!jsonml.getAttr(node, "fn")) {
-                        throw "buttons must have an fn attribute, containing a function to call";
-                    }
-
-                    var fn = jsonml.getAttr(node, "fn");
-                    var onclick = function() { 
-                            mui.formValue = (function() {
-                                var form = formExtract(gId("current"), {});
-                                return function(name) {
-                                    return form[name];
-                                }
-                            })();
-                            fn(mui) 
-                        }
-                    var attr = {
-                        "class": "button"
-                    };
-                    var result = ["a", {onclick:onclick}];
-                    jsonml.childReduce(node, nodeHandler, result);
-                    html.push(["div", {"class":"button", onclick:onclick}, result]);
-                }
-            };
-
-            function nodeHandler(html, node) {
-                if (typeof(node) === "string") {
-                    html.push(node);
-                } else {
-                    var handle = handlers[node[0]];
-                    if (handle) {
-                        handle(html, node);
-                    } else {
-                        var tag = [node[0]];
-                        if (node[1] && node[1].constructor === Object) {
-                            tag.push(node[1]);
-                        }
-                        jsonml.childReduce(node, nodeHandler, tag);
-                        html.push(tag);
-                    }
-                }
-                return html;
-            }
-
-            var html = ["form"];
-            var title = jsonml.getAttr(page, "title") || "untitled";
-            jsonml.childReduce(page, nodeHandler, html);
-            return [["div",
-            {
-                "class": "header"
-            },
-            title], html, ["div",
-            {
-                "class": "contentend"
-            }, " "]];
-
-        };
-    };
 
     // In a web environment, the session object is just a simple object.
     mui.session = {};
 
-
-    // shorthand
-
-
-    function gId(name) {
-        return document.getElementById(name);
-    }
-
     // Error to show, when something goes wrong
-
-
     function callbackError(e) {
         mui.showPage(["page",
         {
@@ -265,29 +43,9 @@ var mui = (function(exports, $, global) {
         throw e;
     }
 
-
-    // run through the dom and extract filled out
-    // input values.
-
-
-    function formExtract(node, acc) {
-        var name = node.getAttribute && node.getAttribute("name");
-        var type = node.getAttribute && node.getAttribute("type");
-        if (name) {
-            var tag = node.tagName;
-            if (tag === "TEXTAREA" || tag === "SELECT" || (tag === "INPUT" && (type === "text" || type === "email" || type === "number" || type === "tel"))) {
-                acc[name] = node.value;
-            } else {
-                throw "unexpected form-like element: " + tag;
-            }
-        }
-        for (var i = 0; i < node.childNodes.length; ++i) {
-            formExtract(node.childNodes[i], acc);
-        }
-        return acc;
-    }
-
-    mui.formValue = function() {};
+    exports.formValue = function(name) {
+        return $("#MUI_FORM_" + name).val();
+    };
 
     // Valid characters in URIs
     var urichars = "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_~.";
@@ -359,16 +117,11 @@ var mui = (function(exports, $, global) {
         executeRemote(url + "?" + encodeUrlParameters(args));
     }
 
-    // END OLD STUFF ////////////////////////////////////////
     nextid = 0;
 
     function uniqId() {
         return "MUI_" + (++nextid);
     }
-
-    var pageTransform = transformFactory({
-        placeholder: true
-    });
 
     exports.storage = {};
 
@@ -411,23 +164,91 @@ var mui = (function(exports, $, global) {
         $("#loading").css("top", "-50px");
     }
 
+    function fixup() {
+        var $page = $("#next page");
+        var title = $page.attr("title");
+        if(title) {
+            $page.prepend($("<div>").addClass("header").text(title));
+        }
+        $page.append($("<div>").addClass("contentend"));
+        $page.replaceWith($page.contents());
+
+        $("#next section").replaceWith(function() {
+            var $result = $("<div>").addClass("contentbox").append($(this).contents());
+            if($(this).prop("autocontent")) {
+               $result.attr("id", "morecontainer");
+               morefn = $(this).prop("autocontent");
+            }
+            return $result;
+        });
+
+        $("#next button").each(function() {
+            if(this.fn) {
+                $(this).replaceWith(
+                    $("<div>").addClass("button").append(
+                        $("<a>").append($(this).contents()))
+                        .one("click", (function(fn) {
+                            return function() { fn(mui); }})(this.fn))
+                );
+            }
+        });
+
+        $("#next input").each(function() {
+            var $this = $(this);
+
+            var $t = $('<div class="input">');
+            $this.replaceWith($t);
+            $t.append($this);
+
+            var type = $this.attr("type");
+            var name = $this.attr("name");
+            var label = $this.prop("label");
+            var hint = $this.prop("hint");
+
+            if(type === "textbox") {
+                var $new = $("<textarea>");
+                $new.attr("name", name)
+                    .val($this.val());
+                $this.replaceWith($new);
+                $this = $new;
+            } 
+
+            if(hint) {
+                $this.after($('<div class="hint">').text("* " + hint));
+            }
+
+            $this.attr("id", "MUI_FORM_" + name);
+
+            // TODO: modernizr placeholder degradation
+            $this.attr("placeholder", label);
+
+            //$this.replaceWith($('<div class="input">').append($this));
+        });
+
+        $("#next choice").replaceWith(function() {
+            $this = $(this);
+            var name = $this.prop("name");
+            $result = $("<select>").attr("name", name)
+                        .append('<option value="">' + $this.prop("label") + "</option>")
+                        .append($this.contents()).val($this.prop("value"));
+            $result.attr("id", "MUI_FORM_" + name);
+
+            return $('<div class="input">').append($result);
+        });
+    }
+
     exports.showPage = function(elem) {
+        previousPage = elem;
+        console.log("showPage", JSON.stringify(elem));
         $(document).unbind('scroll');
         $("#current").before($("<div>").attr("id", "next"));
-        if (elem[0] === "page") {
-            elem = pageTransform(elem, this);
-            //elem = elem.map(jsonml.toXml).join("")
-            elem = elem.forEach(function(node) {
-                $("#next").append(jsonml.toDOM(node));
-            });
-        } else {
-            elem = jsonml.toDOM(elem);
-            $("#next").append(elem);
-        }
+        elem = jsonml.toDOM(elem);
+        $("#next").append(elem);
+        fixup();
         notLoading();
         $("#current").css("top", -$("#next").height()).attr("id", "prev");
         $("#next").attr("id", "current");
-        if ($("#morecontainer")) {
+        if ($("#current #morecontainer")) {
             mui.more(morefn);
         }
         setTimeout('$("#prev").remove()', 500);

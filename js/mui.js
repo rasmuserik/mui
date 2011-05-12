@@ -1,5 +1,6 @@
-var mui = (function(exports, $, global) {
+$("#current").append("HERE! in mui.js");
 
+var mui = (function(exports, $, global) {
     var mui = exports;
 
     exports.setHints = function setHints(page, hints) {
@@ -185,9 +186,7 @@ var mui = (function(exports, $, global) {
                     }
 
                     var fn = jsonml.getAttr(node, "fn");
-                    var attr = {
-                        "class": "button",
-                        onclick: function() { 
+                    var onclick = function() { 
                             mui.formValue = (function() {
                                 var form = formExtract(gId("current"), {});
                                 return function(name) {
@@ -196,10 +195,12 @@ var mui = (function(exports, $, global) {
                             })();
                             fn(mui) 
                         }
+                    var attr = {
+                        "class": "button"
                     };
-                    var result = ["div", attr];
+                    var result = ["a", {onclick:onclick}];
                     jsonml.childReduce(node, nodeHandler, result);
-                    html.push(result);
+                    html.push(["div", {"class":"button", onclick:onclick}, result]);
                 }
             };
 
@@ -362,14 +363,14 @@ var mui = (function(exports, $, global) {
     nextid = 0;
 
     function uniqId() {
-        return "MUI_" + ++nextid;
+        return "MUI_" + (++nextid);
     }
 
     var pageTransform = transformFactory({
-        placeholder: true,
+        placeholder: true
     });
 
-    exports.storage = localStorage;
+    exports.storage = {};
 
     var previousPage = undefined;
 
@@ -379,8 +380,24 @@ var mui = (function(exports, $, global) {
 
     //exports.callJsonpWebservice = Q.callJsonpWebservice;
     var main;
+
     exports.setMain = function(muiMain) {
         $('document').ready(function() {
+
+            if(global.localStorage) {
+                exports.storage = localStorage;
+            } else {
+                var store = {};
+                exports.storage = {
+                    setItem: function(key, val) {
+                        store[key] = val;
+                    },
+                    getItem: function(key) {
+                        return store[key];
+                    }
+                }
+            }
+
             main = muiMain;
             muiMain(mui);
         });
@@ -446,5 +463,6 @@ var mui = (function(exports, $, global) {
         updateLayout();
     }
 
+	
     return mui;
 })({}, $, this /*global*/);

@@ -98,100 +98,94 @@ var mui = (function(exports, $, global) {
      });
 
     exports.loading = function() {
-        $("#loading").css("top", "50px");
+        $.mobile.pageLoading();
     };
 
-    function notLoading() {
-        $("#loading").css("top", "-100px");
+    function childTransform(dst, src) {
+        for(var i=2;i<src.length;++i) {
+            dst.push(transform(src[i]));
+        }
+        return dst;
     }
 
-    function fixup() {
-        var $page = $("#next page");
-        var title = $page.attr("title");
-        if(title) {
-            $page.prepend($("<div>").addClass("header").text(title));
+    function transform(elem) {
+        if(!Array.isArray(elem)) {
+            return elem;
         }
-        $page.append($("<div>").addClass("contentend"));
-        $page.replaceWith($page.contents());
 
-        $("#next section").replaceWith(function() {
-            var $result = $("<div>").addClass("contentbox").append($(this).contents());
-            if($(this).prop("autocontent")) {
-               $result.attr("id", "morecontainer");
-               morefn = $(this).prop("autocontent");
-            }
-            return $result;
-        });
+        var tag = elem[0];
+        var attr = elem[1];
 
-        $("#next button").each(function() {
-            if(this.fn) {
-                $(this).replaceWith(
-                    $("<div>").addClass("button").append(
-                        $("<a>").append($(this).contents()))
-                        .one("click", (function(fn) {
-                            return function() { fn(mui); }})(this.fn))
-                );
-            }
-        });
+        if(tag === "page") {
+            return ["div", {"data-role": "page", id: "current"},
+                ["div", {"data-role": "header"}, ["h1", attr.title || untitled]],
+                childTransform(["div", {"data-role": "content"}], elem)];
 
-        $("#next input").each(function() {
-            var $this = $(this);
-
-            var $t = $('<div class="input">');
-            $this.replaceWith($t);
-            $t.append($this);
-
-            var name = this.name;
-            var type = this.type;
-            var label = this.label;
-            var hint = this.hint;
-
-            if(type === "textbox") {
-                var $new = $("<textarea>");
-                $new.attr("name", name)
-                    .val($this.val());
-                $this.replaceWith($new);
-                $this = $new;
-            } 
-
-            if(hint) {
-                $this.after($('<div class="hint">').text("* " + hint));
+        } else if(tag === "section") {
+            tag = "div";
+            if(attr.autocontent) {
+               $("#morecontainer").attr("id", "");
+               attr.id = "morecontainer";
+               morefn = autocontent("autocontent");
             }
 
-            $this.attr("id", "MUI_FORM_" + name);
+        } else if(tag === "button" && attr.fn) {
+            attr = {"onclick": (function(fn) { return function() { fn(mui) } })(attr.fn)};
 
-            // TODO: modernizr placeholder degradation
-            $this.attr("placeholder", label);
+        } else if(tag === "input") {
+            var result = ["div", /* {"data-role": "fieldcontain"} */]
+            attr.id = "MUI_FORM_" + attr.name;
 
-            //$this.replaceWith($('<div class="input">').append($this));
-        });
+            /* if(attr.label) {
+                result.push(["label", {"for": attr.id}, attr.label, ":"]);
+            } */
+            attr.placeholder = attr.label;
 
-        $("#next choice").replaceWith(function() {
-            $this = $(this);
-            var name = $this.prop("name");
-            $result = $("<select>").attr("name", name)
-                        .append('<option value="">' + $this.prop("label") + "</option>")
-                        .append($this.contents()).val($this.prop("value"));
-            $result.attr("id", "MUI_FORM_" + name);
+            if(attr.type !== "textbox") {
+                result.push([tag, attr])
+            }  else {
+                result.push(["textarea", attr, attr.value || ""])
+            }
 
-            return $('<div class="input">').append($result);
-        });
+            if(attr.hint) {
+                result.push(["div", {"class": "hint"}, "*", attr.hint])
+            }
+
+            return result;
+
+        } else if(tag === "choice") {
+            var result = ["div", /* {"data-role": "fieldcontain"} */];
+            attr.id = "MUI_FORM_" + attr.name;
+
+            var select = childTransform(["select", attr, ["option", {value: ""}, attr.label]], elem);
+            for(var i=2;i<select.length;++i) {
+                if(attr.value === select[i][1].value) {
+                    attr.selectedIndex = i-2;
+                }
+            }
+            result.push(select);
+            return result;
+        } 
+        return childTransform([tag, attr], elem);
     }
 
     exports.showPage = function(elem) {
         previousPage = elem;
-        $(document).unbind('scroll');
-        $("#current").before($("<div>").attr("id", "next"));
+        //$(document).unbind('scroll');
+        elem = jsonml.withAttr(elem);
+        elem = transform(elem);
         elem = jsonml.toDOM(elem);
-        $("#next").append(elem);
-        fixup();
-        notLoading();
-        $("#current").css("top", -$("#next").height()).attr("id", "prev");
-        $("#next").attr("id", "current");
-        if ($("#current #morecontainer")) {
-            mui.more(morefn);
-        }
-        setTimeout('$("#prev").remove()', 500);
+
+        $("#current").attr("id", "prev");
+        setTimeout(function() {$("#prev").remove()}, 500);
+
+        $current = $(elem);
+        $("body").append($current);
+        $.mobile.changePage($current);
+
+        //if ($("#current #morecontainer")) {
+        //    mui.more(morefn);
+        //}
     }
 
     function updateLayout() {
@@ -224,7 +218,6 @@ var mui = (function(exports, $, global) {
         updateLayout();
     }
 
-	
     return mui;
 
 })({}, $, this /*global*/);

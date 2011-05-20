@@ -349,10 +349,16 @@ exports.toDOM = function toDOM(jsonml) {
         var elem = document.createElement(jsonml[0]);
         var attr = jsonml[1];
         for(var name in attr) {
-            elem[{
-                'class': 'className',
-                'for': 'htmlFor'
-            }[name] || name] = attr[name];
+            try {
+                if(attr[name] !== undefined && attr[name] !== null) {
+                    elem[{
+                        'class': 'className',
+                        'for': 'htmlFor'
+                    }[name] || name] = attr[name];
+                }
+            } catch(e) {
+                elem.setAttribute(name, attr[name]);
+            }
         }
         for(var i=2;i<jsonml.length;++i) {
             elem.appendChild(toDOM(jsonml[i]))

@@ -358,18 +358,23 @@ exports.toDOM = function toDOM(jsonml) {
             elem.appendChild(toDOM(jsonml[i]))
         }
         for(var name in attr) {
-            elem[{
-                'class': 'className',
-                'for': 'htmlFor'
-            }[name] || name] = attr[name];
-            
-            elem.setAttribute(name, attr[name]);
-
-            if(global.$ && name.slice(0,2) === "on") {
-                fn = (typeof attr[name] === "string" )
-                    ? Function(attr[name])
-                    : attr[name];
-                global.$(elem).bind(name.slice(2), fn);
+            if(attr[name] !== undefined && attr[name] !== null) {
+                try {
+                    elem[{
+                        'class': 'className',
+                        'for': 'htmlFor'
+                    }[name] || name] = attr[name];
+                } catch(e) {
+                    // some properties cannot be set on internet explorer
+                }
+                elem.setAttribute(name, attr[name]);
+    
+                if(global.$ && name.slice(0,2) === "on") {
+                    fn = (typeof attr[name] === "string" )
+                        ? Function(attr[name])
+                        : attr[name];
+                    global.$(elem).bind(name.slice(2), fn);
+                }
             }
         }
     } else if(typeof jsonml === "string") {

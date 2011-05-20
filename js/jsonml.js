@@ -11,6 +11,7 @@
 // avoid regular expressions to be possible to 
 // run on javascript-subsets on j2me devices.
 var jsonml = (function(exports){
+var global = this;
 
 // ## XML parser
 
@@ -327,12 +328,12 @@ function JsonML_Error(desc) {
     throw desc;
 }
 
-exports.visit = function visit(jsonml, fnlist) {
-    jsonml.forEach(function(elem) { if(Array.isArray(elem)) visit(elem); });
-    fnlist.forEach(function(fn) { fn(jsonml); });
+function visit(jsonml, fn) {
+    jsonml.forEach(function(elem) { if(Array.isArray(elem)) visit(elem, fn); });
+    fn(jsonml);
 }
 
-exports.insertEmptyAttributes = function insertEmptyAttributes(jsonml) {
+function insertEmptyAttributes(jsonml) {
     if(!plainObject(jsonml[1])) {
         jsonml.unshift(jsonml[0]);
         jsonml[1] = {};
@@ -343,25 +344,38 @@ function plainObject(obj) {
     return typeof obj === "object" && obj !== null && obj.constructor === Object;
 }
 
+exports.withAttr = function(obj) {
+    visit(obj, insertEmptyAttributes);
+    return obj;
+}
+
 exports.toDOM = function toDOM(jsonml) {
     if(Array.isArray(jsonml)) {
-        exports.insertEmptyAttributes(jsonml);
+        insertEmptyAttributes(jsonml);
         var elem = document.createElement(jsonml[0]);
         var attr = jsonml[1];
+        for(var i=2;i<jsonml.length;++i) {
+            elem.appendChild(toDOM(jsonml[i]))
+        }
         for(var name in attr) {
-            try {
-                if(attr[name] !== undefined && attr[name] !== null) {
+            if(attr[name] !== undefined && attr[name] !== null) {
+                try {
                     elem[{
                         'class': 'className',
                         'for': 'htmlFor'
                     }[name] || name] = attr[name];
+                } catch(e) {
+                    // some properties cannot be set on internet explorer
                 }
-            } catch(e) {
                 elem.setAttribute(name, attr[name]);
+    
+                if(global.$ && name.slice(0,2) === "on") {
+                    fn = (typeof attr[name] === "string" )
+                        ? Function(attr[name])
+                        : attr[name];
+                    global.$(elem).bind(name.slice(2), fn);
+                }
             }
-        }
-        for(var i=2;i<jsonml.length;++i) {
-            elem.appendChild(toDOM(jsonml[i]))
         }
     } else if(typeof jsonml === "string") {
         var elem = document.createTextNode(jsonml);

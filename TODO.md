@@ -1,8 +1,5 @@
-- merge jqm and default version
-- doc - developer / markdown
-- QA - jshint etc.
-- update autopopulated list for search results
 - doc - intenal / docco
+- doc - developer / markdown
 - testing - unit testing
 - testing - selenium support
 - QA - ff, ie, opera, oldandroid

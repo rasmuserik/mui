@@ -103,7 +103,6 @@ window.mui = (function(exports, global) {
             $("body").append('<div id="container"><div id="current"></div><div class="contentend"></div></div><div id="loading">Loading...</div>');
         }
         exports.main(exports);
-        console.log("ready", mui.main);
      });
 
     exports.loading = function() {

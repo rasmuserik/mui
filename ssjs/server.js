@@ -17,7 +17,7 @@ require('jsdom').jsdom.env( '<div id="container"><div id="current"></div></div>'
     var mui = window.mui;
     window.mui = undefined;
 
-    app.get('/', function(req, res){
+    app.all('/', function(req, res){
         handleRequest(req, res, window, mui);
     });
 
@@ -89,7 +89,7 @@ function handleRequest(req, res, window, mui) {
                 + '<meta name="viewport" content="width=320, initial-scale=1.0">'
                 + '<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">'
                 + '<meta name="apple-mobile-web-app-status-bar-style" content="black">'
-                + '</head><body><form method="GET" action="/">'
+                + '</head><body><form method="POST" action="/">'
                 + window.$("body").html()
                 + '</form></body></html>'
             );

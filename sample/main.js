@@ -18,14 +18,12 @@
             stepValue: step, 
             outputType: 'json'}, 
             function(data) { 
-                console.log("result:", data); 
                 if(first) {
                     hitcount =  +data.searchResponse.result.hitCount.$;
                     mui.append('Searching for "' + query + '" yielded ' + hitcount + ' hits');
                     first = false;
                 }
                 var results = data.searchResponse.result.searchResult;
-                console.log("results:", results); 
                 if(results) {
                 for(var i=0; i < results.length;++i) {
                     mui.append('<hr>');
@@ -34,7 +32,6 @@
                         JSON.stringify(results[i].collection.object.record.creator) + "</div>"
 
                     );
-                    console.log(JSON.stringify(results[i].collection.object.record.title));
                 }
                 start+=step;
                 if(start <= hitcount) {

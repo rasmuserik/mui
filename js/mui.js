@@ -126,6 +126,15 @@ var mui = (function(exports, global) {
         return dst;
     }
 
+    function classExtend(attr, className) {
+        if(attr["class"]) {
+            attr["class"] += " " + className;
+        } else {
+            attr["class"] = className;
+        }
+        return attr;
+    }
+
     transform = function transform(elem) {
         if(!Array.isArray(elem)) {
             return elem;
@@ -133,15 +142,17 @@ var mui = (function(exports, global) {
 
         var result;
         var tag = elem[0];
-        var attr = elem[1];
+        var attr = jQuery.extend({}, elem[1]);
+
 
         if(tag === "page") {
             return ["div", {"data-role": "page", id: "current"},
-                ["div", {"data-role": "header"}, ["h1", attr.title || "untitled"]],
-                childTransform(["div", {"data-role": "content"}], elem)];
+                ["div", {"data-role": "header", "class": "header"}, ["h1", attr.title || "untitled"]],
+                childTransform(["div", {"data-role": "content"}], elem), ["div", {"class": "contentend"}]];
 
         } else if(tag === "section") {
             tag = "div";
+            classExtend(attr, "contentbox");
             if(attr.autocontent) {
                $("#morecontainer").attr("id", "");
                attr.id = "morecontainer";
@@ -150,14 +161,22 @@ var mui = (function(exports, global) {
 
         } else if(tag === "button" && attr.fn) {
             attr = {"onclick": (function(fn) { return function() { fn(mui); }; })(attr.fn)};
+            if(!$.mobile) {
+                classExtend(attr, "button");
+                tag = "div";
+            }
 
         } else if(tag === "input") {
-            result = ["div",  {"data-role": "fieldcontain"} ];
+            result = ["div",  {"data-role": "fieldcontain", "class": "input"} ];
             attr.id = "MUI_FORM_" + attr.name;
-            if(attr.label) {
-                result.push(["label", {"for": attr.id}, attr.label]);
-            } 
-            //attr.placeholder = attr.label;
+
+            if($.mobile) {
+                if(attr.label) {
+                    result.push(["label", {"for": attr.id}, attr.label]);
+                } 
+            } else {
+                attr.placeholder = attr.label;
+            }
 
             if(attr.type !== "textbox") {
                 result.push([tag, attr]);
@@ -175,12 +194,15 @@ var mui = (function(exports, global) {
             result = ["div", {"data-role": "fieldcontain"}];
             attr.id = "MUI_FORM_" + attr.name;
 
-            if(attr.label) {
-                result.push(["label", {"for": attr.id}, attr.label]);
-            } 
+            if($.mobile) {
+                if(attr.label) {
+                    result.push(["label", {"for": attr.id}, attr.label]);
+                } 
+                var select = childTransform(["select", attr], elem);
+            }  else {
+                var select = childTransform(["select", attr, ["option", {value: ""}, attr.label]], elem);
+            }
 
-            //var select = childTransform(["select", attr, ["option", {value: ""}, attr.label]], elem);
-            var select = childTransform(["select", attr], elem);
             for(var i=2;i<select.length;++i) {
                 if(attr.value === select[i][1].value) {
                     attr.selectedIndex = i-2;
@@ -290,10 +312,11 @@ var mui = (function(exports, global) {
         } else {
             previousPage = elem;
             $(document).unbind('scroll');
-            $("#current").before($("<div>").attr("id", "next"));
+            elem = jsonml.withAttr(elem);
+            elem = transform(elem);
             elem = jsonml.toDOM(elem);
-            $("#next").append(elem);
-            fixup();
+            $("#current").attr("id", "prev").before($(elem).attr("id", "next"));
+            //fixup();
             notLoading();
             $("#current").css("top", -$("#next").height()).attr("id", "prev");
             $("#next").attr("id", "current");

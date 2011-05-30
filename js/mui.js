@@ -246,7 +246,8 @@ window.mui = (function(exports, global) {
         }
 
         if ($("#morecontainer")) {
-            mui.more(morefn);
+            morefn(this);
+            // mui.more(morefn);
         }
 
         if(window.ssjs) {

@@ -84,8 +84,9 @@ window.mui = (function(exports, global) {
         fn(mui); 
     };};
     exports.setMain = function(fn) { exports.main = fn; };
-    var startme = false;
-    $(document).ready(function() {
+
+    function start() {
+        console.log("start");
         if(typeof localStorage !== "undefined") {
             exports.storage = localStorage;
         } else {
@@ -103,7 +104,16 @@ window.mui = (function(exports, global) {
             $("body").append('<div id="container"><div id="current"></div><div class="contentend"></div></div><div id="loading">Loading...</div>');
         }
         exports.main(exports);
-     });
+    };
+
+    if(window.PhoneGap && window.PhoneGap.device) {
+        console.log("start A");
+        document.addEventListener("deviceready", function() { $(start); }, false);
+    } else {
+        console.log("start B");
+        $(start);
+    }
+
 
     exports.loading = function() {
         if($.mobile) {
@@ -222,6 +232,7 @@ window.mui = (function(exports, global) {
     };
 
     exports.showPage = function(elem) {
+        console.log("showPage");
         previousPage = elem;
         $(document).unbind('scroll');
         $("#morecontainer").attr("id", "");
@@ -236,8 +247,11 @@ window.mui = (function(exports, global) {
             $("body").html($(elem));
 
         } else if($.mobile) {
+            console.log("body-append");
             $("body").append($(elem));
+            console.log("body-append2");
             $.mobile.changePage($(elem));
+            console.log("body-append-done");
     
         } else {
             $("#prev").before($(elem).attr("id", "next"));
@@ -246,14 +260,14 @@ window.mui = (function(exports, global) {
         }
 
         if ($("#morecontainer")) {
-            morefn(this);
+            if(morefn) morefn(this);
             // mui.more(morefn);
         }
 
         if(window.ssjs) {
             window.ssjs.send();
         } else {
-            setTimeout(function() {$("#prev").remove();}, 500);
+            setTimeout(function() {$("#prev").remove();}, 2000);
         }
     };
 
